@@ -6,6 +6,27 @@
 # You will need to pass the `--batch` flag to `gpg` in your signing step
 # in `goreleaser` to indicate this is being used in a non-interactive mode.
 #
+# Fork notes (TohaUA/terraform-provider-routeros):
+#   * Upstream authenticates with a personal access token stored in the
+#     ROUTEROS_ACTIONS secret. The fork has no such secret, so every step uses
+#     the workflow's own GITHUB_TOKEN instead. That token is read-only by
+#     default in this repository, hence the explicit `permissions:` block:
+#       - contents: write        push the chore(release) commit + tag, create
+#                                the GitHub release, upload goreleaser assets
+#       - issues/pull-requests: write
+#                                @semantic-release/github wants these for its
+#                                success/fail comments; they are disabled in
+#                                .releaserc, so the grant is belt-and-braces
+#     A push made with GITHUB_TOKEN never triggers another workflow run, so the
+#     release commit cannot re-trigger this job (the chore(release) guard below
+#     is kept for manual/PAT pushes).
+#   * package.json still names the upstream repository. semantic-release
+#     prefers that URL over `git remote origin`, so `repository_url` is passed
+#     explicitly to make releases land on the repository running the workflow.
+#   * Go is set up before semantic-release because its prepare step runs
+#     `make docs` (go generate), which must use the go.mod toolchain and not
+#     whatever the runner image happens to ship.
+#
 name: Release
 
 on:
@@ -16,6 +37,11 @@ on:
       - 'devel'
     tags-ignore:
       - '**'
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
 
@@ -29,8 +55,12 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
-          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
-          token: ${{ secrets.ROUTEROS_ACTIONS }}
+          persist-credentials: false # semantic-release authenticates with GITHUB_TOKEN from its own env
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
 
       - name: Import GPG key
         id: import_gpg
@@ -44,6 +74,7 @@ jobs:
         id: release
         uses: cycjimmy/semantic-release-action@v6
         with:
+          repository_url: ${{ github.server_url }}/${{ github.repository }}
           extra_plugins: |
             "@semantic-release/changelog@6.0.2"
             "@semantic-release/commit-analyzer@9.0.2"
@@ -53,22 +84,16 @@ jobs:
             "@semantic-release/release-notes-generator@10.0.3"
             "conventional-changelog-conventionalcommits@8.0.0"
         env:
-          GITHUB_TOKEN: ${{ secrets.ROUTEROS_ACTIONS }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-
-      - name: Set up Go
-        if: steps.release.outputs.new_release_published == 'true'
-        uses: actions/setup-go@v6
-        with:
-          go-version: 1.25
 
       - name: Run GoReleaser
         if: steps.release.outputs.new_release_published == 'true'
         uses: goreleaser/goreleaser-action@v7
         with:
-          version: latest
+          version: '~> v2'
           args: release --clean
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           # GitHub sets this automatically
-          GITHUB_TOKEN: ${{ secrets.ROUTEROS_ACTIONS }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -9,3 +9,4 @@ tools/boilerplate/examples/**
 tools/boilerplate/routeros/**
 tools/boilerplate/*.csv
 main.exe
+dist/
