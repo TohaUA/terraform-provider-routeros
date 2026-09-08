@@ -11,6 +11,7 @@ import (
     "default": "true",
     "disabled": "false",
     "invalid": "false",
+    "managed": "false",
     "prefix": "",
     "topics": "critical"
 }
@@ -42,6 +43,13 @@ func ResourceSystemLogging() *schema.Resource {
 		KeyDefault:  PropDefaultRo,
 		KeyDisabled: PropDisabledRw,
 		KeyInvalid:  PropInvalidRo,
+		"managed": {
+			Type:     schema.TypeBool,
+			Computed: true,
+			Description: "Read-only status flag reported by RouterOS 7.24 showing whether the logging rule is " +
+				"managed by another subsystem. The property is not described in the MikroTik documentation and " +
+				"is exposed here only so that it stops being dropped during the schema conversion.",
+		},
 		"prefix": {
 			Type:        schema.TypeString,
 			Optional:    true,
