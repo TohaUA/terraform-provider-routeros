@@ -53,6 +53,7 @@ resource "routeros_interface_bridge_vlan" "bridge_vlan" {
 - `current_untagged` (List of String)
 - `dynamic` (Boolean) Configuration item created by software, not by management interface. It is not exported, and cannot be directly modified.
 - `id` (String) The ID of this resource.
+- `managed` (Boolean) Read-only status flag reported by RouterOS 7.24 showing whether the bridge VLAN entry is managed by another subsystem. The property is not described in the MikroTik documentation and is exposed here only so that it stops being dropped during the schema conversion.
 
 ## Import
 Import is supported using the following syntax:

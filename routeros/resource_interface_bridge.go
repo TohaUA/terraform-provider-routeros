@@ -47,6 +47,15 @@ func ResourceInterfaceBridge() *schema.Resource {
 			Type:     schema.TypeBool,
 			Optional: true,
 		},
+		"dhcpv6_snooping": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Description: "Enables or disables DHCPv6 Snooping on the bridge. Used together with the bridge port " +
+				"`trusted-dhcpv6` property to block rogue DHCPv6 servers. Enabling the DHCP snooping feature will " +
+				"turn off bridge fast-path, which in turn affects the ability to fasttrack connections going over " +
+				"that bridge.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		KeyDisabled: PropDisabledRw,
 		KeyDynamic:  PropDynamicRo,
 		"ether_type": {
@@ -132,6 +141,13 @@ func ResourceInterfaceBridge() *schema.Resource {
 			RequiredWith:     []string{"igmp_snooping"},
 		},
 		KeyMacAddress: PropMacAddressRo,
+		"managed": {
+			Type:     schema.TypeBool,
+			Computed: true,
+			Description: "Read-only status flag reported by RouterOS 7.24 showing whether the bridge is managed by " +
+				"another subsystem. The property is not described in the MikroTik documentation and is exposed " +
+				"here only so that it stops being dropped during the schema conversion.",
+		},
 		"max_hops": {
 			Type:     schema.TypeInt,
 			Optional: true,
@@ -162,6 +178,36 @@ func ResourceInterfaceBridge() *schema.Resource {
 				"report is not received on a certain port. This property only has effect when igmp-snooping is set to yes.",
 			DiffSuppressFunc: TimeEqual,
 			RequiredWith:     []string{"igmp_snooping"},
+		},
+		"mlag_heartbeat": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "This setting controls how often heartbeat messages are sent to check the connection between " +
+				"MLAG peers. If no heartbeat message is received for three intervals in a row, the peer logs a warning " +
+				"about potential communication problems. If set to `none`, heartbeat messages are not sent at all. " +
+				"Value: 1s..10s or none, default 5s. Starting with RouterOS version 7.22 MLAG is configured per bridge " +
+				"interface instead of the dedicated `/interface/bridge/mlag` submenu.",
+			DiffSuppressFunc: TimeEqual,
+		},
+		"mlag_peer_port": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "An interface (or bond) that will be used as an MLAG peer port. Both peer devices are using " +
+				"inter-chassis communication over these peer ports to establish MLAG and update the host table. " +
+				"The peer port should be isolated on a different untagged VLAN using a pvid setting. Starting with " +
+				"RouterOS version 7.22 MLAG is configured per bridge interface instead of the dedicated " +
+				"`/interface/bridge/mlag` submenu.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
+		"mlag_priority": {
+			Type:     schema.TypeInt,
+			Optional: true,
+			Description: "This setting changes the priority for selecting the primary MLAG node. A lower number means " +
+				"higher priority. If both MLAG nodes have the same priority, the one with the lowest bridge MAC address " +
+				"will become the primary device. Starting with RouterOS version 7.22 MLAG is configured per bridge " +
+				"interface instead of the dedicated `/interface/bridge/mlag` submenu.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+			ValidateFunc:     validation.IntBetween(0, 128),
 		},
 		"mld_version": {
 			Type:     schema.TypeInt,
@@ -270,6 +316,15 @@ func ResourceInterfaceBridge() *schema.Resource {
 				"report. This property only has effect when igmp-snooping and multicast-querier is set to yes.",
 			DiffSuppressFunc: TimeEqual,
 			RequiredWith:     []string{"igmp_snooping", "multicast_querier"},
+		},
+		"ra_guard": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Description: "RA guard - security feature that validates incoming Router Advertisements against a list of " +
+				"authorized, trusted ports. IPv6 packets containing RA messages that arrive on bridge ports marked as " +
+				"untrusted are discarded; by default all bridge ports are RA untrusted, see the bridge port " +
+				"`trusted-ra` property.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		KeyRunning: PropRunningRo,
 		"region_name": {

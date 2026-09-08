@@ -16,6 +16,13 @@ func ResourceDhcpServer() *schema.Resource {
 			Optional:    true,
 			Description: "Whether to add dynamic ARP entry. ",
 		},
+		"add_dns_entries_suffix": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "DNS suffix appended to the host name when the DHCP server publishes a static DNS entry for a " +
+				"lease. Reported by RouterOS 7.24; the property is not covered by the MikroTik DHCP documentation.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		"address_pool": {
 			Type:     schema.TypeString,
 			Optional: true,

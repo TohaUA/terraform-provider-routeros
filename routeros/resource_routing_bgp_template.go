@@ -319,12 +319,26 @@ func ResourceRoutingBgpTemplate() *schema.Resource {
 			ValidateFunc: validation.StringInSlice([]string{"default", "force-self", "propagate"}, false),
 		},
 		"output": {
-			Type:        schema.TypeList,
-			Optional:    true,
+			Type:     schema.TypeList,
+			Optional: true,
+			// Computed: RouterOS always reports at least one `output.*` property (e.g. `output.add-path`),
+			// which materializes the block in the state. Without this the block would be planned for
+			// removal on every configuration that does not declare it explicitly.
+			Computed:    true,
 			Description: "A group of parameters associated with BGP output.",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
+					"add_path": {
+						Type:     schema.TypeString,
+						Optional: true,
+						Description: "Parameter defines for which address families select additional paths to be " +
+							"advertised (RFC7911). Selection of paths can be controlled with the routing select chain " +
+							"(`output.filter-select`). Accepts `ip`, `ipv6` or both as a comma separated list. " +
+							"Replaces the deprecated top-level `add_path_out` property.",
+						ValidateDiagFunc: ValidationMultiValInSlice([]string{"ip", "ipv6"}, false, false),
+						DiffSuppressFunc: AlwaysPresentNotUserProvided,
+					},
 					// May be "0" ?!?
 					// affinity (afi | alone | instance | main | remote-as | vrf; Default: )
 					"affinity": {
