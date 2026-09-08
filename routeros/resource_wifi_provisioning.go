@@ -88,10 +88,13 @@ func ResourceWifiProvisioning() *schema.Resource {
 			Type:     schema.TypeList,
 			Optional: true,
 			Elem: &schema.Schema{
-				Type:         schema.TypeString,
-				ValidateFunc: validation.StringInSlice([]string{"2ghz-ax", "2ghz-g", "2ghz-n", "5ghz-a", "5ghz-ac", "5ghz-ax", "5ghz-n"}, false),
+				Type: schema.TypeString,
+				ValidateFunc: validation.StringInSlice([]string{"2ghz-ax", "2ghz-be", "2ghz-g", "2ghz-n", "5ghz-a", "5ghz-ac",
+					"5ghz-an", "5ghz-ax", "5ghz-be", "5ghz-n", "6ghz-ax", "6ghz-be"}, false),
 			},
-			Description: "Match CAPs by supported modes.",
+			Description: "Match CAPs by supported modes. Possible values: " +
+				"`2ghz-ax`, `2ghz-be`, `2ghz-g`, `2ghz-n`, `5ghz-a`, `5ghz-ac`, `5ghz-an`, `5ghz-ax`, `5ghz-be`, " +
+				"`5ghz-n`, `6ghz-ax`, `6ghz-be`.",
 		},
 	}
 

@@ -22,7 +22,7 @@ resource "routeros_wifi_channel" "channel1" {
 
 ### Optional
 
-- `band` (String) Frequency band and wireless standard that will be used by the AP.
+- `band` (String) Frequency band and wireless standard that will be used by the AP. Possible values: `2ghz-g`, `2ghz-n`, `2ghz-ax`, `2ghz-be`, `5ghz-a`, `5ghz-ac`, `5ghz-ax`, `5ghz-be`, `5ghz-an`, `5ghz-n`, `6ghz-ax`, `6ghz-be`.
 - `comment` (String)
 - `deprioritize_unii_3_4` (Boolean) Whether to assign lower priority to channels with a control frequency of 5720 or 5825-5885 MHz. These channels are unsupported by some client devices, making their automatic selection undesirable. Defaults to `yes` in ETSI regulatory domains, elsewhere to `no`.
 - `disabled` (Boolean)
@@ -36,7 +36,7 @@ Example:
     - 14:00..14:30 → Would set the rescan of channels to run every day (after midday), once, randomly between 14:00:00 to 14:30:00 (or 2 PM to 2:30 PM), system clock time.
 - `secondary_frequency` (List of String) Specifies the second frequency that will be used for 80+80MHz configuration. Set it to `disabled` in order to disable 80+80MHz capability.
 - `skip_dfs_channels` (String) An option to avoid using channels on which channel availability check (listening for the presence of radar signals) is required.
-- `width` (String) Channel width.
+- `width` (String) Channel width. Possible values: `20mhz`, `20/40mhz`, `20/40mhz-Ce`, `20/40mhz-eC`, `20/40/80mhz`, `20/40/80+80mhz`, `20/40/80/160mhz`, `20/40/80/160/320mhz`.
 
 ### Read-Only
 
