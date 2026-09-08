@@ -112,3 +112,24 @@ go run ../tools/drift/main.go
 - Submit your changes!
 
 [Here](https://github.com/terraform-routeros/terraform-provider-routeros/pull/758/files) is a example of pull request.
+
+### Finding schema drift against a new RouterOS release
+
+`tools/schema-drift` compares every resource schema with what a live router returns for the
+resource's menu (GET only) and lists the fields that exist on one side only. Run it once per
+RouterOS release to turn "support 7.xx" into a checklist:
+
+```bash
+export ROS_HOSTURL=https://router.example ROS_USERNAME=admin ROS_PASSWORD=... ROS_CACERT=/path/ca.pem
+curl -sSL https://tikoci.github.io/restraml/7.24/inspect.json -o /tmp/inspect-7.24.json   # optional oracle
+make schema-drift INSPECT=/tmp/inspect-7.24.json                                          # writes schema-drift.md / .json
+```
+
+- **missing** rows are RouterOS fields the provider does not expose (add them to the resource schema);
+- **read-only** rows are status fields RouterOS never accepts on `add`/`set` (add a `Computed`
+  attribute or a `MetaSkipFields` entry if the warning "Field ... not found in the schema" bothers you);
+- **schema-only** rows are attributes the device did not return; RouterOS omits unset properties, so
+  only rows whose `writable` column is `no` are removal candidates.
+
+See [tools/schema-drift/README.md](tools/schema-drift/README.md) for all flags, how to check a
+released binary through `terraform providers schema -json`, and the exit-code contract for CI.
