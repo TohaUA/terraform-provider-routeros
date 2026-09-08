@@ -92,6 +92,13 @@ func ResourceInterfaceBridgePort() *schema.Resource {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"actual_path_cost": {
+			Type:     schema.TypeInt,
+			Computed: true,
+			Description: "Shows the actual port path-cost, either manually applied or automatically determined based " +
+				"on the interface speed and the port-cost-mode setting. Read-only, reported by " +
+				"`/interface/bridge/port monitor`.",
+		},
 		"auto_isolate": {
 			Type:     schema.TypeBool,
 			Optional: true,
@@ -249,6 +256,13 @@ func ResourceInterfaceBridgePort() *schema.Resource {
 			Type:        schema.TypeBool,
 			Computed:    true,
 			Description: "Shows whether the port is capable of learning MAC addresses.",
+		},
+		"managed": {
+			Type:     schema.TypeBool,
+			Computed: true,
+			Description: "Read-only status flag reported by RouterOS 7.24 showing whether the bridge port is managed " +
+				"by another subsystem. The property is not described in the MikroTik documentation and is exposed " +
+				"here only so that it stops being dropped during the schema conversion.",
 		},
 		"multicast_router": {
 			Type:     schema.TypeString,
@@ -421,6 +435,22 @@ func ResourceInterfaceBridgePort() *schema.Resource {
 			Description: "When enabled, it allows to forward DHCP packets towards DHCP server through this port. " +
 				"Mainly used to limit unauthorized servers to provide malicious information for users. " +
 				"This property only has effect when dhcp-snooping is set to yes.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
+		"trusted_dhcpv6": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Description: "When enabled, it allows forwarding DHCPv6 packets towards the DHCP server through this port. " +
+				"Mainly used to limit unauthorized servers to provide malicious information for users. " +
+				"This property only has an effect when dhcpv6-snooping is set to yes.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
+		"trusted_ra": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Description: "Specifies whether the port is permitted to forward IPv6 Router Advertisement messages; set to " +
+				"yes for ports connected to legitimate routers and no to block unauthorized sources. " +
+				"This property only has an effect when ra-guard is set to yes.",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"unknown_multicast_flood": {

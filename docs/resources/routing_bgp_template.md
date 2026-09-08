@@ -83,6 +83,7 @@ Optional:
 
 Optional:
 
+- `add_path` (String) Parameter defines for which address families select additional paths to be advertised (RFC7911). Selection of paths can be controlled with the routing select chain (`output.filter-select`). Accepts `ip`, `ipv6` or both as a comma separated list. Replaces the deprecated top-level `add_path_out` property.
 - `affinity` (String) Configure output multicore processing. Read more in Routing Protocol Multi-core Support article. alone - input and output of each session is processed in its own process, the most likely best option when there are a lot of cores and a lot of peers afi, instance, vrf, remote-as - try to run input/output of new session in process with similar parameters main - run input/output in the main process (could potentially increase performance on single-core even possibly on multicore devices with small amount of cores) input - run output in the same process as input (can be set only for output affinity).
 - `default_originate` (String) Specifies default route (0.0.0.0/0) distribution method.
 - `default_prepend` (Number) The count of AS prepended to the AS path.

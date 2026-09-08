@@ -20,6 +20,20 @@ func ResourceIpNeighborDiscoverySettings() *schema.Resource {
 		MetaResourcePath: PropResourcePath("/ip/neighbor/discovery-settings"),
 		MetaId:           PropId(Id),
 
+		"add_dns_entries": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Description: "Whether to publish discovered neighbors as DNS entries on the router. Reported by " +
+				"RouterOS 7.24; the property is not covered by the MikroTik neighbor discovery documentation.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
+		"add_dns_entries_suffix": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "DNS suffix appended to the host name of the DNS entries created by `add-dns-entries`. " +
+				"Reported by RouterOS 7.24; the property is not covered by the MikroTik neighbor discovery documentation.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		"discover_interface_list": {
 			Type:             schema.TypeString,
 			Optional:         true,
@@ -31,6 +45,13 @@ func ResourceIpNeighborDiscoverySettings() *schema.Resource {
 			Optional: true,
 			Description: "An option to adjust the frequency at which neighbor discovery packets are transmitted. " +
 				"The setting is available since RouterOS version 7.16.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
+		"dying_gasp": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Description: "Whether to send a dying gasp notification to neighbors when the device loses power. " +
+				"Reported by RouterOS 7.24; the property is not covered by the MikroTik neighbor discovery documentation.",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"lldp_dcbx": {
@@ -55,6 +76,13 @@ func ResourceIpNeighborDiscoverySettings() *schema.Resource {
 			Optional: true,
 			Description: "Whether to send Maximum Frame Size TLV in LLDP, which indicates the maximum frame size capability" +
 				" of the interface in bytes (`l2mtu + 18`). Only applies to the Ethernet interfaces.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
+		"lldp_med": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Description: "Specifies whether to advertise the LLDP-MED Media Capabilities TLV. This option must be " +
+				"enabled when `lldp-med-net-policy-vlan` is used. The setting is available since RouterOS version 7.23.",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"lldp_med_net_policy_vlan": {

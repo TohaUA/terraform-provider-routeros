@@ -51,6 +51,13 @@ func ResourceInterfaceBridgeVlan() *schema.Resource {
 		},
 		KeyDisabled: PropDisabledRw,
 		KeyDynamic:  PropDynamicRo,
+		"managed": {
+			Type:     schema.TypeBool,
+			Computed: true,
+			Description: "Read-only status flag reported by RouterOS 7.24 showing whether the bridge VLAN entry is " +
+				"managed by another subsystem. The property is not described in the MikroTik documentation and is " +
+				"exposed here only so that it stops being dropped during the schema conversion.",
+		},
 		"mvrp_forbidden": {
 			Type:     schema.TypeList,
 			Optional: true,

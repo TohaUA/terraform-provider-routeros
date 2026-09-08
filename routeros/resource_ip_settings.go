@@ -94,6 +94,25 @@ func ResourceIpSettings() *schema.Resource {
 				"to defaults according to RFC1812 for routers.",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
+		"ipv4_fragment_time": {
+			Type:     schema.TypeInt,
+			Optional: true,
+			Description: "Time in seconds to keep an IPv4 fragment in memory. Note that RouterOS documents this as a " +
+				"plain integer (default `3`), not as a time value. Available starting with RouterOS version 7.23.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
+		"ipv4_high_fragment_thresh": {
+			Type:     schema.TypeInt,
+			Optional: true,
+			Description: "Sets the upper bound of memory (in bytes) the kernel may consume for all fragment reassembly " +
+				"queues combined (every interface and every flow). When the total memory used by the cache reaches this " +
+				"limit the kernel starts dropping newly arriving fragments, causing packets to be discarded. Raising the " +
+				"limit reduces the chance of drops under heavy fragmentation (e.g. high-throughput links with VPNs, or " +
+				"MTU-limited paths), but it also raises the maximum amount of RAM that can be used. The default depends " +
+				"on the installed amount of RAM (512 KiB for 64 MiB of RAM up to 32 MiB for 2 GiB or higher). " +
+				"Available starting with RouterOS version 7.23.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		"ipv4_multipath_hash_policy": {
 			Type:     schema.TypeString,
 			Optional: true,
