@@ -32,6 +32,7 @@ import (
     "skid": "c90ec1a6d381b97bfa6b2c2c5c3ee81cf80ea729",
     "smart-card-key": "false",
     "subject-alt-name": "",
+    "trust-store": "all",
     "trusted": "true"
   }
 */
@@ -364,6 +365,18 @@ func ResourceSystemCertificate() *schema.Resource {
 			Optional:         true,
 			ForceNew:         true,
 			Description:      "SANs (subject alternative names).",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
+		"trust_store": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "Specify service which can use a specific certificate for certificate verification or " +
+				"trust-chain creation (www, sstp). Several services can be given as a comma separated list, and " +
+				"`all` (the default) offers the certificate to every service. Reported by RouterOS 7.2x alongside " +
+				"`trusted`, which stays the flag that puts the certificate in the trusted chain at all.",
+			ValidateDiagFunc: ValidationMultiValInSlice([]string{"all", "api", "capsman", "container", "dns",
+				"dot1x", "email", "fetch", "ipsec", "lora", "mqtt", "netwatch", "openflow", "ovpn", "radius",
+				"sstp", "tr069", "userman", "wpa-eap", "www"}, false, false),
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"trusted": {

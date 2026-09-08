@@ -17,6 +17,7 @@ resource "routeros_ip_ssh_server" "test" {
 
 - `allow_none_crypto` (Boolean) Whether to allow connection if cryptographic algorithms are set to none.
 - `always_allow_password_login` (Boolean) Whether to allow password login at the same time when public key authorization is configured for a user.
+RouterOS 7.2x replaced this property with the tri-state `password_authentication` and no longer reports it, so on those versions the field is absent from the device and is kept here only for older RouterOS.
 - `ciphers` (String) Allow to configure SSH ciphers.
 - `forwarding_enabled` (String) Allows to control which SSH forwarding method to allow:
   * no - SSH forwarding is disabled;
@@ -25,6 +26,10 @@ resource "routeros_ip_ssh_server" "test" {
   * both - Allow both local and remote forwarding methods.
 - `host_key_size` (Number) RSA key size when host key is being regenerated.
 - `host_key_type` (String) Select host key type.
+- `password_authentication` (String) Whether a password login is accepted at all. RouterOS 7.2x replacement for `always_allow_password_login`:
+  * no - password login is refused, only public key authentication is left;
+  * yes - a password login is always accepted;
+  * yes-if-no-key - a password login is accepted only for users that have no public key configured (the default).
 - `publickey_authentication_options` (String) Sets public key authentication options.
 The touch-required option causes public key authentication using a FIDO authenticator algorithm to always require the signature to attest that a physically present user explicitlyconfirmed the authentication (usually by touching the authenticator).
 The verify-required option requires a FIDO key signature attest that the user was verified, e.g. via a PIN.

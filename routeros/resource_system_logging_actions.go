@@ -14,6 +14,7 @@ import (
     ".id": "*3",
     "bsd-syslog": "false",
     "default": "true",
+    "managed": "false",
     "name": "remote",
     "remote": "0.0.0.0",
     "remote-port": "514",
@@ -77,6 +78,13 @@ func ResourceSystemLoggingAction() *schema.Resource {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "Email address where logs are sent, applicable only if `action=email`.",
+		},
+		"managed": {
+			Type:     schema.TypeBool,
+			Computed: true,
+			Description: "Read-only status flag reported by RouterOS 7.24 showing whether the logging action is " +
+				"managed by another subsystem. The property is not described in the MikroTik documentation and " +
+				"is exposed here only so that it stops being dropped during the schema conversion.",
 		},
 		"memory_lines": {
 			Type:             schema.TypeInt,
