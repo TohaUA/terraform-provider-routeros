@@ -88,6 +88,11 @@ func PropId(t IdType) *schema.Schema {
 }
 
 func toQuotedCommaSeparatedString(s ...string) string {
+	// No names means no list: an empty default, which is what a resource
+	// declares when its update handler fills the field in at run time.
+	if len(s) == 0 {
+		return ""
+	}
 	builder := strings.Builder{}
 	const singleQuote = `"`
 	const commaSingleQuote = `,"`
@@ -911,10 +916,10 @@ var (
 // the ROS API omits it for single hosts. ImplicitSingleHostCIDR should only be used where ROS does otherwise
 // admit a prefix length, i.e. `192.168.1.2/24` would both write and read back as such for the same parameter.
 func ImplicitSingleHostCIDR4(k, old, new string, d *schema.ResourceData) bool {
-	return new == old + "/32"
+	return new == old+"/32"
 }
 func ImplicitSingleHostCIDR6(k, old, new string, d *schema.ResourceData) bool {
-	return new == old + "/128"
+	return new == old+"/128"
 }
 
 func buildReadFilter(m map[string]any) []string {
