@@ -25,11 +25,13 @@ func ResourceWifiChannel() *schema.Resource {
 		MetaId:           PropId(Id),
 
 		"band": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Frequency band and wireless standard that will be used by the AP. ",
-			ValidateFunc: validation.StringInSlice([]string{"2ghz-g", "2ghz-n", "2ghz-ax", "5ghz-a", "5ghz-ac", "5ghz-ax",
-				"5ghz-an", "5ghz-n"}, false),
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "Frequency band and wireless standard that will be used by the AP. Possible values: " +
+				"`2ghz-g`, `2ghz-n`, `2ghz-ax`, `2ghz-be`, `5ghz-a`, `5ghz-ac`, `5ghz-ax`, `5ghz-be`, `5ghz-an`, " +
+				"`5ghz-n`, `6ghz-ax`, `6ghz-be`.",
+			ValidateFunc: validation.StringInSlice([]string{"2ghz-g", "2ghz-n", "2ghz-ax", "2ghz-be", "5ghz-a", "5ghz-ac",
+				"5ghz-ax", "5ghz-be", "5ghz-an", "5ghz-n", "6ghz-ax", "6ghz-be"}, false),
 		},
 		KeyComment: PropCommentRw,
 		"deprioritize_unii_3_4": {
@@ -86,10 +88,13 @@ func ResourceWifiChannel() *schema.Resource {
 			ValidateFunc: validation.StringInSlice([]string{"10min-cac", "all", "disabled"}, false),
 		},
 		"width": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Description:  "Channel width.",
-			ValidateFunc: validation.StringInSlice([]string{"20mhz", "20/40mhz", "20/40mhz-Ce", "20/40mhz-eC", "20/40/80mhz", "20/40/80+80mhz", "20/40/80/160mhz"}, false),
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "Channel width. Possible values: " +
+				"`20mhz`, `20/40mhz`, `20/40mhz-Ce`, `20/40mhz-eC`, `20/40/80mhz`, `20/40/80+80mhz`, " +
+				"`20/40/80/160mhz`, `20/40/80/160/320mhz`.",
+			ValidateFunc: validation.StringInSlice([]string{"20mhz", "20/40mhz", "20/40mhz-Ce", "20/40mhz-eC", "20/40/80mhz",
+				"20/40/80+80mhz", "20/40/80/160mhz", "20/40/80/160/320mhz"}, false),
 		},
 	}
 

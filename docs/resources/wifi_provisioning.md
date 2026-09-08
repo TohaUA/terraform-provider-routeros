@@ -35,7 +35,7 @@ resource "routeros_wifi_provisioning" "provisioning1" {
 - `radio_mac` (String) MAC address of radio to be matched, empty MAC means match all MAC addresses. `00:00:00:00:00:00` is not considered empty MAC-address.
 - `slave_configurations` (List of String) If action specifies to create interfaces, then a new slave interface for each configuration profile in this list is created.
 - `slave_name_format` (String) The name format of the slave CAP interfaces. This option is available in RouterOS starting from version 7.16.
-- `supported_bands` (List of String) Match CAPs by supported modes.
+- `supported_bands` (List of String) Match CAPs by supported modes. Possible values: `2ghz-ax`, `2ghz-be`, `2ghz-g`, `2ghz-n`, `5ghz-a`, `5ghz-ac`, `5ghz-an`, `5ghz-ax`, `5ghz-be`, `5ghz-n`, `6ghz-ax`, `6ghz-be`.
 
 ### Read-Only
 
