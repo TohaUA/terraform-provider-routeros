@@ -1,4 +1,16 @@
 name: Go Client Tests
+
+# Every run boots a RouterOS VM under qemu for about fifteen minutes, so a
+# superseded run is expensive to leave going.
+#
+# The group is the branch name rather than github.ref on purpose: a
+# pull_request run sees refs/pull/N/merge while a workflow_dispatch run of the
+# same branch sees refs/heads/<branch>, so grouping on github.ref puts them in
+# different buckets and both run to completion on the same commit.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
 on:
   # Manual runs can narrow the suite. A full pass is ~15 minutes, most of it
   # tests unrelated to whatever is being fixed, which makes a fix-and-check
