@@ -2,6 +2,12 @@ module github.com/terraform-routeros/terraform-provider-routeros
 
 go 1.25.8
 
+// actions/setup-go installs this directive verbatim (and, without it, the exact
+// patch named by `go` above), so the release job builds against a supported,
+// patched standard library. The `go` directive stays at the language level the
+// hashicorp dependencies require.
+toolchain go1.26.8
+
 require (
 	github.com/fatih/color v1.19.0
 	github.com/go-routeros/routeros/v3 v3.0.1
