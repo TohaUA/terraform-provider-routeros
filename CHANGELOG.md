@@ -1,3 +1,35 @@
+## [1.100.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.99.1...v1.100.0) (2026-09-09)
+
+### Features
+
+* add RouterOS 7.24 fields to bridge, bridge port, ip service, dhcp, ip settings, neighbor discovery, wireguard peer and bgp ([f4cfd64](https://github.com/TohaUA/terraform-provider-routeros/commit/f4cfd64467aee575ea30f2caeff5b17cf754415b))
+* Add routeros_routing_id resource with schema and example usage ([d8d90b5](https://github.com/TohaUA/terraform-provider-routeros/commit/d8d90b53c3cbfb5c339d0d1431f3fb1befb81d5d))
+* add trust_store, logging managed, and the 7.2x ssh authentication fields ([f748774](https://github.com/TohaUA/terraform-provider-routeros/commit/f7487748e8e2ef1feac40db30df0c07a5e59eef4))
+* **dhcp-server:** add add_dns_entries alongside add_dns_entries_suffix ([#12](https://github.com/TohaUA/terraform-provider-routeros/issues/12)) ([7581251](https://github.com/TohaUA/terraform-provider-routeros/commit/758125182c299fd46d1068207a406b47f07c69cf)), closes [#1009](https://github.com/TohaUA/terraform-provider-routeros/issues/1009)
+* Implement resource_interface_l2tp_server ([decbbd5](https://github.com/TohaUA/terraform-provider-routeros/commit/decbbd5f450320b6357d9dd4c59cff4893370184)), closes [#952](https://github.com/TohaUA/terraform-provider-routeros/issues/952)
+* **tools:** add schema-drift, a RouterOS-vs-provider schema comparison ([73857fc](https://github.com/TohaUA/terraform-provider-routeros/commit/73857fcf1e2220a17455ba1ebd02c4716ae07c60))
+* **wifi:** add 802.11be bands and 320 MHz width to wifi_channel and wifi_provisioning ([3a729af](https://github.com/TohaUA/terraform-provider-routeros/commit/3a729af206fc5f1b6d973246b66d2dbc23b46ea4))
+
+### Bug Fixes
+
+* Add attributes to ipv6_address and ip_ssh_server [7.21] ([5698c77](https://github.com/TohaUA/terraform-provider-routeros/commit/5698c77e97555ebe3f29cbcec304f178738d2e35)), closes [#935](https://github.com/TohaUA/terraform-provider-routeros/issues/935)
+* always-allow-password-login rename [7.21] ([bc06c3f](https://github.com/TohaUA/terraform-provider-routeros/commit/bc06c3f227fc13795c2c480458222044ef7f9bfd))
+* Fix continual +/32 diffs, where ROS reads back without ([aed2eb4](https://github.com/TohaUA/terraform-provider-routeros/commit/aed2eb4a917284118728ffe74cd690eea260da5c)), closes [#916](https://github.com/TohaUA/terraform-provider-routeros/issues/916)
+* **interface_ethernet_switch_port:** Add the hw offloading attribute ([2892320](https://github.com/TohaUA/terraform-provider-routeros/commit/2892320bf1748319b1b810cfc928f488b353d836)), closes [#895](https://github.com/TohaUA/terraform-provider-routeros/issues/895)
+* **ip-service:** map address to available-from through the 7.24 drift table ([#13](https://github.com/TohaUA/terraform-provider-routeros/issues/13)) ([90af81a](https://github.com/TohaUA/terraform-provider-routeros/commit/90af81af626ccede8c84c9c219fd668032363b93)), closes [#1009](https://github.com/TohaUA/terraform-provider-routeros/issues/1009) [#1009](https://github.com/TohaUA/terraform-provider-routeros/issues/1009)
+* **ip-ssh-server:** read password_authentication back on RouterOS 7.21+ ([#11](https://github.com/TohaUA/terraform-provider-routeros/issues/11)) ([cc12873](https://github.com/TohaUA/terraform-provider-routeros/commit/cc1287369f8fae24c14095bf04359797b226a828))
+* **queue_tree:** Fix the resource "routeros_queue_tree" crashes when refreshing state ([15869a0](https://github.com/TohaUA/terraform-provider-routeros/commit/15869a040a5d4327beebedd4045b05bb1164bc36)), closes [#925](https://github.com/TohaUA/terraform-provider-routeros/issues/925)
+* **release:** set repositoryUrl in .releaserc, the action input is inert ([#22](https://github.com/TohaUA/terraform-provider-routeros/issues/22)) ([1a96026](https://github.com/TohaUA/terraform-provider-routeros/commit/1a96026cf419717787e1666e8333d33de60e1bf3))
+* **routing_bgp_connections:** Unable to unset bgp connection keepalive time ([d2d3a82](https://github.com/TohaUA/terraform-provider-routeros/commit/d2d3a8260c9e4070bde01fa76c73cec67a9c8cce)), closes [#904](https://github.com/TohaUA/terraform-provider-routeros/issues/904)
+* **routing_bgp:** stop sending removed add-path-out parameter ([#14](https://github.com/TohaUA/terraform-provider-routeros/issues/14)) ([a0d4df0](https://github.com/TohaUA/terraform-provider-routeros/commit/a0d4df01f5474140de05fccc724acc00b02857ff)), closes [#1016](https://github.com/TohaUA/terraform-provider-routeros/issues/1016)
+* **schema-drift:** exit 1 when a menu could not be read ([#17](https://github.com/TohaUA/terraform-provider-routeros/issues/17)) ([264ab67](https://github.com/TohaUA/terraform-provider-routeros/commit/264ab67522c2c698ca549d1a1066a3a216493253))
+* **serialize:** skip a Computed block that the configuration does not declare ([#9](https://github.com/TohaUA/terraform-provider-routeros/issues/9)) ([8cae05f](https://github.com/TohaUA/terraform-provider-routeros/commit/8cae05f658e3a252b8d906bc933297fa9a435dea))
+* **system_certificate:** accept wiliot and logging trust_store values, drop undocumented multi-value claim ([#10](https://github.com/TohaUA/terraform-provider-routeros/issues/10)) ([6ad9d03](https://github.com/TohaUA/terraform-provider-routeros/commit/6ad9d031e56e46c781d9634d4f6f900dc868890d))
+* **system_routerboard:** Field 'disable_pci' not found in the schema (7.20.6) ([45a8f99](https://github.com/TohaUA/terraform-provider-routeros/commit/45a8f992756356d45206682d442a4d5fc8d18d06)), closes [#902](https://github.com/TohaUA/terraform-provider-routeros/issues/902)
+* **tool_sniffer:** routeros_tool_sniffer filter_ip_address field must support CIDR ([9d57561](https://github.com/TohaUA/terraform-provider-routeros/commit/9d57561c0cbfddeb7196661636478592f4329bcc)), closes [#938](https://github.com/TohaUA/terraform-provider-routeros/issues/938)
+* **traffic_flow:** Add the missing `enable` attribute ([e97e918](https://github.com/TohaUA/terraform-provider-routeros/commit/e97e9187fbdab147a8602313f6b39f8146af7993)), closes [#890](https://github.com/TohaUA/terraform-provider-routeros/issues/890)
+* **wifi,capsman:** declare the skip-fields meta so updating an access-list entry cannot crash ([5cf3b98](https://github.com/TohaUA/terraform-provider-routeros/commit/5cf3b98e0e66107104a5e92f41d1d65ae5cd974c))
+
 ## [1.99.1](https://github.com/terraform-routeros/terraform-provider-routeros/compare/v1.99.0...v1.99.1) (2026-03-08)
 
 ### Bug Fixes
