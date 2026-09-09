@@ -35,19 +35,21 @@ func TestAccIpVrfTest_basic(t *testing.T) {
 
 func testAccIpVrfConfig() string {
 	return providerConfig + `
-resource "routeros_interface_veth" "veth1" {
-	name    = "veth1"
+# Bridges rather than veths: CHR stopped shipping /interface/veth after 7.16,
+# and this only ever needed two interfaces to put in the VRF.
+resource "routeros_interface_bridge" "vrf1" {
+	name    = "vrf-member1"
 }
 
-resource "routeros_interface_veth" "veth2" {
-	name    = "veth2"
+resource "routeros_interface_bridge" "vrf2" {
+	name    = "vrf-member2"
 }
 
 resource "routeros_ip_vrf" "test_vrf_a" {
 	disabled 	= true
 	name 		= "vrf_1"
-	interfaces 	= ["veth1", "veth2"]
-	depends_on  = [routeros_interface_veth.veth1, routeros_interface_veth.veth2]
+	interfaces 	= ["vrf-member1", "vrf-member2"]
+	depends_on  = [routeros_interface_bridge.vrf1, routeros_interface_bridge.vrf2]
 }
 `
 }

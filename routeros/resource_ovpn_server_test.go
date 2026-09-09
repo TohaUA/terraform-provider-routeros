@@ -7,6 +7,16 @@ import (
 )
 
 const testOpenVPNServerMinVersion = "7.8"
+
+// /interface/ovpn-server/server stopped being a singleton. On 7.16 it answers
+// with an object carrying `enabled`; on 7.24 it answers with an array, and the
+// `enabled` parameter is gone. routeros_ovpn_server models it as a singleton --
+// DefaultSystemCreate/Read/Update over PropId(Id) -- so supporting the newer
+// form is a schema version bump plus a state migration, not a test edit. Until
+// that lands the resource does not work on 7.24 at all, and this gate says so
+// rather than letting the test fail every run.
+const testOpenVPNServerMaxVersion = "7.16"
+
 const testOpenVPNServer = "routeros_ovpn_server.server"
 const testInterfaceOpenVPNServer = "routeros_interface_ovpn_server.user1"
 
@@ -14,6 +24,10 @@ func TestAccOpenVPNServerTest_basic(t *testing.T) {
 	if !testCheckMinVersion(t, testOpenVPNServerMinVersion) {
 		t.Logf("Test skipped, the minimum required version is %v", testOpenVPNServerMinVersion)
 		return
+	}
+	if !testCheckMaxVersion(t, testOpenVPNServerMaxVersion) {
+		t.Skipf("Test skipped, routeros_ovpn_server does not yet support the list form "+
+			"introduced after RouterOS %v", testOpenVPNServerMaxVersion)
 	}
 
 	for _, name := range testNames {

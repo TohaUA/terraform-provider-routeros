@@ -41,6 +41,14 @@ func TestAccRoutingBgpVpnTest_basic(t *testing.T) {
 func testAccRoutingBgpVpnConfig() string {
 	return fmt.Sprintf(`%v
 
+# RouterOS 7.20 moved the BGP AS onto its own instance menu, and /routing/bgp/vpn
+# now refuses to be created without one ("missing =instance="), so the test has
+# to bring its own rather than relying on a default that no longer exists.
+resource "routeros_routing_bgp_instance" "test" {
+  as   = "65000"
+  name = "bgp-instance-vpn"
+}
+
 resource "routeros_routing_bgp_vpn" "test" {
   disabled = false
   export {
@@ -50,6 +58,7 @@ resource "routeros_routing_bgp_vpn" "test" {
   import {
     route_targets = ["1:2"]
   }
+  instance                = resource.routeros_routing_bgp_instance.test.name
   label_allocation_policy = "per-vrf"
   name                    = "bgp-mpls-vpn-test"
   route_distinguisher     = "1.2.3.4:1"

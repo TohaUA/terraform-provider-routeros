@@ -37,16 +37,22 @@ func TestAccInterfaceGre6Test_basic(t *testing.T) {
 func testAccInterfaceGre6Config() string {
 	return providerConfig + `
 
-resource "routeros_interface_veth" "veth_v6" {
-  name    = "veth_v6"
-  address = ["2a02::1/64"]
+# A bridge rather than a veth: CHR stopped shipping /interface/veth after 7.16,
+# and this only ever needed some interface to carry the IPv6 address.
+resource "routeros_interface_bridge" "gre6_v6" {
+  name = "gre6_v6"
+}
+
+resource "routeros_ipv6_address" "gre6_v6" {
+  address   = "2a02::1/64"
+  interface = routeros_interface_bridge.gre6_v6.name
 }
 
 resource "routeros_interface_gre6" "gre_v6" {
   name           = "gre_v6"
   remote_address = "2a02::2"
   disabled       = true
-  depends_on  = [routeros_interface_veth.veth_v6]
+  depends_on  = [routeros_ipv6_address.gre6_v6]
 }
 `
 }

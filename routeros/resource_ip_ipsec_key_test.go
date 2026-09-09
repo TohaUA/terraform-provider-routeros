@@ -9,7 +9,16 @@ import (
 
 const testIpIpsecKey = "routeros_ip_ipsec_key.test"
 
+// RouterOS removed the /ip/ipsec/key menu outright. It answers HTTP 200 with an
+// empty list on 7.16 and "no such command" on 7.24, so this is a removal rather
+// than a rename and there is nothing for the resource to talk to.
+const testIpIpsecKeyMaxVersion = "7.23"
+
 func TestAccIpIpsecKeyTest_basic(t *testing.T) {
+	if !testCheckMaxVersion(t, testIpIpsecKeyMaxVersion) {
+		t.Skipf("Test skipped, /ip/ipsec/key was removed after RouterOS %v", testIpIpsecKeyMaxVersion)
+	}
+
 	// t.Parallel()
 	for _, name := range testNames {
 		t.Run(name, func(t *testing.T) {
