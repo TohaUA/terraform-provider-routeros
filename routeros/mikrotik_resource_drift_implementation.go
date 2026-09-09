@@ -92,16 +92,20 @@ func (do *driftObjects) GetDriftMap(ros, resName string, reverse bool) (res map[
 
 func parseRouterOSVersion(ros string) (version uint64, err error) {
 	for i, p := range strings.Split(ros, ".") {
+		// The version is packed into three bytes, so only major.minor.patch fit.
+		// This has to stop before the shift rather than after it: at i == 3 the
+		// shift count is (2-3)*8 == -8, and Go panics on a negative shift amount.
+		// The bound used to sit below and never ran.
+		if i > 2 {
+			break
+		}
+
 		var u uint64
 		if u, err = strconv.ParseUint(p, 10, 64); err != nil {
 			err = fmt.Errorf("RouterOS version parts parsing error, %v", err)
 			return
 		} else {
 			version += u << ((2 - i) * 8)
-		}
-
-		if i > 3 {
-			break
 		}
 	}
 

@@ -122,3 +122,26 @@ func Test_driftIpServiceAvailableFrom(t *testing.T) {
 		}
 	})
 }
+
+// A four-part version used to panic with "negative shift amount": the loop
+// shifted by (2-i)*8 and only checked the bound afterwards, so i == 3 crashed
+// before the check could stop it.
+func TestParseRouterOSVersionExtraParts(t *testing.T) {
+	for _, tt := range []struct {
+		version string
+		want    uint64
+	}{
+		{"7.24", 464896},
+		{"7.24.1", 464897},
+		{"7.24.1.2", 464897}, // trailing parts do not fit in the packed form and are ignored
+	} {
+		got, err := parseRouterOSVersion(tt.version)
+		if err != nil {
+			t.Errorf("parseRouterOSVersion(%q) returned error: %v", tt.version, err)
+			continue
+		}
+		if got != tt.want {
+			t.Errorf("parseRouterOSVersion(%q) = %d, want %d", tt.version, got, tt.want)
+		}
+	}
+}
