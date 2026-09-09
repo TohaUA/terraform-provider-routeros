@@ -23,15 +23,15 @@ func ResourceIpNeighborDiscoverySettings() *schema.Resource {
 		"add_dns_entries": {
 			Type:     schema.TypeBool,
 			Optional: true,
-			Description: "Whether to publish discovered neighbors as DNS entries on the router. Reported by " +
-				"RouterOS 7.24; the property is not covered by the MikroTik neighbor discovery documentation.",
+			Description: "Whether to publish discovered neighbors as DNS entries on the router. Introduced in " +
+				"RouterOS 7.23; the property is not yet covered by the MikroTik neighbor discovery documentation.",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"add_dns_entries_suffix": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Description: "DNS suffix appended to the host name of the DNS entries created by `add-dns-entries`. " +
-				"Reported by RouterOS 7.24; the property is not covered by the MikroTik neighbor discovery documentation.",
+				"Introduced in RouterOS 7.23; the property is not yet covered by the MikroTik neighbor discovery documentation.",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"discover_interface_list": {
