@@ -30,6 +30,14 @@
 #     falls back to package.json. The symptom is a green job that releases
 #     nothing: semantic-release resolves the upstream repository, finds the
 #     fork's main "behind the remote one", and skips publishing.
+#   * Every action is pinned to a commit SHA with its version in a trailing
+#     comment. This job imports a GPG signing key and holds a contents:write
+#     token, so "whatever that tag points at today" is not a good enough
+#     answer for what executes in it. cycjimmy/semantic-release-action@v6 was
+#     the sharpest case: upstream publishes v6 as a mutable *branch*, not a
+#     tag, so any push to it silently changed what ran here. Dependabot is
+#     configured for github-actions and updates SHA pins, keeping the comment
+#     in step, so this costs nothing to maintain.
 #   * Go is set up before semantic-release, not after it, because the prepare
 #     step runs `make docs` (go generate), which must use the go.mod toolchain
 #     and not whatever the runner image happens to ship. The single early step
@@ -60,20 +68,20 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6.1.0
         with:
           fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
           persist-credentials: false # semantic-release authenticates with GITHUB_TOKEN from its own env
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16  # v6.5.0
         with:
           go-version-file: go.mod
           check-latest: true
 
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v7
+        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd  # v7.0.0
         with:
           # These secrets will need to be configured for the repository:
           gpg_private_key: ${{ secrets.TERRAFORM_GPG_SIGNING_KEY }}
@@ -81,7 +89,7 @@ jobs:
 
       - name: Release
         id: release
-        uses: cycjimmy/semantic-release-action@v6
+        uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90  # v6.0.0 -- @v6 is a mutable BRANCH upstream, not a tag
         with:
           # No repository_url here on purpose -- see the fork notes above.
           # The release target is .releaserc's repositoryUrl.
@@ -99,7 +107,7 @@ jobs:
 
       - name: Run GoReleaser
         if: steps.release.outputs.new_release_published == 'true'
-        uses: goreleaser/goreleaser-action@v7
+        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94  # v7.2.3
         with:
           version: '~> v2'
           args: release --clean
