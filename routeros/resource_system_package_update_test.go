@@ -86,6 +86,10 @@ func TestSystemPackageUpdateReadsTheWholeMenu(t *testing.T) {
 	}
 }
 
+// The second step leaves the container on the long-term channel. Deleting a singleton only drops it from
+// state, so nothing puts the channel back, and any later test in the same job sees long-term. That is how
+// every other singleton test in this repository behaves, and no test here reads the channel, but it is
+// shared state and worth knowing about before another one starts depending on the default.
 func TestAccSystemPackageUpdateTest_basic(t *testing.T) {
 	for _, name := range testNames {
 		t.Run(name, func(t *testing.T) {

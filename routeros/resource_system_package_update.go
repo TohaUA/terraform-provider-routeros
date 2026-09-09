@@ -6,12 +6,20 @@ import (
 )
 
 // The menu a router uses to decide which RouterOS release it should be comparing itself against. A
-// RouterOS 7.24 router answers it with channel, check-certificate, installed-version, ip-version,
-// latest-version and mode; `channel` is the one this resource writes. The other three settable-looking
-// properties are declared read-only rather than left out: a property the device returns that the schema
-// does not know about turns every read into a warning, while declaring one whose accepted values were
-// never checked against a router invites an apply that RouterOS rejects. Whoever confirms what
-// check-certificate, ip-version and mode accept can make them writable then.
+// RouterOS 7.24 router answers it with seven properties -- channel, check-certificate,
+// installed-version, ip-version, latest-version, mode and status -- and `channel` is the one this
+// resource writes. The other six are declared read-only, for two different reasons.
+//
+// installed-version, latest-version and status are what the router found rather than what anyone asks
+// of it, so there is nothing to write. check-certificate, ip-version and mode are a different case:
+// they genuinely are writable, and recently so. The console command tree captured off this fleet shows
+// `/system/package/update set` accepting all four properties on 7.23 and 7.24 and accepting `channel`
+// alone on 7.19 through 7.22. They are still declared read-only here because their accepted values were
+// never checked against a router, and a validator built on a guess invites an apply that RouterOS
+// rejects; leaving them undeclared is the other failure, since a property the device returns that the
+// schema does not know about turns every read into a warning. Whoever confirms what check-certificate,
+// ip-version and mode accept can make them writable then. On a router below 7.23 the three do not exist
+// in the menu at all, so those attributes stay empty there however this resource is configured.
 //
 // Checking for updates and installing them are one-shot actions rather than desired state, so this
 // resource does neither. It records the channel and reads back what the router last found.

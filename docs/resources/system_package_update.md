@@ -1,9 +1,11 @@
 # routeros_system_package_update (Resource)
 
 
-The menu a router uses to decide which RouterOS release it should be comparing itself against. A RouterOS 7.24 router answers it with `channel`, `check-certificate`, `installed-version`, `ip-version`, `latest-version` and `mode`; `channel` is the one this resource writes.
+The menu a router uses to decide which RouterOS release it should be comparing itself against. A RouterOS 7.24 router answers it with seven properties: `channel`, `check-certificate`, `installed-version`, `ip-version`, `latest-version`, `mode` and `status`. `channel` is the one this resource writes; the other six are read-only, for two different reasons.
 
-The other three settable-looking properties are declared read-only rather than left out. A property the device returns that the schema does not know about turns every read into a warning, while declaring one whose accepted values were never checked against a router invites an apply that RouterOS rejects. Whoever confirms what `check-certificate`, `ip-version` and `mode` accept can make them writable then.
+`installed-version`, `latest-version` and `status` are what the router found rather than anything asked of it, so there is nothing to write. `check-certificate`, `ip-version` and `mode` are a different case: they genuinely are writable on a recent enough router. RouterOS 7.23 and 7.24 accept all four properties in `/system/package/update set`, while 7.19 through 7.22 accept `channel` alone. They are still read-only here because their accepted values were never checked against a router, and a validator built on a guess invites an apply that RouterOS rejects; leaving them undeclared is the other failure, since a property the device returns that the schema does not know about turns every read into a warning. Whoever confirms what `check-certificate`, `ip-version` and `mode` accept can make them writable then.
+
+On a router below 7.23 those three properties do not exist in the menu at all, so the attributes stay empty there whatever the configuration says.
 
 Checking for updates and installing them are one-shot actions rather than desired state, so this resource does neither. It records the channel and reads back what the router last found.
 
