@@ -173,6 +173,14 @@ func Test_toQuotedCommaSeparatedString(t *testing.T) {
 			[]string{"a"},
 			`"a"`,
 		},
+		{
+			// A resource whose update handler fills the skip list in at run
+			// time declares the key with no names; that must be an empty
+			// default, not a pair of bare quotes.
+			"Zero args gives empty default",
+			nil,
+			"",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
