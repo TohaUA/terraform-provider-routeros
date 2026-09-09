@@ -35,9 +35,10 @@ func ResourceIpHotspotIpBinding() *schema.Resource {
 			Description: "MAC address of the client.",
 		},
 		"server": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Name of the HotSpot server. `all` - will be applied to all hotspot servers.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "Name of the HotSpot server. `all` - will be applied to all hotspot servers.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"to_address": {
 			Type:     schema.TypeString,

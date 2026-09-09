@@ -80,9 +80,10 @@ policy = ["ftp", "read", "write"]
 			Description: "This counter is incremented each time the script is executed.",
 		},
 		"source": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "Script source code.",
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "Script source code.",
+			DiffSuppressFunc: TextBlockEqual,
 		},
 	}
 

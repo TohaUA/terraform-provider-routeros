@@ -91,8 +91,9 @@ func ResourceInterfaceVxlan() *schema.Resource {
 			ValidateFunc: validation.StringInSlice([]string{"IPv4", "IPv6"}, false),
 		},
 		"hw": {
-			Type:     schema.TypeBool,
-			Optional: true,
+			Type:             schema.TypeBool,
+			Optional:         true,
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		KeyHwOffloaded: PropHwOffloadedRo,
 		"interface": {

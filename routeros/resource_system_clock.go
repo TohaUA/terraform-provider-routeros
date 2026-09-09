@@ -38,7 +38,7 @@ func ResourceSystemClock() *schema.Resource {
 			Type:             schema.TypeString,
 			Optional:         true,
 			Description:      `Time.`,
-			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+			DiffSuppressFunc: ClockTimeEqual,
 		},
 		"time_zone_autodetect": {
 			Type:             schema.TypeBool,
