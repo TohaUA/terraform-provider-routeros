@@ -141,7 +141,7 @@ func run(schemaFile, inspectFile, resources, statusFields, mdOut, jsonOut string
 				results[i] = SkippedComparison(g, err.Error())
 				return
 			case err != nil:
-				results[i] = SkippedComparison(g, "GET failed: "+err.Error())
+				results[i] = FailedComparison(g, err.Error())
 				return
 			}
 			cmp, err := comparer.Compare(g, items)
@@ -175,12 +175,32 @@ func run(schemaFile, inspectFile, resources, statusFields, mdOut, jsonOut string
 		}
 	}
 	s := report.Summary
-	log.Printf("menus %d (compared %d, skipped %d): missing %d, read-only %d, schema-only %d, covered %d",
-		s.Menus, s.Compared, s.Skipped, s.Missing, s.ReadOnly, s.SchemaOnly, s.Covered)
+	log.Printf("menus %d (compared %d, skipped %d of which failed %d): missing %d, read-only %d, schema-only %d, covered %d",
+		s.Menus, s.Compared, s.Skipped, s.Failed, s.Missing, s.ReadOnly, s.SchemaOnly, s.Covered)
+	// A menu the device does not have is a normal skip; a menu that could not be read (401 after a
+	// session change, 403, 5xx, timeout, TLS reset, malformed body) makes the comparison incomplete,
+	// so the run fails even when nothing was classified as missing. The reports are already written.
+	if s.Failed > 0 {
+		return 1, fmt.Errorf("%d of %d menus could not be read: %s", s.Failed, s.Menus, failedMenus(report.Menus))
+	}
+	if s.Compared == 0 {
+		log.Printf("warning: nothing was compared; every selected menu is absent on this device")
+	}
 	if failOnDrift && s.Missing > 0 {
 		return 2, nil
 	}
 	return 0, nil
+}
+
+// failedMenus lists the menus whose GET failed, for the exit-1 message.
+func failedMenus(menus []*Comparison) string {
+	var out []string
+	for _, m := range menus {
+		if m != nil && m.Failed {
+			out = append(out, m.Path+" ("+m.Skipped+")")
+		}
+	}
+	return strings.Join(out, "; ")
 }
 
 // buildRevision returns " (git <rev>[+dirty])" when the Go toolchain stamped VCS information.

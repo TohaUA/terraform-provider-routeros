@@ -53,6 +53,7 @@ type Comparison struct {
 	Fields      []Row    `json:"fields"`
 	AliasDrift  []string `json:"alias_drift,omitempty"`
 	Skipped     string   `json:"skipped,omitempty"` // reason the menu was not compared
+	Failed      bool     `json:"failed,omitempty"`  // the menu was unreadable (transport/HTTP error), not absent
 	Note        string   `json:"note,omitempty"`
 }
 
@@ -346,9 +347,20 @@ func hasPrefixKey(keys map[string]*deviceKey, prefix string) bool {
 	return false
 }
 
-// SkippedComparison records a menu that could not be compared.
+// SkippedComparison records a menu that could not be compared because the device does not
+// have it. That is a normal outcome and does not fail the run.
 func SkippedComparison(g *MenuGroup, reason string) *Comparison {
 	return &Comparison{Path: g.Path, Resources: g.Names(), Skipped: reason, AliasDrift: g.AliasDrift()}
+}
+
+// FailedComparison records a menu whose GET failed for a reason other than the menu being absent
+// (authentication, permissions, 5xx, timeout, TLS or a malformed body). The menu still shows up in
+// the report so the operator sees what was unreadable, but the run itself is not a success:
+// run reports exit 1 when any menu failed.
+func FailedComparison(g *MenuGroup, reason string) *Comparison {
+	c := SkippedComparison(g, "GET failed: "+reason)
+	c.Failed = true
+	return c
 }
 
 // String renders a row for logs.

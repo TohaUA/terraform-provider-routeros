@@ -27,6 +27,7 @@ type Summary struct {
 	Menus           int `json:"menus"`
 	Compared        int `json:"compared"`
 	Skipped         int `json:"skipped"`
+	Failed          int `json:"failed"` // part of Skipped: menus whose GET failed instead of being absent
 	Missing         int `json:"missing"`
 	MissingInspect  int `json:"missing_from_inspect"` // part of Missing: found via the inspect tree only
 	ReadOnly        int `json:"read_only"`
@@ -42,6 +43,9 @@ func (r *Report) Summarize() {
 	for _, m := range r.Menus {
 		if m.Skipped != "" {
 			s.Skipped++
+			if m.Failed {
+				s.Failed++
+			}
 		} else {
 			s.Compared++
 		}
@@ -158,6 +162,10 @@ func (r *Report) WriteMarkdown(w io.Writer) error {
 			fmt.Fprintf(b, "| `%s` | %s | %s |\n", m.Path, strings.Join(m.Resources, ", "), mdEscape(m.Skipped))
 		}
 		fmt.Fprintf(b, "\n")
+		if s.Failed > 0 {
+			fmt.Fprintf(b, "**%d of these menus could not be read** (`GET failed` rows): this report is incomplete "+
+				"and the run exits 1.\n\n", s.Failed)
+		}
 	}
 
 	if len(r.NoMenu) > 0 {
