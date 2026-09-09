@@ -124,7 +124,7 @@ EOT
 - `sign_via_scep` (Block Set) (see [below for nested schema](#nestedblock--sign_via_scep))
 - `state` (String) State or Province Name (full name).
 - `subject_alt_name` (String) SANs (subject alternative names).
-- `trust_store` (String) Specify service which can use a specific certificate for certificate verification or trust-chain creation (www, sstp). Several services can be given as a comma separated list, and `all` (the default) offers the certificate to every service. Reported by RouterOS 7.2x alongside `trusted`, which stays the flag that puts the certificate in the trusted chain at all.
+- `trust_store` (String) Specify the service which can use a specific certificate for certificate verification or trust-chain creation (www, sstp); `all` (the default) offers the certificate to every service. The accepted service names follow the MikroTik Certificates manual, which documents a single value; the provider also accepts a comma separated list for forward compatibility. Reported by RouterOS 7.2x alongside `trusted`, which stays the flag that puts the certificate in the trusted chain at all.
 - `trusted` (Boolean) If set to yes certificate is included 'in trusted certificate chain'.
 - `unit` (String) Organizational Unit Name (eg, section).
 
