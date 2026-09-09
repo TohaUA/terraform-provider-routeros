@@ -113,6 +113,13 @@ go run ../tools/drift/main.go
 
 [Here](https://github.com/terraform-routeros/terraform-provider-routeros/pull/758/files) is a example of pull request.
 
+A drift entry is only right when the property was *renamed*: the `tf` name must be the snake-case
+schema attribute and the new RouterOS key must carry the same kind of value. When RouterOS replaces
+a property with one of a different shape (`/ip/ssh` `always-allow-password-login` bool ->
+`password-authentication` tri-state in 7.21), add the new key as its own attribute instead. A drift
+entry would rename the incoming key before the schema lookup, so the new attribute would never be
+read back.
+
 ### Finding schema drift against a new RouterOS release
 
 `tools/schema-drift` compares every resource schema with what a live router returns for the
