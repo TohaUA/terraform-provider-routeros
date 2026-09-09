@@ -103,9 +103,24 @@ jobs:
             sleep 10
           done
 
+      # The banner in the container log is the login prompt, which RouterOS
+      # prints before the API service accepts logins -- connections to 8728 are
+      # accepted and then reset while the guest finishes booting. The setup
+      # script already retries for about 90 seconds; retrying the script itself
+      # covers a guest that needs longer than that under software emulation.
       - name: Preparing RouterOS for testing
         run: |
-          go run .github/scripts/setup_routeros.go
+          for attempt in 1 2 3 4 5; do
+            if go run .github/scripts/setup_routeros.go; then
+              echo "RouterOS accepted the API login on attempt $attempt"
+              exit 0
+            fi
+            echo "attempt $attempt did not get through; the guest may still be booting"
+            sleep 20
+          done
+          echo "RouterOS never accepted an API login:"
+          docker logs routeros 2>&1 | tail -60
+          exit 1
         env:
           ROS_USERNAME: admin
           ROS_PASSWORD: ''
