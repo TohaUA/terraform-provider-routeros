@@ -45,6 +45,7 @@ func ResourceIpSSHServer() *schema.Resource {
 				"configured for a user.\nRouterOS 7.2x replaced this property with the tri-state " +
 				"`password_authentication` and no longer reports it, so on those versions the field is absent " +
 				"from the device and is kept here only for older RouterOS.",
+			ConflictsWith:    []string{"password_authentication"},
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"ciphers": {
@@ -89,6 +90,7 @@ func ResourceIpSSHServer() *schema.Resource {
 				"\n  * yes-if-no-key - a password login is accepted only for users that have no public key " +
 				"configured (the default).",
 			ValidateFunc:     validation.StringInSlice([]string{"no", "yes", "yes-if-no-key"}, false),
+			ConflictsWith:    []string{"always_allow_password_login"},
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"publickey_authentication_options": {
