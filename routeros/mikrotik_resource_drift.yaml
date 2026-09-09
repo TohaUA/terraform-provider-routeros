@@ -38,3 +38,7 @@
 # bool cannot carry, so routeros_ip_ssh_server exposes it as its own `password_authentication`
 # attribute instead. A drift entry here would swallow the key before the schema lookup and leave
 # `password_authentication` empty on every read. Do not reintroduce it on an upstream sync.
+7.24:
+  /ip/service:
+    - tf: address
+      mt: available-from

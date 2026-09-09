@@ -12,5 +12,6 @@ func init() {
     driftAttributeSlice.Add("7.20", "/container/config", "ram_high", "memory-high")
     driftAttributeSlice.Add("7.20", "/container/envs", "name", "list")
     driftAttributeSlice.Add("7.20", "/interface/vxlan", "vrf", "vtep-vrf")
+    driftAttributeSlice.Add("7.24", "/ip/service", "address", "available-from")
     driftAttributeSlice.SortDesc()
 }
