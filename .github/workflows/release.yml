@@ -20,9 +20,16 @@
 #     A push made with GITHUB_TOKEN never triggers another workflow run, so the
 #     release commit cannot re-trigger this job (the chore(release) guard below
 #     is kept for manual/PAT pushes).
-#   * package.json still names the upstream repository. semantic-release
-#     prefers that URL over `git remote origin`, so `repository_url` is passed
-#     explicitly to make releases land on the repository running the workflow.
+#   * package.json still names the upstream repository, and semantic-release
+#     prefers that URL over `git remote origin`, so the fork must say where
+#     releases go. It is set as `repositoryUrl` in .releaserc, NOT through this
+#     action's `repository_url:` input -- that input is silently ineffective.
+#     The action calls semantic-release's Node API and passes the value as
+#     `{ r: url }` (see src/handleOptions.js in v6.0.0); `r` is a yargs alias
+#     that only exists in the CLI parser, so the Node API never sees it and
+#     falls back to package.json. The symptom is a green job that releases
+#     nothing: semantic-release resolves the upstream repository, finds the
+#     fork's main "behind the remote one", and skips publishing.
 #   * Go is set up before semantic-release, not after it, because the prepare
 #     step runs `make docs` (go generate), which must use the go.mod toolchain
 #     and not whatever the runner image happens to ship. The single early step
@@ -76,7 +83,8 @@ jobs:
         id: release
         uses: cycjimmy/semantic-release-action@v6
         with:
-          repository_url: ${{ github.server_url }}/${{ github.repository }}
+          # No repository_url here on purpose -- see the fork notes above.
+          # The release target is .releaserc's repositoryUrl.
           extra_plugins: |
             "@semantic-release/changelog@6.0.2"
             "@semantic-release/commit-analyzer@9.0.2"
