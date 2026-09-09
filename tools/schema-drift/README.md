@@ -101,6 +101,15 @@ Flags:
 
 Exit codes: `0` done, `1` usage/connection error, `2` drift found (with `-fail-on-missing`).
 
+`1` also covers a menu whose `GET` failed for any reason other than the menu being absent
+(`401` after a session or ACL change, `403 not enough permissions`, `5xx`, timeout, TLS reset,
+malformed body): the comparison is then incomplete, so the run fails even when nothing was
+classified as missing. Both reports are still written, and the failed menus appear in the
+"Skipped menus" table with a `GET failed` reason (`"failed": true` in JSON, counted as
+`summary.failed`). Menus the device simply does not have (`404`, `400 no such command`) stay
+plain skips and keep exit `0`. The read-only user therefore needs `read` on every compared menu;
+for a slow or busy device raise `-timeout` and lower `-concurrency`.
+
 ## Checking a specific provider binary (`-schema`)
 
 `terraform providers schema -json` only emits attribute names and flags, not the `___path___`
