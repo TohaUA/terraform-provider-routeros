@@ -45,6 +45,7 @@ resource "routeros_ip_dhcp_client" "client" {
 - `gateway` (String) The IP address of the gateway which is assigned by DHCP server.
 - `id` (String) The ID of this resource.
 - `invalid` (Boolean)
+- `name` (String) The name of the DHCP client, derived by RouterOS 7.24 from the interface the client runs on. Read-only; the property is not covered by the MikroTik DHCP documentation.
 - `primary_dns` (String) The IP address of the first DNS resolver, that was assigned by the DHCP server.
 - `primary_ntp` (String) The IP address of the primary NTP server, assigned by the DHCP server.
 - `secondary_dns` (String) The IP address of the second DNS resolver, assigned by the DHCP server.

@@ -21,6 +21,14 @@ func ResourceInterfaceWireguardPeer() *schema.Resource {
 				// ValidateFunc: ValidationIpAddress,
 			},
 		},
+		"client_allowed_address": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "The `AllowedIPs` written into the generated client configuration (the QR code / exported " +
+				"peer config), not the router's own `allowed-address`. Accepts a comma separated list of IPv4/IPv6 " +
+				"prefixes; the exported configuration defaults to `0.0.0.0/0, ::/0`. Configurable since RouterOS 7.21.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		"client_address": {
 			Type:     schema.TypeString,
 			Optional: true,

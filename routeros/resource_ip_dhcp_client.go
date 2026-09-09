@@ -94,6 +94,12 @@ func ResourceDhcpClient() *schema.Resource {
 		},
 		KeyInterface: PropInterfaceRw,
 		KeyInvalid:   PropInvalidRo,
+		"name": {
+			Type:     schema.TypeString,
+			Computed: true,
+			Description: "The name of the DHCP client, derived by RouterOS 7.24 from the interface the client runs on. " +
+				"Read-only; the property is not covered by the MikroTik DHCP documentation.",
+		},
 		"primary_dns": {
 			Type:        schema.TypeString,
 			Computed:    true,

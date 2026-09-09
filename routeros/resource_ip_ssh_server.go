@@ -13,6 +13,17 @@ import (
   "host-key-size": "2048",
   "strong-crypto": "false"
 }
+
+RouterOS 7.24 drops `always-allow-password-login` and `allow-none-crypto` and reports instead:
+{
+  "ciphers": "auto",
+  "forwarding-enabled": "no",
+  "host-key-size": "2048",
+  "host-key-type": "rsa",
+  "password-authentication": "yes-if-no-key",
+  "publickey-authentication-options": "none",
+  "strong-crypto": "true"
+}
 */
 
 // https://help.mikrotik.com/docs/display/ROS/SSH#SSH-SSHServer
@@ -31,7 +42,11 @@ func ResourceIpSSHServer() *schema.Resource {
 			Type:     schema.TypeBool,
 			Optional: true,
 			Description: "Whether to allow password login at the same time when public key authorization is " +
-				"configured for a user.",
+				"configured for a user.\nRouterOS 7.2x replaced this property with the tri-state " +
+				"`password_authentication` and no longer reports it, so on those versions the field is absent " +
+				"from the device and is kept here only for older RouterOS.",
+			ConflictsWith:    []string{"password_authentication"},
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"ciphers": {
 			Type:             schema.TypeString,
@@ -63,6 +78,19 @@ func ResourceIpSSHServer() *schema.Resource {
 			Optional:         true,
 			Description:      "Select host key type.",
 			ValidateFunc:     validation.StringInSlice([]string{"rsa", "ed25519"}, false),
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
+		"password_authentication": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "Whether a password login is accepted at all. RouterOS 7.2x replacement for " +
+				"`always_allow_password_login`:" +
+				"\n  * no - password login is refused, only public key authentication is left;" +
+				"\n  * yes - a password login is always accepted;" +
+				"\n  * yes-if-no-key - a password login is accepted only for users that have no public key " +
+				"configured (the default).",
+			ValidateFunc:     validation.StringInSlice([]string{"no", "yes", "yes-if-no-key"}, false),
+			ConflictsWith:    []string{"always_allow_password_login"},
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"publickey_authentication_options": {

@@ -28,6 +28,11 @@ func ResourceCapsManAccessList() *schema.Resource {
 	resSchema := map[string]*schema.Schema{
 		MetaResourcePath: PropResourcePath("/caps-man/access-list"),
 		MetaId:           PropId(Id),
+		// The update handler below sets this field's Default to skip
+		// `place_before`; without the key in the schema that write is a nil
+		// dereference, and every update of an access-list entry crashed the
+		// plugin.
+		MetaSkipFields: PropSkipFields(),
 
 		KeyComment:  PropCommentRw,
 		KeyDisabled: PropDisabledRw,

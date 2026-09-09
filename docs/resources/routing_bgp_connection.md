@@ -4,10 +4,9 @@
 ## Example Usage
 ```terraform
 resource "routeros_routing_bgp_connection" "test" {
-  name         = "neighbor-test"
-  as           = "65550/5"
-  as_override  = true
-  add_path_out = "none"
+  name        = "neighbor-test"
+  as          = "65550/5"
+  as_override = true
   remote {
     address = "172.17.0.1"
     as      = "12345/5"
@@ -28,7 +27,7 @@ resource "routeros_routing_bgp_connection" "test" {
 
 ### Optional
 
-- `add_path_out` (String)
+- `add_path_out` (String, Deprecated) Advertise additional paths. The parameter was removed in RouterOS v7.22 and is only sent to the router when explicitly configured.
 - `address_families` (String) List of address families about which this peer will exchange routing information. The remote peer must support (they usually do) BGP capabilities optional parameter to negotiate any other families than IP.
 - `cisco_vpls_nlri_len_fmt` (String) VPLS NLRI length format type. Used for compatibility with Cisco VPLS.
 - `cluster_id` (String, Deprecated) In case this instance is a route reflector: the cluster ID of the router reflector cluster to this instance belongs. This attribute helps to recognize routing updates that come from another route reflector in this cluster and avoid routing information looping. Note that normally there is only one route reflector in a cluster; in this case, 'cluster-id' does not need to be configured and BGP router ID is used instead.
@@ -104,6 +103,7 @@ Read-Only:
 
 Optional:
 
+- `add_path` (String) Parameter defines for which address families select additional paths to be advertised (RFC7911). Selection of paths can be controlled with the routing select chain (`output.filter-select`). Accepts `ip`, `ipv6` or both as a comma separated list. Replaces the deprecated top-level `add_path_out` property.
 - `affinity` (String) Configure output multicore processing. Read more in Routing Protocol Multi-core Support article. alone - input and output of each session is processed in its own process, the most likely best option when there are a lot of cores and a lot of peers afi, instance, vrf, remote-as - try to run input/output of new session in process with similar parameters main - run input/output in the main process (could potentially increase performance on single-core even possibly on multicore devices with small amount of cores) input - run output in the same process as input (can be set only for output affinity).
 - `as_override` (Boolean) If set, then all instances of the remote peer's AS number in the BGP AS-PATH attribute are replaced with the local AS number before sending a route update to that peer. Happens before routing filters and prepending.
 - `default_originate` (String) Specifies default route (0.0.0.0/0) distribution method.

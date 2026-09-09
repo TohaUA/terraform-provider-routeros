@@ -23,9 +23,10 @@
 #   * package.json still names the upstream repository. semantic-release
 #     prefers that URL over `git remote origin`, so `repository_url` is passed
 #     explicitly to make releases land on the repository running the workflow.
-#   * Go is set up before semantic-release because its prepare step runs
-#     `make docs` (go generate), which must use the go.mod toolchain and not
-#     whatever the runner image happens to ship.
+#   * Go is set up before semantic-release, not after it, because the prepare
+#     step runs `make docs` (go generate), which must use the go.mod toolchain
+#     and not whatever the runner image happens to ship. The single early step
+#     serves GoReleaser too, so there is no second setup-go later in the job.
 #
 name: Release
 
@@ -61,6 +62,7 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
+          check-latest: true
 
       - name: Import GPG key
         id: import_gpg

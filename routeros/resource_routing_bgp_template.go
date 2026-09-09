@@ -58,11 +58,13 @@ func ResourceRoutingBgpTemplate() *schema.Resource {
 		MetaId:           PropId(Id),
 
 		"add_path_out": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Description:  "",
-			Default:      "none",
-			ValidateFunc: validation.StringInSlice([]string{"all", "none"}, false),
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "Advertise additional paths. The parameter was removed in RouterOS v7.22 and is only sent " +
+				"to the router when explicitly configured.",
+			ValidateFunc:     validation.StringInSlice([]string{"all", "none"}, false),
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+			Deprecated:       DeprecatedInfo("7.22"),
 		},
 		"address_families": {
 			Type:     schema.TypeString,
@@ -319,12 +321,26 @@ func ResourceRoutingBgpTemplate() *schema.Resource {
 			ValidateFunc: validation.StringInSlice([]string{"default", "force-self", "propagate"}, false),
 		},
 		"output": {
-			Type:        schema.TypeList,
-			Optional:    true,
+			Type:     schema.TypeList,
+			Optional: true,
+			// Computed: RouterOS always reports at least one `output.*` property (e.g. `output.add-path`),
+			// which materializes the block in the state. Without this the block would be planned for
+			// removal on every configuration that does not declare it explicitly.
+			Computed:    true,
 			Description: "A group of parameters associated with BGP output.",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
+					"add_path": {
+						Type:     schema.TypeString,
+						Optional: true,
+						Description: "Parameter defines for which address families select additional paths to be " +
+							"advertised (RFC7911). Selection of paths can be controlled with the routing select chain " +
+							"(`output.filter-select`). Accepts `ip`, `ipv6` or both as a comma separated list. " +
+							"Replaces the deprecated top-level `add_path_out` property.",
+						ValidateDiagFunc: ValidationMultiValInSlice([]string{"ip", "ipv6"}, false, false),
+						DiffSuppressFunc: AlwaysPresentNotUserProvided,
+					},
 					// May be "0" ?!?
 					// affinity (afi | alone | instance | main | remote-as | vrf; Default: )
 					"affinity": {
@@ -449,6 +465,14 @@ func ResourceRoutingBgpTemplate() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    (&schema.Resource{Schema: resSchema}).CoreConfigSchema().ImpliedType(),
+				Upgrade: stateMigrationClearInjectedDefault("add_path_out", "none"),
+				Version: 0,
+			},
+		},
 		Description: "> [!WARNING] Using this resource you may happen unexpected behavior, for example, some of the attributes " +
 			"may not be removable after adding them to the TF configuration. Please report this to GitHub and it " +
 			"may be possible to fix it. Use the resource at your own risk as it is!",

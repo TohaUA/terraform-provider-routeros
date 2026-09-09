@@ -33,7 +33,12 @@
   /container/envs:
     - tf: name
       mt: list
-7.21:
-  /ip/ssh:
-    - tf: always-allow-password-login
-      mt: password-authentication
+# Deliberately no entry for 7.21 /ip/ssh (always-allow-password-login -> password-authentication).
+# That change is not a plain rename: the new key is a tri-state (no / yes / yes-if-no-key) that a
+# bool cannot carry, so routeros_ip_ssh_server exposes it as its own `password_authentication`
+# attribute instead. A drift entry here would swallow the key before the schema lookup and leave
+# `password_authentication` empty on every read. Do not reintroduce it on an upstream sync.
+7.24:
+  /ip/service:
+    - tf: address
+      mt: available-from

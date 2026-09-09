@@ -170,3 +170,58 @@ func Test_loadSkipFields(t *testing.T) {
 		}
 	}
 }
+
+// RouterOS 7.21 replaced the bool `always-allow-password-login` with the tri-state
+// `password-authentication`. The resource models the new key as its own attribute, so no drift
+// entry may rename it away before the schema lookup; otherwise the attribute is never read back.
+func Test_mikrotikResourceDataToTerraform_ipSSHServerPasswordAuthentication(t *testing.T) {
+	originalVersion := RouterOSVersion
+	defer func() { RouterOSVersion = originalVersion }()
+
+	res := ResourceIpSSHServer()
+
+	testData := []struct {
+		version   string
+		item      MikrotikItem
+		expected  map[string]interface{}
+		driftSize int
+	}{
+		{
+			version:   "7.24",
+			item:      MikrotikItem{"password-authentication": "yes-if-no-key"},
+			expected:  map[string]interface{}{"password_authentication": "yes-if-no-key", "always_allow_password_login": false},
+			driftSize: 0,
+		},
+		{
+			version:   "7.24",
+			item:      MikrotikItem{"password-authentication": "no"},
+			expected:  map[string]interface{}{"password_authentication": "no", "always_allow_password_login": false},
+			driftSize: 0,
+		},
+		{
+			version:   "7.20",
+			item:      MikrotikItem{"always-allow-password-login": "true"},
+			expected:  map[string]interface{}{"password_authentication": "", "always_allow_password_login": true},
+			driftSize: 0,
+		},
+	}
+
+	for _, tc := range testData {
+		RouterOSVersion = tc.version
+
+		if drift := driftAttributeSlice.GetDriftMap(tc.version, "/ip/ssh", true); len(drift) != tc.driftSize {
+			t.Fatalf("bad: (version: %v) unexpected /ip/ssh drift map %#v", tc.version, drift)
+		}
+
+		d := res.TestResourceData()
+		if diags := MikrotikResourceDataToTerraform(tc.item, res.Schema, d); len(diags) != 0 {
+			t.Fatalf("bad: (version: %v) unexpected diagnostics: %v", tc.version, diags)
+		}
+
+		for key, expected := range tc.expected {
+			if actual := d.Get(key); !reflect.DeepEqual(actual, expected) {
+				t.Fatalf("bad: (version: %v) %v expected:%#v\tactual:%#v", tc.version, key, expected, actual)
+			}
+		}
+	}
+}

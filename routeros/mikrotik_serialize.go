@@ -248,13 +248,21 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 
 			case *schema.Resource:
 
+				// A Computed block can be present in the state (materialized by Read) while the
+				// configuration does not declare it: the raw config is then an empty list (absent
+				// nested block) or null. Nothing was configured, so there is nothing to send.
+				ctyBlock := rawConfig.GetAttr(terraformSnakeName)
+				if ctyBlock.IsNull() || !ctyBlock.IsKnown() || ctyBlock.LengthInt() == 0 {
+					continue
+				}
+
 				// skip if object is empty
-				if value.([]interface{})[0] == nil {
+				if len(value.([]interface{})) == 0 || value.([]interface{})[0] == nil {
 					continue
 				}
 
 				list := value.([]interface{})[0].(map[string]interface{})
-				ctyList := rawConfig.GetAttr(terraformSnakeName).AsValueSlice()[0]
+				ctyList := ctyBlock.AsValueSlice()[0]
 
 				for fieldName, value := range list {
 					// "output.0.affinity"

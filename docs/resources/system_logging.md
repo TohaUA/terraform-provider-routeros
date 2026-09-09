@@ -30,6 +30,7 @@ resource "routeros_system_logging" "log_snmp_disk" {
 - `default` (Boolean) It's the default item.
 - `id` (String) The ID of this resource.
 - `invalid` (Boolean)
+- `managed` (Boolean) Read-only status flag reported by RouterOS 7.24 showing whether the logging rule is managed by another subsystem. The property is not described in the MikroTik documentation and is exposed here only so that it stops being dropped during the schema conversion.
 
 ## Import
 Import is supported using the following syntax:

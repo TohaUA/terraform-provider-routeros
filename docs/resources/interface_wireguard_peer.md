@@ -31,6 +31,7 @@ resource "routeros_interface_wireguard_peer" "wg_peer" {
 ### Optional
 
 - `client_address` (String) When imported using a qr code for a client (for example, a phone), then this address for the wg interface is set on that device.
+- `client_allowed_address` (String) The `AllowedIPs` written into the generated client configuration (the QR code / exported peer config), not the router's own `allowed-address`. Accepts a comma separated list of IPv4/IPv6 prefixes; the exported configuration defaults to `0.0.0.0/0, ::/0`. Configurable since RouterOS 7.21.
 - `client_dns` (String) Specify when using WireGuard Server as a VPN gateway for peer traffic.
 - `client_endpoint` (String) The IP address and port number of the WireGuard Server.
 - `client_keepalive` (String) Same as persistent-keepalive but from peer side.
