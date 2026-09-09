@@ -44,8 +44,17 @@ func ResourceSystemPackageLocalUpdateSource() *schema.Resource {
 			Optional:    true,
 			Sensitive:   true,
 			Description: "Password of the account the client authenticates to the package source with.",
-			// Only for the entry nobody declared a password for: an imported or device-made source keeps
-			// whatever the router reports without asking for a rewrite. A declared password still diffs.
+			// Only for the entry nobody declared a password for: the plan stays quiet on an imported or
+			// device-made source rather than offering to rewrite a password no configuration ever set. A
+			// declared password still diffs. The quiet is the plan's alone. Once something else on the
+			// entry changes, the serializer sends every non-empty state value, so a mask that a provider
+			// account without the `sensitive` policy read back is what lands on the device in place of
+			// the credential. Only two other passwords in this provider suppress their own diff this way,
+			// interface_lte_apn and interface_w60g, and both are silent about it, so know it before
+			// importing an entry and editing its user rather than reading it off a neighbour.
+			// The suppression stays anyway, because both alternatives are worse: without it an imported
+			// entry diffs forever and the apply sends an empty password, which wipes the credential
+			// instead of masking it, and skipping the field keeps it out of the request as well.
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"user": {

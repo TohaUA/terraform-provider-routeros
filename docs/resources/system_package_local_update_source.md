@@ -3,7 +3,11 @@
 
 A local-update client takes its `.npk` files from the sources listed in this menu instead of from MikroTik's download servers. The transfer runs over WinBox rather than HTTP or FTP, so the source router has to answer WinBox on the address given here and the account named has to exist on that router, not on this one.
 
-The password is the reason the resource exists, and it is also the field most likely to churn a plan. RouterOS hides stored secrets from an account that does not carry the `sensitive` policy, so a provider account without it reads the entry back with a mask in place of the password, and the mask lands in the state. The diff that follows is left in place on purpose: a suppression wide enough to swallow the mask would swallow a genuine password rotation as well, and a rotation that silently never reaches the device is the worse of the two failures. Give the provider account the `sensitive` policy for a quiet plan, or accept a credential rewritten on every apply. A source that no configuration declares a password for is left alone either way.
+The password is the reason the resource exists, and it is also the field most likely to churn a plan. RouterOS hides stored secrets from an account that does not carry the `sensitive` policy, so a provider account without it reads the entry back with a mask in place of the password, and the mask lands in the state. The diff that follows is left in place on purpose: a suppression wide enough to swallow the mask would swallow a genuine password rotation as well, and a rotation that silently never reaches the device is the worse of the two failures. Give the provider account the `sensitive` policy for a quiet plan, or accept a credential rewritten on every apply.
+
+A source that no configuration declares a `password` for is left out of the plan. That quiet is the plan's alone. Once anything else on the entry changes, the value in state is written back with the rest, so a mask read by an account without the `sensitive` policy is what reaches the device in place of the credential. Import an entry, change its `user`, and the password on the source router is replaced by the mask.
+
+Declare the `password` whenever the entry is under management and none of that applies. The suppression is kept rather than removed because the alternatives are worse: without it an imported entry with a mask in state diffs on every plan and the apply sends an empty password, wiping the credential rather than masking it.
 
 ---
 
@@ -37,7 +41,7 @@ Import is supported using the following syntax:
 ```shell
 #The ID can be found via API or the terminal
 #The command for the terminal is -> :put [/system/package/local-update/update-package-source get [print show-ids]]
-terraform import routeros_system_package_local_update_source.hub *1
+terraform import routeros_system_package_local_update_source.hub "*1"
 #Or you can import a resource using one of its attributes
 terraform import routeros_system_package_local_update_source.hub "address=192.168.88.1"
 ```
