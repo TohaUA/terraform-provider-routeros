@@ -9,6 +9,23 @@ description: |-
 
 # RouterOS Provider
 
+## This is a fork
+
+These docs are built from [TohaUA/terraform-provider-routeros](https://github.com/TohaUA/terraform-provider-routeros),
+a fork of [terraform-routeros/terraform-provider-routeros](https://github.com/terraform-routeros/terraform-provider-routeros)
+at commit `0d8c069` (upstream `main` shortly after v1.99.1), plus 802.11be bands and 320 MHz channel
+width, two rounds of RouterOS 7.24 fields, a fix for the crash when a wifi/capsman access-list entry
+is updated, dependency bumps, and the `tools/schema-drift` comparison tool.
+
+The fork continues upstream's version numbering, so **fork v1.100.0 is not upstream v1.100.0**. The
+fork is not published on registry.terraform.io: keep `source = "terraform-routeros/routeros"` and
+install it through `dev_overrides` or a `filesystem_mirror`, as described in
+[Using this fork](https://github.com/TohaUA/terraform-provider-routeros#using-this-fork), which also
+covers release verification, the RouterOS 7.24 target, where to report problems, and what a
+migration to a published `TohaUA/routeros` namespace would look like.
+
+## Getting started
+
 To get started with the provider, you first need to enable the REST API on your router. [You can follow the Mikrotik documentation on this](https://help.mikrotik.com/docs/display/ROS/REST+API), but the gist is to create an SSL cert (in `/system/certificates`) and enable the `web-ssl` service (in `/ip/services`) which uses that certificate.
 
 
