@@ -54,6 +54,16 @@ on:
     tags-ignore:
       - '**'
 
+# Releases are serialized, never cancelled. cancel-in-progress would be actively
+# harmful here: semantic-release pushes a release commit and a tag, and
+# GoReleaser then builds, signs and uploads the artifacts against that tag.
+# Interrupting between those leaves a tag published with nothing attached to it,
+# and the tag cannot be taken back once anyone has fetched it. Queueing a second
+# run behind the first costs a few minutes; cancelling costs a broken release.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 permissions:
   contents: write
   issues: write
