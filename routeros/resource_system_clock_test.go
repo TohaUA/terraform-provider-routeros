@@ -50,15 +50,27 @@ func makeSteps(name string) (res []resource.TestStep) {
 	}
 
 	for k, v := range params[name] {
+		checks := []resource.TestCheckFunc{
+			testResourcePrimaryInstanceId(testSystemClockTask),
+		}
+
+		// Everything except the time of day can be read back and compared. The
+		// clock keeps running, so by the time the value is checked it has moved
+		// on -- asserting it equals what was written is a race that can only be
+		// won by finishing within the same second. Applying it is still
+		// exercised; only the equality claim is dropped.
+		if k != "time" {
+			checks = append(checks, resource.TestCheckResourceAttr(testSystemClockTask, k, v))
+		} else {
+			checks = append(checks, resource.TestCheckResourceAttrSet(testSystemClockTask, k))
+		}
+
 		res = append(res, resource.TestStep{
 			Config: fmt.Sprintf(`%v
 			resource "routeros_system_clock" "set" {
 				%v = "%v"
 			}`, providerConfig, k, v),
-			Check: resource.ComposeTestCheckFunc(
-				testResourcePrimaryInstanceId(testSystemClockTask),
-				resource.TestCheckResourceAttr(testSystemClockTask, k, v),
-			),
+			Check: resource.ComposeTestCheckFunc(checks...),
 		})
 
 	}

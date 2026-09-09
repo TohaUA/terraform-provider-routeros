@@ -54,7 +54,7 @@ func testAccRoutingBfdConfigurationConfig() string {
 	return fmt.Sprintf(`%v
 
 resource "routeros_routing_bfd_configuration" "test" {
-  interfaces = ["ether2"]
+  interfaces = ["all"]
   vrf        = "main"
   forbid_bfd = true
 }

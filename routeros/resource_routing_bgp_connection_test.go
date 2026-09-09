@@ -40,7 +40,13 @@ func TestAccBGPConnectionTest_basic(t *testing.T) {
 
 func testAccBGPConnectionConfig() string {
 	return providerConfig + `
+resource "routeros_routing_bgp_instance" "test" {
+	as   = "65550"
+	name = "bgp-instance-conn"
+}
+
 resource "routeros_routing_bgp_connection" "test" {
+	instance                = resource.routeros_routing_bgp_instance.test.name
 	address_families        = "ip"
 	as                      = "65550"
 	cisco_vpls_nlri_len_fmt = "auto-bits"
