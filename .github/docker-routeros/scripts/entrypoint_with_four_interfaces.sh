@@ -55,7 +55,13 @@ prepare_intf $default_dev3 $QEMU_BRIDGE_ETH3
 prepare_intf $default_dev4 $QEMU_BRIDGE_ETH4
 
 # And run the VM! A brief explanation of the options here:
-# -enable-kvm: Use KVM for this VM (much faster for our case).
+# -accel kvm:tcg: use KVM where the host offers /dev/kvm and fall back to
+#   software emulation where it does not. The comment here used to promise
+#   -enable-kvm while the command below passed no acceleration flag at all, so
+#   every guest ran under TCG -- an order of magnitude slower, and slow enough
+#   that RouterOS sometimes had not finished booting before CI gave up on it.
+#   kvm:tcg rather than plain -enable-kvm because the latter aborts outright on
+#   a host without /dev/kvm instead of degrading.
 # -nographic: disable SDL graphics.
 # -serial mon:stdio: use "monitored stdio" as our serial output.
 # -nic: Use a TAP interface with our custom up/down scripts.
@@ -64,6 +70,7 @@ prepare_intf $default_dev4 $QEMU_BRIDGE_ETH4
 MAC_BASE=$(printf '54:05:AB:%02X:%02X:%X\n' $[RANDOM%256] $[RANDOM%256] $[RANDOM%16])
 exec qemu-system-x86_64 \
    -nographic -serial mon:stdio \
+   -accel kvm:tcg \
    -vnc 0.0.0.0:0 \
    -m 512 \
    -smp 4,sockets=1,cores=4,threads=1 \

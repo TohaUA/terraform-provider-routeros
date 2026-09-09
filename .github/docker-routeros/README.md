@@ -25,12 +25,22 @@ Vendored from [vaerh/docker-routeros](https://github.com/vaerh/docker-routeros) 
 project's, kept verbatim, and the maintainer attribution in the `Dockerfile` is untouched.
 `scripts/` is an unmodified copy.
 
-Two things differ from upstream: `ROUTEROS_VERSION`, and the download is retried and written to
-disk before extraction instead of being piped into `bsdtar`. The second matters because this image
-is built on every CI run rather than occasionally — a truncated transfer fails the extract, a
-stream cannot be retried once started, and upstream's fallback to the bare `.vdi` cannot help since
-MikroTik publishes only the `.zip` and that URL answers 404. Everything else is byte-identical, so
-re-syncing stays a diff against upstream rather than a merge of divergent trees.
+Three things differ from upstream:
+
+1. `ROUTEROS_VERSION`.
+2. The download is retried and written to disk before extraction instead of being piped into
+   `bsdtar`. This image is built on every CI run rather than occasionally, so an intermittent
+   transfer is intermittent CI — a truncated stream fails the extract and cannot be retried once
+   started, and upstream's fallback to the bare `.vdi` cannot help because MikroTik publishes only
+   the `.zip` and that URL answers 404.
+3. `entrypoint_with_four_interfaces.sh` passes `-accel kvm:tcg`. Its comment promised `-enable-kvm`
+   while the command passed no acceleration flag at all, so every guest ran under software
+   emulation — an order of magnitude slower, and slow enough that RouterOS sometimes had not
+   finished booting before CI gave up waiting. `kvm:tcg` rather than `-enable-kvm` because the
+   latter aborts on a host without `/dev/kvm` instead of degrading to emulation.
+
+Everything else is byte-identical, so re-syncing stays a diff against upstream rather than a merge
+of divergent trees. Items 2 and 3 are worth offering upstream.
 
 ## Changing the RouterOS version
 
