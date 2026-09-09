@@ -8,33 +8,50 @@ on:
       - 'main.go'
       - 'routeros/*.go'
       - '.github/workflows/*.yml'
+      # The container the tests run against is built from the repository now,
+      # so changes to it have to re-run the tests.
+      - '.github/docker-routeros/**'
+      - '.github/scripts/*.go'
 jobs:
   build:
     name: Build
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
-    strategy:
-      matrix:
-        experimental: [false]
-        os: [ubuntu-latest]
-        routeros_version:
-          - "7.12"
-          - "7.15"
-          - "7.16"
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Container check
-        run: |
-          echo "Wait for the container to finish launching..."
-          while true; do
-            docker logs ${{ job.services.routeros.id }} 2>&1 | grep MikroTik && break
-            # docker logs ${{ job.services.routeros.id }} 2>&1
-            echo "waiting..."
-            sleep 10
-          done
-
       - name: Check out code into the Go module directory
         uses: actions/checkout@v6
+
+      # Single source of truth for the version under test: the Dockerfile builds
+      # that CHR image and the tests read ROS_VERSION to decide which
+      # version-gated cases apply. Deriving one from the other means they cannot
+      # drift into silently skipping tests or asserting the wrong behaviour.
+      - name: Read the RouterOS version from the Dockerfile
+        id: ros
+        run: |
+          version=$(grep -oP '^ENV ROUTEROS_VERSION="\K[^"]+' .github/docker-routeros/Dockerfile)
+          if [ -z "$version" ]; then
+            echo "Could not read ROUTEROS_VERSION from .github/docker-routeros/Dockerfile"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Testing against RouterOS $version"
+
+      - name: Build the RouterOS container
+        run: docker build -t routeros-test .github/docker-routeros
+
+      # Started before the Go setup so the guest boots while the toolchain and
+      # modules are being prepared; the wait below is what actually gates the tests.
+      - name: Start RouterOS
+        run: |
+          docker run -d --name routeros \
+            --cap-add=NET_ADMIN \
+            --device /dev/net/tun \
+            --device /dev/kvm \
+            -p 443:443 \
+            -p 8728:8728 \
+            -p 8729:8729 \
+            --entrypoint /routeros/entrypoint_with_four_interfaces.sh \
+            routeros-test
 
       - name: Cache restore
         uses: actions/cache/restore@v5
@@ -52,13 +69,39 @@ jobs:
           go-version-file: go.mod
           check-latest: true
         id: go
-  
+
       - name: Get dependencies
-        run: | 
+        run: |
           go mod download
 
       - name: Build
         run: go build -v .
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Container check
+        run: |
+          echo "Wait for the container to finish launching..."
+          deadline=$((SECONDS + 600))
+          while true; do
+            if docker logs routeros 2>&1 | grep -q MikroTik; then
+              echo "RouterOS is up."
+              break
+            fi
+            if ! docker inspect -f '{{.State.Running}}' routeros 2>/dev/null | grep -q true; then
+              echo "The container exited before RouterOS finished booting:"
+              docker logs routeros 2>&1 | tail -50
+              exit 1
+            fi
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "RouterOS did not boot within 10 minutes:"
+              docker logs routeros 2>&1 | tail -50
+              exit 1
+            fi
+            echo "waiting..."
+            sleep 10
+          done
 
       - name: Preparing RouterOS for testing
         run: |
@@ -68,9 +111,6 @@ jobs:
           ROS_PASSWORD: ''
           ROS_IP_ADDRESS: 127.0.0.1
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v4
-
       - name: Run client tests
         run: go test -timeout 30m -v ./routeros
         env:
@@ -79,17 +119,8 @@ jobs:
           ROS_PASSWORD: ''
           ROS_INSECURE: true
           TF_ACC: 1
-          ROS_VERSION: ${{ matrix.routeros_version }}
+          ROS_VERSION: ${{ steps.ros.outputs.version }}
 
-    services:
-      routeros:
-        image: vaerhme/routeros:v${{ matrix.routeros_version }}
-        ports:
-          - 443:443
-          - 8728:8728
-          - 8729:8729
-        options: >-
-          --cap-add=NET_ADMIN
-          --entrypoint /routeros/entrypoint_with_four_interfaces.sh
-          --device /dev/net/tun
-          --device /dev/kvm
+      - name: RouterOS logs
+        if: failure()
+        run: docker logs routeros 2>&1 | tail -200
