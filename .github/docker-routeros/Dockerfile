@@ -25,8 +25,27 @@ ENV ROUTEROS_VERSION="7.24"
 ENV ROUTEROS_IMAGE="chr-$ROUTEROS_VERSION.vdi"
 ENV ROUTEROS_PATH="https://download.mikrotik.com/routeros/$ROUTEROS_VERSION/$ROUTEROS_IMAGE"
 
-# Download VDI image from remote site
-RUN wget -qO- "$ROUTEROS_PATH".zip | bsdtar -C /routeros/ -xf- || wget "$ROUTEROS_PATH" -O "/routeros/$ROUTEROS_IMAGE"
+# Download VDI image from remote site.
+#
+# Written to disk and retried rather than piped straight into bsdtar. A
+# truncated transfer makes the extract fail with "ZIP decompression failed",
+# and a stream cannot be retried once it has started. Upstream falls back to
+# fetching the bare .vdi, which cannot help: MikroTik publishes only the .zip,
+# so that URL answers 404 and the real error is buried under it. Only the
+# retry differs from upstream; the resulting image is the same.
+RUN for attempt in 1 2 3 4 5; do \
+      wget -q -O /tmp/chr.zip "$ROUTEROS_PATH.zip" \
+        && bsdtar -C /routeros/ -xf /tmp/chr.zip \
+        && break; \
+      echo "download/extract attempt $attempt failed, retrying"; \
+      rm -f /tmp/chr.zip; \
+      sleep 5; \
+    done; \
+    rm -f /tmp/chr.zip; \
+    if [ ! -f "/routeros/$ROUTEROS_IMAGE" ]; then \
+      echo "could not obtain $ROUTEROS_PATH.zip after 5 attempts"; \
+      exit 1; \
+    fi
 
 # Copy script to routeros folder
 ADD ["./scripts", "/routeros"]

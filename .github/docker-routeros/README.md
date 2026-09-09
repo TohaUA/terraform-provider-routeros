@@ -25,8 +25,12 @@ Vendored from [vaerh/docker-routeros](https://github.com/vaerh/docker-routeros) 
 project's, kept verbatim, and the maintainer attribution in the `Dockerfile` is untouched.
 `scripts/` is an unmodified copy.
 
-The only local change is `ROUTEROS_VERSION`. Keeping the rest byte-identical means re-syncing
-is a diff against upstream rather than a merge of divergent trees.
+Two things differ from upstream: `ROUTEROS_VERSION`, and the download is retried and written to
+disk before extraction instead of being piped into `bsdtar`. The second matters because this image
+is built on every CI run rather than occasionally — a truncated transfer fails the extract, a
+stream cannot be retried once started, and upstream's fallback to the bare `.vdi` cannot help since
+MikroTik publishes only the `.zip` and that URL answers 404. Everything else is byte-identical, so
+re-syncing stays a diff against upstream rather than a merge of divergent trees.
 
 ## Changing the RouterOS version
 
