@@ -64,7 +64,6 @@ resource "routeros_ip_service" "enabled" {
 
 ### Read-Only
 
-- `available_from` (String) The list of IP/IPv6 prefixes from which the service is accessible, as reported by the router. RouterOS 7.2x renamed `address` to `available-from` and only returns the new name on read, while still accepting `address` on write. This attribute is the read-only mirror of that value; keep using `address` to configure the allowed prefixes.
 - `dynamic` (Boolean) Configuration item created by software, not by management interface. It is not exported, and cannot be directly modified.
 - `id` (String) The ID of this resource.
 - `invalid` (Boolean)

@@ -49,14 +49,6 @@ func ResourceIpService() *schema.Resource {
 				return oldValue == newValue
 			},
 		},
-		"available_from": {
-			Type:     schema.TypeString,
-			Computed: true,
-			Description: "The list of IP/IPv6 prefixes from which the service is accessible, as reported by the router. " +
-				"RouterOS 7.2x renamed `address` to `available-from` and only returns the new name on read, while " +
-				"still accepting `address` on write. This attribute is the read-only mirror of that value; keep " +
-				"using `address` to configure the allowed prefixes.",
-		},
 		"certificate": {
 			Type:     schema.TypeString,
 			Optional: true,
