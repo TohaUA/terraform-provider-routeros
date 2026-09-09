@@ -1,0 +1,83 @@
+# Throwaway probe. Delete once the 7.24 migration has settled.
+#
+# The veth tests passed against CHR 7.16 and fail against CHR 7.24 with
+# "no such command or directory (veth)". /interface/veth belongs to the
+# container package, so either CHR stopped bundling it or something else
+# changed. This boots both images and prints what each one actually ships,
+# which is the difference between repairing a regression and adapting to a
+# deliberate MikroTik packaging change.
+name: RouterOS probe
+
+on:
+  push:
+    branches:
+      - 'ci/ros-probe'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["7.16", "7.24"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Build ${{ matrix.version }}
+        run: |
+          docker build \
+            --build-arg VERSION=${{ matrix.version }} \
+            -t routeros-probe \
+            - <<'DOCKERFILE'
+          FROM alpine:3.22.1
+          ARG VERSION
+          RUN apk add --no-cache qemu-x86_64 qemu-system-x86_64 busybox-extras \
+              iproute2 iputils bridge-utils iptables jq bash python3 libarchive-tools netcat-openbsd
+          WORKDIR /routeros
+          ENV ROUTEROS_VERSION=${VERSION}
+          ENV ROUTEROS_IMAGE="chr-${VERSION}.vdi"
+          RUN wget -qO- "https://download.mikrotik.com/routeros/${VERSION}/chr-${VERSION}.vdi.zip" \
+              | bsdtar -C /routeros/ -xf-
+          DOCKERFILE
+          echo "built ${{ matrix.version }}"
+
+      - name: Boot ${{ matrix.version }} and report packages
+        run: |
+          cp .github/docker-routeros/scripts/* /tmp/ 2>/dev/null || true
+          docker run -d --name ros \
+            --cap-add=NET_ADMIN --device /dev/net/tun --device /dev/kvm \
+            -p 443:443 -p 8728:8728 \
+            -v "$PWD/.github/docker-routeros/scripts:/scripts:ro" \
+            --entrypoint /scripts/entrypoint_with_four_interfaces.sh \
+            routeros-probe
+
+          echo "waiting for boot..."
+          deadline=$((SECONDS + 600))
+          until docker logs ros 2>&1 | grep -q MikroTik; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "did not boot in 10 minutes"; docker logs ros 2>&1 | tail -40; exit 1
+            fi
+            sleep 10
+          done
+          # REST needs a moment after the banner appears.
+          until curl -sk -m 5 -u admin: https://127.0.0.1/rest/system/resource >/dev/null 2>&1; do
+            if [ "$SECONDS" -ge "$deadline" ]; then echo "REST never came up"; exit 1; fi
+            sleep 5
+          done
+
+          echo "===== ${{ matrix.version }} packages ====="
+          curl -sk -u admin: https://127.0.0.1/rest/system/package | jq -r '.[] | "\(.name) \(.version) disabled=\(.disabled)"' | sort
+
+          echo "===== ${{ matrix.version }} does /interface/veth exist? ====="
+          code=$(curl -sk -o /tmp/veth.json -w '%{http_code}' -u admin: https://127.0.0.1/rest/interface/veth)
+          echo "GET /rest/interface/veth -> HTTP $code"
+          cat /tmp/veth.json
+
+          echo "===== ${{ matrix.version }} resource ====="
+          curl -sk -u admin: https://127.0.0.1/rest/system/resource | jq -r '"board=\(.["board-name"]) arch=\(.["architecture-name"]) free-hdd=\(.["free-hdd-space"])"'
