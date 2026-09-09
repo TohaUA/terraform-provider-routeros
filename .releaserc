@@ -1,4 +1,5 @@
 {
+    "repositoryUrl": "https://github.com/TohaUA/terraform-provider-routeros",
     "branches": [
         "main",
         {
