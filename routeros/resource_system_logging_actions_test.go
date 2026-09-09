@@ -26,7 +26,7 @@ func TestAccSystemLoggingActionTest_basic(t *testing.T) {
 							resource.TestCheckResourceAttr(testSystemLoggingAction, "default", "false"),
 							resource.TestCheckResourceAttr(testSystemLoggingAction, "target", "remote"),
 							resource.TestCheckResourceAttr(testSystemLoggingAction, "remote", "192.168.1.1"),
-							resource.TestCheckResourceAttr(testSystemLoggingAction, "bsd_syslog", "true"),
+							resource.TestCheckResourceAttr(testSystemLoggingAction, "remote_log_format", "syslog"),
 							resource.TestCheckResourceAttr(testSystemLoggingAction, "syslog_facility", "user"),
 							resource.TestCheckResourceAttr(testSystemLoggingAction, "syslog_severity", "notice"),
 							resource.TestCheckResourceAttr(testSystemLoggingAction, "syslog_time_format", "iso8601"),
@@ -45,7 +45,7 @@ resource "routeros_system_logging_action" "action" {
 	name               = "action1"
     target             = "remote"
 	remote             = "192.168.1.1"
-    bsd_syslog         = true
+    remote_log_format  = "syslog"
 	syslog_facility    = "user"
 	syslog_severity    = "notice"
 	syslog_time_format = "iso8601"

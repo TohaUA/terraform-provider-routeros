@@ -3,6 +3,7 @@ package routeros
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -26,14 +27,23 @@ func TestAccSystemClockTest_basic(t *testing.T) {
 }
 
 func makeSteps(name string) (res []resource.TestStep) {
+	// RouterOS refuses "cannot set time before package build time", so a
+	// hardcoded date only works until the device under test is built after it.
+	// The dates here used to be in 2024 and started failing on 7.24, which was
+	// built in August 2026. Deriving them from the clock keeps the test honest
+	// about what it is checking -- that a date round-trips -- without pinning it
+	// to a moment that expires.
+	apiDate := time.Now().AddDate(0, 0, 1).Format("2006-01-02")
+	restDate := time.Now().AddDate(0, 0, 2).Format("2006-01-02")
+
 	params := map[string]map[string]string{
 		"API": {
-			"date":           `2024-05-15`,
+			"date":           apiDate,
 			"time":           `17:58:11`,
 			"time_zone_name": `EST`,
 		},
 		"REST": {
-			"date":           `2024-05-17`,
+			"date":           restDate,
 			"time":           `18:58:11`,
 			"time_zone_name": `UTC`,
 		},
