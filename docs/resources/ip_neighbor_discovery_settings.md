@@ -16,8 +16,8 @@ resource "routeros_ip_neighbor_discovery_settings" "test" {
 
 ### Optional
 
-- `add_dns_entries` (Boolean) Whether to publish discovered neighbors as DNS entries on the router. Reported by RouterOS 7.24; the property is not covered by the MikroTik neighbor discovery documentation.
-- `add_dns_entries_suffix` (String) DNS suffix appended to the host name of the DNS entries created by `add-dns-entries`. Reported by RouterOS 7.24; the property is not covered by the MikroTik neighbor discovery documentation.
+- `add_dns_entries` (Boolean) Whether to publish discovered neighbors as DNS entries on the router. Introduced in RouterOS 7.23; the property is not yet covered by the MikroTik neighbor discovery documentation.
+- `add_dns_entries_suffix` (String) DNS suffix appended to the host name of the DNS entries created by `add-dns-entries`. Introduced in RouterOS 7.23; the property is not yet covered by the MikroTik neighbor discovery documentation.
 - `discover_interface_list` (String) Interface list on which members the discovery protocol will run on.
 - `discover_interval` (String) An option to adjust the frequency at which neighbor discovery packets are transmitted. The setting is available since RouterOS version 7.16.
 - `dying_gasp` (Boolean) Whether to send a dying gasp notification to neighbors when the device loses power. Reported by RouterOS 7.24; the property is not covered by the MikroTik neighbor discovery documentation.

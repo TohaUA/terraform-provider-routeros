@@ -3,6 +3,7 @@ package routeros
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -30,6 +31,31 @@ func TestAccIpDhcpServerTest_basic(t *testing.T) {
 			})
 
 		})
+	}
+}
+
+// RouterOS 7.23 introduced add-dns-entries together with add-dns-entries-suffix;
+// the suffix is meaningless unless the switch that enables the feature is writable too.
+func TestIpDhcpServerSchema_addDnsEntriesPair(t *testing.T) {
+	s := ResourceDhcpServer().Schema
+
+	for name, typ := range map[string]schema.ValueType{
+		"add_dns_entries":        schema.TypeBool,
+		"add_dns_entries_suffix": schema.TypeString,
+	} {
+		f, ok := s[name]
+		if !ok {
+			t.Fatalf("%s: attribute missing from routeros_ip_dhcp_server schema", name)
+		}
+		if f.Type != typ {
+			t.Errorf("%s: type = %v, want %v", name, f.Type, typ)
+		}
+		if !f.Optional {
+			t.Errorf("%s: must be optional", name)
+		}
+		if f.DiffSuppressFunc == nil {
+			t.Errorf("%s: must suppress the diff when not user provided (pre-7.23 devices do not report it)", name)
+		}
 	}
 }
 
