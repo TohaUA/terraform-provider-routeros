@@ -51,7 +51,6 @@ resource "routeros_routing_bgp_connection" "test" {
 		accept_ext_communities    = "222"
 		accept_large_communities  = "444"
 		accept_nlri               = ""
-		accept_unknown            = ""
 		affinity                  = "alone"
 		allow_as                  = "0"
 		filter                    = ""

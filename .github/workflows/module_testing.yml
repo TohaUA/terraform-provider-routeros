@@ -1,5 +1,14 @@
 name: Go Client Tests
 on:
+  # Manual runs can narrow the suite. A full pass is ~15 minutes, most of it
+  # tests unrelated to whatever is being fixed, which makes a fix-and-check
+  # cycle far more expensive than it needs to be.
+  workflow_dispatch:
+    inputs:
+      run:
+        description: 'Regex passed to go test -run (empty runs everything)'
+        required: false
+        default: ''
   pull_request:
     branches:
       - 'main'
@@ -126,8 +135,17 @@ jobs:
           ROS_PASSWORD: ''
           ROS_IP_ADDRESS: 127.0.0.1
 
+      # TEST_RUN comes through the environment rather than being interpolated
+      # into the script: it is user-supplied text, and expanding it inline is
+      # how a workflow input becomes shell.
       - name: Run client tests
-        run: go test -timeout 30m -v ./routeros
+        run: |
+          if [ -n "$TEST_RUN" ]; then
+            echo "Narrowed to: $TEST_RUN"
+            go test -timeout 30m -v -run "$TEST_RUN" ./routeros
+          else
+            go test -timeout 30m -v ./routeros
+          fi
         env:
           ROS_HOSTURL: https://127.0.0.1
           ROS_USERNAME: admin
@@ -135,6 +153,7 @@ jobs:
           ROS_INSECURE: true
           TF_ACC: 1
           ROS_VERSION: ${{ steps.ros.outputs.version }}
+          TEST_RUN: ${{ github.event.inputs.run }}
 
       - name: RouterOS logs
         if: failure()

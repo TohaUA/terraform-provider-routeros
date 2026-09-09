@@ -38,21 +38,19 @@ func testAccInterfaceGre6Config() string {
 	return providerConfig + `
 
 # A bridge rather than a veth: CHR stopped shipping /interface/veth after 7.16,
-# and this only ever needed some interface to carry the IPv6 address.
+# and this only ever needed an interface to exist alongside the tunnel. No
+# address is attached: the tunnel is created disabled, so it never has to come
+# up, and routeros_ipv6_address carries its own drift on `advertise` that has
+# nothing to do with what this test is checking.
 resource "routeros_interface_bridge" "gre6_v6" {
   name = "gre6_v6"
-}
-
-resource "routeros_ipv6_address" "gre6_v6" {
-  address   = "2a02::1/64"
-  interface = routeros_interface_bridge.gre6_v6.name
 }
 
 resource "routeros_interface_gre6" "gre_v6" {
   name           = "gre_v6"
   remote_address = "2a02::2"
   disabled       = true
-  depends_on  = [routeros_ipv6_address.gre6_v6]
+  depends_on  = [routeros_interface_bridge.gre6_v6]
 }
 `
 }
