@@ -1,0 +1,21 @@
+# {{.Name}} ({{.Type}})
+{{ .Description | trimspace }}
+
+A local-update client takes its `.npk` files from the sources listed in this menu instead of from MikroTik's download servers. The transfer runs over WinBox rather than HTTP or FTP, so the source router has to answer WinBox on the address given here and the account named has to exist on that router, not on this one.
+
+The password is the reason the resource exists, and it is also the field most likely to churn a plan. RouterOS hides stored secrets from an account that does not carry the `sensitive` policy, so a provider account without it reads the entry back with a mask in place of the password, and the mask lands in the state. The diff that follows is left in place on purpose: a suppression wide enough to swallow the mask would swallow a genuine password rotation as well, and a rotation that silently never reaches the device is the worse of the two failures. Give the provider account the `sensitive` policy for a quiet plan, or accept a credential rewritten on every apply. A source that no configuration declares a password for is left alone either way.
+
+---
+
+{{ if .HasExample -}}
+## Example Usage
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+Import is supported using the following syntax:
+{{ codefile "shell" .ImportFile }}
+{{- end }}

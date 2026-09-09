@@ -1,0 +1,23 @@
+# {{.Name}} ({{.Type}})
+{{ .Description | trimspace }}
+
+The menu a router uses to decide which RouterOS release it should be comparing itself against. A RouterOS 7.24 router answers it with `channel`, `check-certificate`, `installed-version`, `ip-version`, `latest-version` and `mode`; `channel` is the one this resource writes.
+
+The other three settable-looking properties are declared read-only rather than left out. A property the device returns that the schema does not know about turns every read into a warning, while declaring one whose accepted values were never checked against a router invites an apply that RouterOS rejects. Whoever confirms what `check-certificate`, `ip-version` and `mode` accept can make them writable then.
+
+Checking for updates and installing them are one-shot actions rather than desired state, so this resource does neither. It records the channel and reads back what the router last found.
+
+---
+
+{{ if .HasExample -}}
+## Example Usage
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+Import is supported using the following syntax:
+{{ codefile "shell" .ImportFile }}
+{{- end }}
