@@ -12,6 +12,12 @@ on:
     paths:
       - "main.go"
       - "routeros/*.go"
+      # The toolchain comes from go.mod and the cache key hashes go.sum, so a
+      # change to either is exactly when the cache needs rebuilding.
+      - "go.mod"
+      - "go.sum"
+      # Dependabot bumps the pinned actions below; run them before merging.
+      - ".github/workflows/go-mod-cache.yml"
 
 jobs:
   go-cache:

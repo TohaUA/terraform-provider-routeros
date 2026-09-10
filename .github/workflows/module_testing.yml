@@ -7,8 +7,14 @@ name: Go Client Tests
 # pull_request run sees refs/pull/N/merge while a workflow_dispatch run of the
 # same branch sees refs/heads/<branch>, so grouping on github.ref puts them in
 # different buckets and both run to completion on the same commit.
+#
+# The branch name alone is not unique, though: forks routinely open pull
+# requests from their own `main`, and those would cancel each other. The
+# source repository tells them apart. A dispatch has no pull_request payload
+# and always runs here, so it falls back to github.repository and still lands
+# with a pull request from a branch of this repository.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 on:
@@ -28,6 +34,11 @@ on:
     paths:
       - 'main.go'
       - 'routeros/*.go'
+      # go.mod picks the toolchain and, with go.sum, every dependency the
+      # provider is built and tested with. Dependabot's gomod PRs touch
+      # nothing else, so without these they merge with no run at all.
+      - 'go.mod'
+      - 'go.sum'
       - '.github/workflows/*.yml'
       # The container the tests run against is built from the repository now,
       # so changes to it have to re-run the tests.
