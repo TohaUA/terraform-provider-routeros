@@ -76,17 +76,13 @@ func TestSystemPackageLocalUpdateSourceReadsAMaskedPassword(t *testing.T) {
 	}
 }
 
-// AlwaysPresentNotUserProvided keeps the password out of the diff when no configuration declares one, and
-// it is easy to read that as the value never being written. It is not: the serializer skips an Optional
-// field only when the state value is empty too, so an apply that touches this entry for any other reason
-// sends whatever is in state, and for an account without the `sensitive` policy that is the mask rather
-// than the credential. Import a source, change its user, and the password on the source router becomes
-// three asterisks. Only interface_lte_apn and interface_w60g suppress a password's own diff the same way,
-// and neither says so, so there is not much precedent to lean on. This test pins the behaviour instead,
-// so that the documentation and the code cannot drift apart: if the serializer is ever taught to leave a
-// suppressed field out of the request, this fails and the prose gets rewritten, rather than quietly
-// becoming true by accident.
-func TestSystemPackageLocalUpdateSourceSendsTheMaskFromState(t *testing.T) {
+// AlwaysPresentNotUserProvided keeps a password that no configuration declares out of the plan, and this
+// pins the other half: nothing is written for it either. The state carries what the last read returned,
+// which for an account without the `sensitive` policy is a mask. Until the serializer was taught to leave
+// such a value alone, an apply that changed the entry's user sent that mask back and replaced the working
+// credential on the source router with three asterisks. The same check over every resource in the provider
+// is TestSensitiveValuesAreNotSentUnlessDeclared.
+func TestSystemPackageLocalUpdateSourceDoesNotSendAnUndeclaredPassword(t *testing.T) {
 	old := RouterOSVersion
 	RouterOSVersion = "7.24"
 	defer func() { RouterOSVersion = old }()
@@ -114,19 +110,19 @@ func TestSystemPackageLocalUpdateSourceSendsTheMaskFromState(t *testing.T) {
 	})
 
 	actual, _ := TerraformResourceDataToMikrotik(res.Schema, d)
-	if got, ok := actual["password"]; !ok || got != "***" {
-		t.Fatalf("the request carried password %#v (present: %v); the resource note and the docs page "+
-			"both say the masked value is what reaches the device, so one of the two is now wrong", got, ok)
+	if got, ok := actual["password"]; ok {
+		t.Fatalf("the request carried password %#v although no configuration declares one; the mask in state "+
+			"would replace the credential on the source router", got)
+	}
+	if _, ok := actual["address"]; !ok {
+		t.Fatalf("the request lost the address too (%#v), so the check above would pass on an empty request", actual)
 	}
 }
 
-// MikroTik documents this menu as appearing in 7.17beta3, so the guard below keeps the test off a
-// container that does not have it. Be clear about what that costs today: module_testing.yml runs its
-// matrix on 7.12, 7.15 and 7.16, every one of them below the guard, so this test skips on every job and
-// the resource ships with no acceptance coverage at all. Adding a 7.17 or newer container to that matrix
-// is what turns this back into a test. Even then it would not exercise the masked-password path, because
-// the workflow logs in as `admin`, which carries the `sensitive` policy and so reads the real password
-// back rather than a mask.
+// MikroTik documents this menu as appearing in 7.17beta3, so the guard below keeps the test off an older
+// container. The acceptance workflow tests RouterOS 7.24, so this runs. It still does not exercise the
+// masked-password path: the workflow logs in as `admin`, which carries the `sensitive` policy and reads
+// the real password back rather than a mask. The unit tests above are what cover that path.
 func TestAccSystemPackageLocalUpdateSourceTest_basic(t *testing.T) {
 	if !testCheckMinVersion(t, testSystemPackageLocalUpdateSourceMinVersion) {
 		t.Logf("Test skipped, the minimum required version is %v", testSystemPackageLocalUpdateSourceMinVersion)

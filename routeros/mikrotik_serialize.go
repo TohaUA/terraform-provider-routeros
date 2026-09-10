@@ -201,6 +201,18 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 		}
 		// fmt.Println()
 
+		// An unchanged sensitive value that configuration does not declare is never
+		// written back. State cannot be trusted to hold the secret: RouterOS reads a
+		// stored secret back as a mask to an account without the `sensitive` policy,
+		// and the check above only skips a value that is empty, so an apply that
+		// touched such an entry for any other reason sent the mask and replaced a
+		// working credential with it. A declared value still goes out, and so does a
+		// removal, which changes the value and has to clear the secret.
+		if terraformMetadata.Optional && terraformMetadata.Sensitive && !d.HasChange(terraformSnakeName) &&
+			rawConfig.GetAttr(terraformSnakeName).IsNull() {
+			continue
+		}
+
 		// terraformSnakeName = fast_forward, schemaPropData = true
 		// NewMikrotikItem.Fields["fast-forward"] = "true"
 		mikrotikKebabName := SnakeToKebab(terraformSnakeName)
