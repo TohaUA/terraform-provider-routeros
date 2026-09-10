@@ -105,7 +105,7 @@ func Provider() *schema.Provider {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      59,
-				Description:  "HTTP Client Timeout",
+				Description:  "Timeout, in seconds, for a single request to the router. Applies to both the REST and the API transport.",
 				ValidateFunc: validation.IntAtLeast(5),
 			},
 		},

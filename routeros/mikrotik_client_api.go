@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-
-	"github.com/go-routeros/routeros/v3"
 )
 
 type ApiClient struct {
@@ -16,7 +14,7 @@ type ApiClient struct {
 	Password  string
 	Transport TransportType
 	extra     *ExtraParams
-	*routeros.Client
+	pool      *apiPool
 }
 
 var (
@@ -60,7 +58,13 @@ func (c *ApiClient) SendRequest(method crudMethod, url *URL, item MikrotikItem, 
 	}
 	ColorizedDebug(c.ctx, "request body:  "+strings.Join(cmd, " "))
 
-	resp, err := c.RunArgs(cmd)
+	session, err := c.pool.acquire()
+	if err != nil {
+		return err
+	}
+
+	resp, err := session.run(cmd, c.pool.timeout)
+	c.pool.release(session, sessionUsable(err))
 	if err != nil {
 		return err
 	}

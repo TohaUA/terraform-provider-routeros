@@ -187,7 +187,12 @@ func testCheckResourceDestroy(resourcePath, resourceType string) resource.TestCh
 			switch testTransport {
 			case TransportAPI:
 				cmd := []string{resourcePath + "/print", "?" + idName + "=" + id}
-				res, err := cApi.RunArgs(cmd)
+				session, err := cApi.pool.acquire()
+				if err != nil {
+					return nil
+				}
+				res, err := session.run(cmd, cApi.pool.timeout)
+				cApi.pool.release(session, sessionUsable(err))
 				if err != nil {
 					return nil
 				}

@@ -8,36 +8,26 @@ import (
 	"os"
 	"testing"
 	"time"
-
-	"github.com/go-routeros/routeros/v3"
 )
 
 func newApiClient(ctx context.Context, hostUrl, user, pass string, useTLS bool) (*ApiClient, error) {
-	api := &ApiClient{
+	pool := newAPIPool(apiDial(hostUrl, user, pass, useTLS, &tls.Config{InsecureSkipVerify: true}), time.Minute, 1)
+
+	// Dial now, so an unreachable router fails here rather than on the first request.
+	session, err := pool.acquire()
+	if err != nil {
+		return nil, err
+	}
+	pool.release(session, true)
+
+	return &ApiClient{
 		ctx:       ctx,
 		HostURL:   hostUrl,
 		Username:  user,
 		Password:  pass,
 		Transport: TransportAPI,
-	}
-
-	tlsConf := tls.Config{
-		InsecureSkipVerify: true,
-	}
-
-	var err error
-
-	if useTLS {
-		api.Client, err = routeros.DialTLS(api.HostURL, api.Username, api.Password, &tlsConf)
-	} else {
-		api.Client, err = routeros.Dial(api.HostURL, api.Username, api.Password)
-	}
-	if err != nil {
-		return nil, err
-	}
-	api.Async()
-
-	return api, nil
+		pool:      pool,
+	}, nil
 }
 
 func newRestClient(ctx context.Context, hostUrl, user, pass string) *RestClient {
