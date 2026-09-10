@@ -145,3 +145,15 @@ func TestParseRouterOSVersionExtraParts(t *testing.T) {
 		}
 	}
 }
+
+// With no RouterOS version known yet, as in a unit test that never configures the
+// provider, there are no renames to apply. This used to exit the test binary through
+// log.Fatal, so a failure here would not even be reported as a failure: every test
+// after it would simply not run.
+func TestGetDriftMapWithoutAVersion(t *testing.T) {
+	for _, reverse := range []bool{false, true} {
+		if got := driftAttributeSlice.GetDriftMap("", "/ip/service", reverse); len(got) != 0 {
+			t.Errorf("GetDriftMap(\"\", /ip/service, reverse=%v) = %#v, want no renames", reverse, got)
+		}
+	}
+}

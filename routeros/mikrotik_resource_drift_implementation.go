@@ -68,12 +68,25 @@ func (do *driftObjects) index(version uint64) int {
 // Obtaining a map to match TF attributes and MT parameters for further transformation.
 // Direct output (for TF to MT serialization) and reverse output (MT to TF) are provided.
 func (do *driftObjects) GetDriftMap(ros, resName string, reverse bool) (res map[string]string) {
+	res = map[string]string{}
+
+	// No version means the provider has not been configured yet, which is how the
+	// package's unit tests serialize resources. There are no renames to apply
+	// before a version is known. This used to reach the log.Fatal below and exit
+	// the whole test binary, silently skipping every test after the first one to
+	// get here; CI only survived it because an earlier test happened to set the
+	// version from the environment first. A version that is present but malformed
+	// is still fatal: that is wrong configuration, and carrying on without the
+	// renames would send attribute names the router does not use.
+	if ros == "" {
+		return res
+	}
+
 	version, err := parseRouterOSVersion(ros)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	res = map[string]string{}
 	for i := range *do {
 		if version >= (*do)[i].Version {
 			for _, attr := range (*do)[i].Resources[resName] {
