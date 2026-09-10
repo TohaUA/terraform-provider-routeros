@@ -56,7 +56,7 @@ func (c *ApiClient) SendRequest(method crudMethod, url *URL, item MikrotikItem, 
 	for fieldName, fieldValue := range item {
 		cmd = append(cmd, fmt.Sprintf("=%s=%s", fieldName, fieldValue))
 	}
-	ColorizedDebug(c.ctx, "request body:  "+strings.Join(cmd, " "))
+	ColorizedDebug(c.ctx, "request body:  "+strings.Join(redactAPIWords(cmd), " "))
 
 	session, err := c.pool.acquire()
 	if err != nil {
@@ -69,7 +69,7 @@ func (c *ApiClient) SendRequest(method crudMethod, url *URL, item MikrotikItem, 
 		return err
 	}
 
-	ColorizedDebug(c.ctx, "response body: "+resp.String())
+	ColorizedDebug(c.ctx, "response body: "+redactReply(resp))
 
 	if result == nil {
 		return nil

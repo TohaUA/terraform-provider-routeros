@@ -63,14 +63,14 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 			return err
 		}
 
-		ColorizedDebug(c.ctx, "request body:  "+string(b))
+		ColorizedDebug(c.ctx, "request body:  "+redactJSON(b))
 		data = bytes.NewBuffer(b)
 	}
 
 	// https://mikrotik + /rest + /interface/vlan + ? + .id=*39
 	// Escaping spaces!
 	requestUrl := c.HostURL + "/rest" + strings.Replace(url.GetRestURL(), " ", "%20", -1)
-	ColorizedDebug(c.ctx, restMethodName[method]+" request URL:  "+requestUrl)
+	ColorizedDebug(c.ctx, restMethodName[method]+" request URL:  "+redactURL(requestUrl))
 
 	req, err := http.NewRequest(restMethodName[method], requestUrl, data)
 	if err != nil {
@@ -92,17 +92,17 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
 		var errRes errorResponse
 
-		ColorizedDebug(c.ctx, fmt.Sprintf("error response body:\n%s", body))
+		ColorizedDebug(c.ctx, fmt.Sprintf("error response body:\n%s", redactJSON(body)))
 
 		if err = json.Unmarshal(body, &errRes); err != nil {
 			return fmt.Errorf("json.Unmarshal - %v", err)
 		} else {
 			return fmt.Errorf("%v '%v' returned response code: %v, message: '%v', details: '%v'",
-				restMethodName[method], requestUrl, res.StatusCode, errRes.Message, errRes.Detail)
+				restMethodName[method], redactURL(requestUrl), res.StatusCode, errRes.Message, errRes.Detail)
 		}
 	}
 
-	ColorizedDebug(c.ctx, "response body: "+string(body))
+	ColorizedDebug(c.ctx, "response body: "+redactJSON(body))
 
 	// Cast single return values to an array.
 	if !isJsonArray(body) {
