@@ -70,7 +70,7 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 	// https://mikrotik + /rest + /interface/vlan + ? + .id=*39
 	// Escaping spaces!
 	requestUrl := c.HostURL + "/rest" + strings.Replace(url.GetRestURL(), " ", "%20", -1)
-	ColorizedDebug(c.ctx, restMethodName[method]+" request URL:  "+requestUrl)
+	ColorizedDebug(c.ctx, restMethodName[method]+" request URL:  "+redactURL(requestUrl))
 
 	req, err := http.NewRequest(restMethodName[method], requestUrl, data)
 	if err != nil {
@@ -98,7 +98,7 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 			return fmt.Errorf("json.Unmarshal - %v", err)
 		} else {
 			return fmt.Errorf("%v '%v' returned response code: %v, message: '%v', details: '%v'",
-				restMethodName[method], requestUrl, res.StatusCode, errRes.Message, errRes.Detail)
+				restMethodName[method], redactURL(requestUrl), res.StatusCode, errRes.Message, errRes.Detail)
 		}
 	}
 

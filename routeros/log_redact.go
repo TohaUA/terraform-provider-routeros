@@ -1,6 +1,7 @@
 package routeros
 
 import (
+	neturl "net/url"
 	"regexp"
 	"sort"
 	"strings"
@@ -122,22 +123,72 @@ func isSensitiveName(name string) bool {
 }
 
 // redactAPIWords returns a copy of an API command's words for logging, with the
-// value of every sensitive "=name=value" word replaced. The words themselves are
-// what is sent, so they are never modified.
+// value of every sensitive field replaced. That covers attribute words
+// ("=name=value") and query words ("?name=value", and "?=name=value",
+// "?>name=value", "?<name=value"), which a filtered read or an import builds
+// from its filter. The words themselves are what is sent, so they are never
+// modified.
 func redactAPIWords(words []string) []string {
 	out := make([]string, len(words))
 	for i, word := range words {
 		out[i] = word
 
-		if !strings.HasPrefix(word, "=") {
+		var prefix, rest string
+		switch {
+		case strings.HasPrefix(word, "="):
+			prefix, rest = "=", word[1:]
+		case strings.HasPrefix(word, "?"):
+			prefix, rest = "?", word[1:]
+			if rest != "" && strings.ContainsRune("=<>", rune(rest[0])) {
+				prefix, rest = word[:2], rest[1:]
+			}
+		default:
 			continue
 		}
-		name, value, ok := strings.Cut(word[1:], "=")
+		name, value, ok := strings.Cut(rest, "=")
 		if ok && value != "" && isSensitiveName(name) {
-			out[i] = "=" + name + "=" + redactedValue
+			out[i] = prefix + name + "=" + redactedValue
 		}
 	}
 	return out
+}
+
+// redactURL returns a REST request URL for logs and error messages, with the
+// value of every sensitive query parameter replaced. A filtered read or an import
+// puts its filter in the query string ("?name=alice&password=..."). That query is
+// not escaped, so a segment without '=' that follows a sensitive parameter is
+// taken as the rest of its value rather than a parameter of its own. The URL that
+// is requested is left as it is.
+func redactURL(raw string) string {
+	base, query, ok := strings.Cut(raw, "?")
+	if !ok {
+		return raw
+	}
+
+	segments := strings.Split(query, "&")
+	out := make([]string, 0, len(segments))
+	inSecret := false
+	for _, segment := range segments {
+		key, value, hasValue := strings.Cut(segment, "=")
+		if !hasValue {
+			if !inSecret {
+				out = append(out, segment)
+			}
+			continue
+		}
+
+		name := key
+		if unescaped, err := neturl.QueryUnescape(key); err == nil {
+			name = unescaped
+		}
+		inSecret = value != "" && isSensitiveName(name)
+		if inSecret {
+			segment = key + "=" + redactedValue
+		}
+		out = append(out, segment)
+	}
+
+	return base + "?" + strings.Join(out, "&")
 }
 
 // redactReply renders an API reply the way Reply.String does, with the value of
