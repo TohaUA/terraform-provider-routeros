@@ -36,20 +36,6 @@ func init() {
 	}
 }
 
-// skipWithoutAcceptanceEnv skips a version-gated test when acceptance tests were not
-// asked for. The gates below read the RouterOS version under test from ROS_VERSION,
-// which only an acceptance run sets. A plain `go test` sets neither that nor TF_ACC,
-// so the gate failed with a version parsing error before resource.Test could skip the
-// test the way it skips every other acceptance test without TF_ACC. An acceptance run
-// that forgets ROS_VERSION still fails, because that one is misconfigured.
-func skipWithoutAcceptanceEnv(t *testing.T) {
-	t.Helper()
-
-	if RouterOSVersion == "" && os.Getenv("TF_ACC") == "" {
-		t.Skip("acceptance test: set TF_ACC and ROS_VERSION to run it")
-	}
-}
-
 func testCheckMinVersion(t *testing.T, version string) bool {
 	// version: 6.39.1
 	var current, min uint64
@@ -57,7 +43,6 @@ func testCheckMinVersion(t *testing.T, version string) bool {
 	if RouterOSVersion == "" {
 		RouterOSVersion = os.Getenv("ROS_VERSION")
 	}
-	skipWithoutAcceptanceEnv(t)
 
 	current, err := parseRouterOSVersion(RouterOSVersion)
 	if err != nil {
@@ -79,7 +64,6 @@ func testCheckMaxVersion(t *testing.T, version string) bool {
 	if RouterOSVersion == "" {
 		RouterOSVersion = os.Getenv("ROS_VERSION")
 	}
-	skipWithoutAcceptanceEnv(t)
 
 	current, err := parseRouterOSVersion(RouterOSVersion)
 	if err != nil {
