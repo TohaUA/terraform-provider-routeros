@@ -98,9 +98,11 @@ func boolKey(v bool) string {
 	return "0"
 }
 
-// connectionKey identifies a credential set. The password is hashed rather than
-// held in a map key so it cannot surface in a dump of provider state, and every
-// part is terminated so adjacent fields cannot shift into one another.
+// connectionKey identifies a credential set. Every part is terminated so
+// adjacent fields cannot shift into one another, and the result is hashed so the
+// registry's keys never spell out a password if they are ever logged or printed.
+// The hash does not keep the password out of memory: a pool's dialer holds it to
+// log in again, just as ApiClient and RestClient hold it for their lifetime.
 func connectionKey(parts ...string) string {
 	h := sha256.New()
 	for _, part := range parts {
