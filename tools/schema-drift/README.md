@@ -14,9 +14,12 @@ lab router with `-fail-on-missing`.
    `___skip___` (ignored fields) and the version-dependent rename table in
    `routeros/mikrotik_resource_drift.go`. The tool reads all of that from
    `routeros.Provider()` at run time, so the mapping cannot drift from the provider it is
-   built with; `mapping_test.go` fails when a resource has no menu path. Resources that
-   share a menu (legacy aliases such as `routeros_bridge` / `routeros_interface_bridge`) are
-   compared once and flagged when their attribute sets diverge.
+   built with; `mapping_test.go` fails when a resource has no menu path. Every menu is fetched
+   once. Resources that share a menu with an identical schema (legacy aliases such as
+   `routeros_bridge` / `routeros_interface_bridge`) are compared once; resources with a different
+   schema on the same menu (`routeros_interface_ethernet_switch` and
+   `routeros_interface_ethernet_switch_crs`) are each compared against the device, so every
+   resource's attributes are classified against its own schema.
 2. **Attributes** come from the compiled provider by default, or from a
    `terraform providers schema -json` file (`-schema`) when you want to check a released or
    locally built binary instead of the working tree. Nested blocks are flattened to the dotted
@@ -155,6 +158,12 @@ reason, and resources that have no menu. Each row is
 where `provider attribute` is the name the field would have (or has) in the schema and `note`
 carries "computed-only in provider", "dynamic only", "map attribute" or the inspect verdict.
 The JSON report has the same content (`menus[].fields[]`) for scripting.
+
+A menu shared by resources with different schemas gets one entry per schema: its sections are
+titled ``### `/interface/ethernet/switch` (`routeros_interface_ethernet_switch_crs`)`` and name
+the other schema's resources, the "without drift" list carries the same note, and JSON entries
+list them in `shared_with`. The summary's `shared menus` column (`summary.shared_menus`) counts
+such menus; `menus`, `compared`, `skipped` and `failed` count each menu once.
 
 ## Limits
 

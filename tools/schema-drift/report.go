@@ -15,7 +15,7 @@ type Report struct {
 	RouterOS       string        `json:"routeros"`
 	SchemaSource   string        `json:"schema_source"`
 	InspectSource  string        `json:"inspect_source,omitempty"`
-	Menus          []*Comparison `json:"menus"`
+	Menus          []*Comparison `json:"menus"`              // one entry per compared schema; one per menu when skipped
 	NoMenu         []string      `json:"no_menu,omitempty"`  // resources without a RouterOS menu
 	Unmapped       []string      `json:"unmapped,omitempty"` // resources in the schema JSON unknown to the compiled provider
 	Summary        Summary       `json:"summary"`
@@ -34,20 +34,30 @@ type Summary struct {
 	SchemaOnly      int `json:"schema_only"`
 	SchemaOnlyUnset int `json:"schema_only_unset"` // part of SchemaOnly: writable per inspect, just unset on the device
 	Covered         int `json:"covered"`
-	AliasDrift      int `json:"alias_drift"`
+	SharedMenus     int `json:"shared_menus"` // menus mapped by resources with different schemas, compared once per schema
 }
 
-// Summarize fills Summary from Menus.
+// Summarize fills Summary from Menus. Menus, Compared, Skipped and Failed count RouterOS menus, so a
+// menu with an entry per schema counts once there; the field classes add up every entry.
 func (r *Report) Summarize() {
-	s := Summary{Menus: len(r.Menus)}
+	var s Summary
+	seen := make(map[string]struct{}, len(r.Menus))
+	shared := make(map[string]struct{})
 	for _, m := range r.Menus {
-		if m.Skipped != "" {
-			s.Skipped++
-			if m.Failed {
-				s.Failed++
+		if _, dup := seen[m.Path]; !dup {
+			seen[m.Path] = struct{}{}
+			s.Menus++
+			if m.Skipped != "" {
+				s.Skipped++
+				if m.Failed {
+					s.Failed++
+				}
+			} else {
+				s.Compared++
 			}
-		} else {
-			s.Compared++
+		}
+		if len(m.SharedWith) > 0 {
+			shared[m.Path] = struct{}{}
 		}
 		s.Missing += m.Count(ClassMissing)
 		s.MissingInspect += m.CountSource(ClassMissing, SourceInspect)
@@ -55,10 +65,8 @@ func (r *Report) Summarize() {
 		s.SchemaOnly += m.Count(ClassSchemaOnly)
 		s.SchemaOnlyUnset += unsetSchemaOnly(m)
 		s.Covered += m.Count(ClassCovered) + m.Count(ClassSkipped)
-		if len(m.AliasDrift) > 0 {
-			s.AliasDrift++
-		}
 	}
+	s.SharedMenus = len(shared)
 	r.Summary = s
 }
 
@@ -83,7 +91,7 @@ func visibleDrift(m *Comparison, includeCovered bool) bool {
 	if includeCovered {
 		return true
 	}
-	return m.Count(ClassMissing)+m.Count(ClassReadOnly)+(m.Count(ClassSchemaOnly)-unsetSchemaOnly(m)) > 0 || len(m.AliasDrift) > 0
+	return m.Count(ClassMissing)+m.Count(ClassReadOnly)+(m.Count(ClassSchemaOnly)-unsetSchemaOnly(m)) > 0
 }
 
 // WriteJSON writes the report as indented JSON.
@@ -107,10 +115,10 @@ func (r *Report) WriteMarkdown(w io.Writer) error {
 	}
 	fmt.Fprintf(b, "- Generated: %s\n\n", r.GeneratedAt.UTC().Format(time.RFC3339))
 
-	fmt.Fprintf(b, "| menus | compared | skipped | missing | of which inspect-only | read-only | schema-only | of which unset on device | covered | alias drift |\n")
+	fmt.Fprintf(b, "| menus | compared | skipped | missing | of which inspect-only | read-only | schema-only | of which unset on device | covered | shared menus |\n")
 	fmt.Fprintf(b, "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n")
 	fmt.Fprintf(b, "| %d | %d | %d | %d | %d | %d | %d | %d | %d | %d |\n\n",
-		s.Menus, s.Compared, s.Skipped, s.Missing, s.MissingInspect, s.ReadOnly, s.SchemaOnly, s.SchemaOnlyUnset, s.Covered, s.AliasDrift)
+		s.Menus, s.Compared, s.Skipped, s.Missing, s.MissingInspect, s.ReadOnly, s.SchemaOnly, s.SchemaOnlyUnset, s.Covered, s.SharedMenus)
 
 	fmt.Fprintf(b, "How to read the classes:\n\n")
 	fmt.Fprintf(b, "- **missing**: a RouterOS field the provider has no attribute for. Source `device` means the device "+
@@ -120,6 +128,8 @@ func (r *Report) WriteMarkdown(w io.Writer) error {
 		"(status list: %s, or not an argument in the inspect tree). Informational.\n", strings.Join(DefaultStatusFields, ", "))
 	fmt.Fprintf(b, "- **schema-only**: provider attribute the device did not return. RouterOS omits unset/default "+
 		"properties, so this is only a removal candidate when the writable column says `no`; rows with `yes` are counted but hidden unless `-all` is given.\n")
+	fmt.Fprintf(b, "- *shared menus* are menus that resources with different schemas map to (aliases share one schema). "+
+		"Each schema is compared on its own and named by its resources, so a field can be covered for one resource and missing for another.\n")
 	fmt.Fprintf(b, "- *dynamic only* marks fields that appeared only on items with `dynamic=true`.\n\n")
 
 	// Drift first, then clean menus, then skipped.
@@ -147,8 +157,12 @@ func (r *Report) WriteMarkdown(w io.Writer) error {
 		fmt.Fprintf(b, "None.\n\n")
 	} else {
 		for _, m := range clean {
-			fmt.Fprintf(b, "- `%s` (%s): %d fields covered, %d items\n", m.Path, strings.Join(m.Resources, ", "),
+			fmt.Fprintf(b, "- `%s` (%s): %d fields covered, %d items", m.Path, strings.Join(m.Resources, ", "),
 				m.Count(ClassCovered)+m.Count(ClassSkipped), m.Rows)
+			if len(m.SharedWith) > 0 {
+				fmt.Fprintf(b, "; menu shared with %s (different schema)", strings.Join(m.SharedWith, ", "))
+			}
+			fmt.Fprintf(b, "\n")
 		}
 		fmt.Fprintf(b, "\n")
 	}
@@ -188,7 +202,12 @@ func (r *Report) WriteMarkdown(w io.Writer) error {
 }
 
 func writeMenu(b *strings.Builder, m *Comparison, includeCovered bool) {
-	fmt.Fprintf(b, "### `%s`\n\n", m.Path)
+	if len(m.SharedWith) > 0 {
+		// One section per schema of the menu: the resource names keep the headings apart.
+		fmt.Fprintf(b, "### `%s` (%s)\n\n", m.Path, codeList(m.Resources))
+	} else {
+		fmt.Fprintf(b, "### `%s`\n\n", m.Path)
+	}
 	fmt.Fprintf(b, "Resources: %s. Items: %d", codeList(m.Resources), m.Rows)
 	if m.DynamicRows > 0 {
 		fmt.Fprintf(b, " (%d dynamic)", m.DynamicRows)
@@ -201,8 +220,8 @@ func writeMenu(b *strings.Builder, m *Comparison, includeCovered bool) {
 	if m.Note != "" {
 		fmt.Fprintf(b, "Note: %s.\n\n", m.Note)
 	}
-	if len(m.AliasDrift) > 0 {
-		fmt.Fprintf(b, "Alias resources disagree on attributes: %s\n\n", codeList(m.AliasDrift))
+	if len(m.SharedWith) > 0 {
+		fmt.Fprintf(b, "Menu shared with a different schema (%s), compared separately.\n\n", codeList(m.SharedWith))
 	}
 	fmt.Fprintf(b, "| RouterOS field | provider attribute | class | source | writable | note |\n|---|---|---|---|---|---|\n")
 	for _, row := range m.Fields {

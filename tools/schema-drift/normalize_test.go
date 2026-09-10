@@ -13,6 +13,19 @@ func rowsByField(c *Comparison) map[string]Row {
 	return out
 }
 
+// compareOne compares a group that has a single schema and returns its only comparison.
+func compareOne(t *testing.T, cmp *Comparer, g *MenuGroup, items []map[string]string) (*Comparison, error) {
+	t.Helper()
+	got, err := cmp.Compare(g, items)
+	if err != nil {
+		return nil, err
+	}
+	if len(got) != 1 {
+		t.Fatalf("%s: %d comparisons, want 1", g.Path, len(got))
+	}
+	return got[0], nil
+}
+
 func TestCollectKeys(t *testing.T) {
 	items := []map[string]string{
 		{".id": "*1", ".nextid": "*2", "name": "a", "ret": "x", "port": "22"},
@@ -53,7 +66,7 @@ func TestCompareBasicClasses(t *testing.T) {
 		"dhcpv6-snooping": "false", "managed": "false", "dynamic": "false", "invalid": "false",
 	}}
 	c := NewComparer("7.24", nil, nil)
-	got, err := c.Compare(g, items)
+	got, err := compareOne(t, c, g, items)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,7 +121,7 @@ func TestCompareWithInspectAndStatusFields(t *testing.T) {
 	}}}
 	items := []map[string]string{{"name": "b", "dhcpv6-snooping": "false", "mlag-priority": "128", "managed": "false", "l2mtu": "1500", "custom": "x"}}
 	c := NewComparer("7.24", inspect, []string{"custom"})
-	got, err := c.Compare(g, items)
+	got, err := compareOne(t, c, g, items)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -138,7 +151,7 @@ func TestCompareWithInspectAndStatusFields(t *testing.T) {
 
 	// Menu absent from the inspect tree -> writable unknown, status list still applies.
 	g.Path = "/zerotier"
-	got, _ = c.Compare(g, []map[string]string{{"name": "z", "dynamic": "true", "foo": "1"}})
+	got, _ = compareOne(t, c, g, []map[string]string{{"name": "z", "dynamic": "true", "foo": "1"}})
 	rows = rowsByField(got)
 	if rows["foo"].Class != ClassMissing || rows["foo"].Writable != "unknown" || !rows["foo"].DynamicOnly {
 		t.Errorf("foo: %+v", rows["foo"])
@@ -164,7 +177,7 @@ func TestCompareTransformSetMapsAndBlocks(t *testing.T) {
 			{Name: "datapath", Type: "map", Optional: true},
 		},
 	}}}
-	got, err := c.Compare(g, []map[string]string{{"name": "c", "channel": "ch1", "channel.band": "2ghz-b", "channel.width": "20"}})
+	got, err := compareOne(t, c, g, []map[string]string{{"name": "c", "channel": "ch1", "channel.band": "2ghz-b", "channel.width": "20"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -185,7 +198,7 @@ func TestCompareTransformSetMapsAndBlocks(t *testing.T) {
 		SkipFields:   `".about","pci_info"`,
 		Attrs:        []Attr{{Name: "basic_rates_ag", Type: "string", Optional: true}, {Name: "name", Type: "string"}},
 	}}}
-	got, _ = c.Compare(g, []map[string]string{{"name": "w", "basic-rates-a/g": "6Mbps", "pci-info": "x"}})
+	got, _ = compareOne(t, c, g, []map[string]string{{"name": "w", "basic-rates-a/g": "6Mbps", "pci-info": "x"}})
 	rows = rowsByField(got)
 	if rows["basic-rates-a/g"].Class != ClassCovered || rows["basic-rates-a/g"].Attr != "basic_rates_ag" {
 		t.Errorf("basic-rates-a/g: %+v", rows["basic-rates-a/g"])
@@ -200,7 +213,7 @@ func TestCompareTransformSetMapsAndBlocks(t *testing.T) {
 		TransformSet: `"identity_public: identity.public"`,
 		Attrs:        []Attr{{Name: "identity_public", Type: "string", Computed: true}, {Name: "name", Type: "string"}},
 	}}}
-	got, _ = c.Compare(g, []map[string]string{{"name": "z", "identity.public": "abc"}})
+	got, _ = compareOne(t, c, g, []map[string]string{{"name": "z", "identity.public": "abc"}})
 	rows = rowsByField(got)
 	if rows["identity.public"].Class != ClassCovered || rows["identity.public"].Attr != "identity_public" {
 		t.Errorf("identity.public: %+v", rows["identity.public"])
@@ -218,7 +231,7 @@ func TestCompareTransformSetMapsAndBlocks(t *testing.T) {
 			{Name: "output.network", Type: "string", Optional: true},
 		},
 	}}}
-	got, _ = c.Compare(g, []map[string]string{{"name": "b", "output.default-originate": "never", "output.add-path": "all"}})
+	got, _ = compareOne(t, c, g, []map[string]string{{"name": "b", "output.default-originate": "never", "output.add-path": "all"}})
 	rows = rowsByField(got)
 	if rows["output.default-originate"].Class != ClassCovered || rows["output.default-originate"].Attr != "output.default_originate" {
 		t.Errorf("output.default-originate: %+v", rows["output.default-originate"])
@@ -239,7 +252,7 @@ func TestCompareAppliesVersionDrift(t *testing.T) {
 	}}}
 	items := []map[string]string{{"name": "d", "server-address": "10.0.0.1"}}
 
-	got, err := NewComparer("7.24", nil, nil).Compare(g, items)
+	got, err := compareOne(t, NewComparer("7.24", nil, nil), g, items)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -251,7 +264,7 @@ func TestCompareAppliesVersionDrift(t *testing.T) {
 		t.Errorf("7.24 src_address should be matched via the drift map: %v", got.Fields)
 	}
 
-	got, _ = NewComparer("7.0", nil, nil).Compare(g, items)
+	got, _ = compareOne(t, NewComparer("7.0", nil, nil), g, items)
 	rows = rowsByField(got)
 	if rows["server-address"].Class != ClassMissing || rows["src-address"].Class != ClassSchemaOnly {
 		t.Errorf("7.0 must not apply the 7.1 rename: %v", got.Fields)
@@ -282,7 +295,7 @@ func TestCompareInspectOnlyPassAndEmptyMenus(t *testing.T) {
 	c := NewComparer("7.24", inspect, nil)
 
 	// Device has one item that does not set lease-time or comment; add-dns-entries is unset too.
-	got, err := c.Compare(g, []map[string]string{{"name": "d"}})
+	got, err := compareOne(t, c, g, []map[string]string{{"name": "d"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -303,7 +316,7 @@ func TestCompareInspectOnlyPassAndEmptyMenus(t *testing.T) {
 	}
 
 	// No items at all: the schema-only pass is skipped, the inspect pass still runs.
-	got, _ = c.Compare(g, nil)
+	got, _ = compareOne(t, c, g, nil)
 	if got.Count(ClassSchemaOnly) != 0 || got.Note == "" {
 		t.Errorf("empty menu must skip the schema-only pass: note=%q fields=%v", got.Note, got.Fields)
 	}
@@ -312,7 +325,7 @@ func TestCompareInspectOnlyPassAndEmptyMenus(t *testing.T) {
 	}
 
 	// Without an inspect tree there is no inspect pass and no note beyond the empty-menu one.
-	got, _ = NewComparer("7.24", nil, nil).Compare(g, nil)
+	got, _ = compareOne(t, NewComparer("7.24", nil, nil), g, nil)
 	if len(got.Fields) != 0 {
 		t.Errorf("no inspect, no items: expected no rows, got %v", got.Fields)
 	}
@@ -328,8 +341,81 @@ func TestCompareSkipFieldsCoverNestedAndSchemaOnly(t *testing.T) {
 			{Name: "cert_file_content", Type: "string", Optional: true},
 		},
 	}}}
-	got, _ := NewComparer("7.24", nil, nil).Compare(g, []map[string]string{{"name": "c"}})
+	got, _ := compareOne(t, NewComparer("7.24", nil, nil), g, []map[string]string{{"name": "c"}})
 	if got.Count(ClassSchemaOnly) != 0 {
 		t.Errorf("skip-field attributes must not be reported as schema-only: %v", got.Fields)
+	}
+}
+
+// Two resources with different schemas on one menu (like the CRS and non-CRS switch VLAN resources)
+// must each be classified against the device, never one through the other's schema; an alias of one
+// of them joins that resource's comparison.
+func TestCompareDistinctSchemasOnOneMenu(t *testing.T) {
+	const path = "/interface/ethernet/switch/vlan"
+	crs := &Resource{Name: "routeros_switch_crs_vlan", Path: path, Attrs: []Attr{
+		{Name: "vlan_id", Type: "number", Required: true},
+		{Name: "ports", Type: "set", Optional: true},
+		{Name: "learn", Type: "bool", Optional: true},
+		{Name: "flood", Type: "bool", Optional: true},
+	}}
+	plain := &Resource{Name: "routeros_switch_vlan", Path: path, Attrs: []Attr{
+		{Name: "vlan_id", Type: "number", Required: true},
+		{Name: "ports", Type: "set", Optional: true},
+		{Name: "independent_learning", Type: "bool", Optional: true},
+		{Name: "switch", Type: "string", Required: true},
+	}}
+	legacy := &Resource{Name: "routeros_switch_vlan_legacy", Path: path, Attrs: plain.Attrs}
+	g := &MenuGroup{Path: path, Resources: []*Resource{crs, plain, legacy}}
+	// A non-CRS switch chip: it returns the fields of routeros_switch_vlan, not of the CRS resource.
+	items := []map[string]string{{".id": "*1", "vlan-id": "10", "ports": "ether1", "independent-learning": "yes", "switch": "switch1"}}
+
+	comparer := NewComparer("7.24", nil, nil)
+	got, err := comparer.Compare(g, items)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 2 {
+		t.Fatalf("got %d comparisons, want one per distinct schema", len(got))
+	}
+	for i, want := range []struct {
+		resources, sharedWith string
+		classes               map[string]string
+	}{
+		{
+			resources:  "routeros_switch_crs_vlan",
+			sharedWith: "routeros_switch_vlan,routeros_switch_vlan_legacy",
+			classes: map[string]string{
+				"vlan-id": ClassCovered, "ports": ClassCovered,
+				"independent-learning": ClassMissing, "switch": ClassMissing,
+				"learn": ClassSchemaOnly, "flood": ClassSchemaOnly,
+			},
+		},
+		{
+			resources:  "routeros_switch_vlan,routeros_switch_vlan_legacy",
+			sharedWith: "routeros_switch_crs_vlan",
+			classes: map[string]string{
+				"vlan-id": ClassCovered, "ports": ClassCovered, "independent-learning": ClassCovered, "switch": ClassCovered,
+			},
+		},
+	} {
+		c := got[i]
+		if c.Path != path || c.Rows != 1 {
+			t.Errorf("comparison %d: path %q rows %d", i, c.Path, c.Rows)
+		}
+		if r := strings.Join(c.Resources, ","); r != want.resources {
+			t.Errorf("comparison %d: resources %s, want %s", i, r, want.resources)
+		}
+		if s := strings.Join(c.SharedWith, ","); s != want.sharedWith {
+			t.Errorf("comparison %d (%s): shared with %s, want %s", i, want.resources, s, want.sharedWith)
+		}
+		rows := rowsByField(c)
+		if len(rows) != len(want.classes) {
+			t.Errorf("%s: rows %v, want %v", want.resources, c.Fields, want.classes)
+		}
+		for field, class := range want.classes {
+			if rows[field].Class != class {
+				t.Errorf("%s: %s is %q, want %s", want.resources, field, rows[field].Class, class)
+			}
+		}
 	}
 }
