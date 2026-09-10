@@ -105,9 +105,9 @@ func TestGroupByMenuAliases(t *testing.T) {
 	if len(noMenu) != len(noMenuAllowlist) {
 		t.Errorf("resources without menu: %d, allowlist has %d", len(noMenu), len(noMenuAllowlist))
 	}
-	if !g.MatchesFilter([]string{"routeros_bridge"}) || !g.MatchesFilter([]string{"/interface/bridge"}) ||
-		g.MatchesFilter([]string{"/ip/service"}) || !g.MatchesFilter(nil) {
-		t.Errorf("MatchesFilter mismatch")
+	if g.Select([]string{"routeros_bridge"}) == nil || g.Select([]string{"/interface/bridge"}) == nil ||
+		g.Select([]string{"/ip/service"}) != nil || g.Select(nil) == nil {
+		t.Errorf("Select mismatch")
 	}
 
 	// The CRS switch resources share their menus with the non-CRS ones but are not aliases: their
@@ -216,5 +216,42 @@ func TestSDKAndJSONAttrShapesAgree(t *testing.T) {
 	}
 	if maps != 0 {
 		t.Errorf("bgp connection has %d map attributes, expected none", maps)
+	}
+}
+
+// No filter, or the menu's path, selects every schema on a shared menu. A resource name selects only
+// the schema that resource belongs to, with its aliases.
+func TestSelectNarrowsASharedMenuToTheNamedSchema(t *testing.T) {
+	g := sharedSwitchMenu()
+	schemas := func(g *MenuGroup) string {
+		if g == nil {
+			return "<nil>"
+		}
+		var out []string
+		for _, s := range g.SelectedSchemas() {
+			out = append(out, strings.Join(s.Names(), "+"))
+		}
+		return strings.Join(out, " ")
+	}
+	const both = "routeros_switch+routeros_switch_legacy routeros_switch_crs"
+	for _, tc := range []struct {
+		filter []string
+		want   string
+	}{
+		{nil, both},
+		{[]string{"/interface/ethernet/switch"}, both},
+		{[]string{"routeros_switch_crs", "/interface/ethernet/switch"}, both},
+		{[]string{"routeros_switch", "routeros_switch_crs"}, both},
+		{[]string{" routeros_switch_crs "}, "routeros_switch_crs"},
+		{[]string{"routeros_switch_legacy"}, "routeros_switch+routeros_switch_legacy"},
+		{[]string{"routeros_other", ""}, "<nil>"},
+		{[]string{""}, "<nil>"},
+	} {
+		if got := schemas(g.Select(tc.filter)); got != tc.want {
+			t.Errorf("Select(%q) = %s, want %s", tc.filter, got, tc.want)
+		}
+	}
+	if got := schemas(g); got != both {
+		t.Errorf("after Select the group itself selects %s; Select must narrow a copy", got)
 	}
 }

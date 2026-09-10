@@ -65,7 +65,7 @@ func TestWriteMarkdownFoldsNoise(t *testing.T) {
 		"- `/b` (routeros_b, routeros_b_alias): 1 fields covered, 2 items\n",
 		"| `/c` | routeros_c | menu absent on device: no such command or directory (c) |",
 		"### `/d` (`routeros_d`)\n",
-		"Menu shared with a different schema (`routeros_d_crs`), compared separately.",
+		"Menu shared with a different schema (`routeros_d_crs`), compared in its own entry unless `-resources` left it out.",
 		"| `chip` | `chip` | missing | device | yes |",
 		"- `/d` (routeros_d_crs): 2 fields covered, 1 items; menu shared with routeros_d (different schema)\n",
 		"- `routeros_wireguard_keys`",

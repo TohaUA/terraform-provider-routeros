@@ -419,3 +419,77 @@ func TestCompareDistinctSchemasOnOneMenu(t *testing.T) {
 		}
 	}
 }
+
+// sharedSwitchMenu is one menu mapped by two schemas: routeros_switch with its alias
+// routeros_switch_legacy, and routeros_switch_crs.
+func sharedSwitchMenu() *MenuGroup {
+	const path = "/interface/ethernet/switch"
+	plain := &Resource{Name: "routeros_switch", Path: path, Attrs: []Attr{{Name: "switch", Type: "string", Required: true}}}
+	crs := &Resource{Name: "routeros_switch_crs", Path: path, Attrs: []Attr{{Name: "learn", Type: "bool", Optional: true}}}
+	legacy := &Resource{Name: "routeros_switch_legacy", Path: path, Attrs: plain.Attrs}
+	return &MenuGroup{Path: path, Resources: []*Resource{plain, crs, legacy}}
+}
+
+// A -resources filter naming one resource on a shared menu compares that resource's schema only. The
+// other schema is named in shared_with but not compared, so its rows reach neither the report nor
+// -fail-on-missing.
+func TestCompareOnlyTheSelectedSchema(t *testing.T) {
+	g := sharedSwitchMenu()
+	items := []map[string]string{{".id": "*1", "switch": "switch1", "learn": "yes"}}
+
+	got, err := NewComparer("7.24", nil, nil).Compare(g.Select([]string{"routeros_switch_crs"}), items)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 {
+		t.Fatalf("got %d comparisons, want only the selected schema's", len(got))
+	}
+	c := got[0]
+	if r, s := strings.Join(c.Resources, ","), strings.Join(c.SharedWith, ","); r != "routeros_switch_crs" ||
+		s != "routeros_switch,routeros_switch_legacy" {
+		t.Errorf("resources %s shared with %s; want routeros_switch_crs shared with routeros_switch,routeros_switch_legacy", r, s)
+	}
+	rows := rowsByField(c)
+	if rows["learn"].Class != ClassCovered || rows["switch"].Class != ClassMissing {
+		t.Errorf("rows %v; want learn covered and switch missing against the CRS schema", c.Fields)
+	}
+}
+
+// A shared menu the device lacks, or that could not be read, keeps one entry per selected schema, so
+// shared_with and summary.shared_menus describe it the same way as a compared one.
+func TestSkippedSharedMenuKeepsItsSchemas(t *testing.T) {
+	g := sharedSwitchMenu()
+	for _, tc := range []struct {
+		name    string
+		entries []*Comparison
+		failed  int
+	}{
+		{"absent", SkippedComparisons(g, "menu absent on device"), 0},
+		{"failed", FailedComparisons(g, "HTTP 500"), 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var got []string
+			for _, c := range tc.entries {
+				got = append(got, strings.Join(c.Resources, "+")+" shared with "+strings.Join(c.SharedWith, "+"))
+			}
+			want := []string{
+				"routeros_switch+routeros_switch_legacy shared with routeros_switch_crs",
+				"routeros_switch_crs shared with routeros_switch+routeros_switch_legacy",
+			}
+			if strings.Join(got, "; ") != strings.Join(want, "; ") {
+				t.Errorf("entries = %q, want %q", got, want)
+			}
+			r := &Report{Menus: tc.entries}
+			r.Summarize()
+			if want := (Summary{Menus: 1, Skipped: 1, Failed: tc.failed, SharedMenus: 1}); r.Summary != want {
+				t.Errorf("summary = %+v, want %+v", r.Summary, want)
+			}
+		})
+	}
+
+	narrowed := SkippedComparisons(g.Select([]string{"routeros_switch_legacy"}), "menu absent on device")
+	if len(narrowed) != 1 || strings.Join(narrowed[0].Resources, ",") != "routeros_switch,routeros_switch_legacy" ||
+		strings.Join(narrowed[0].SharedWith, ",") != "routeros_switch_crs" {
+		t.Errorf("narrowed skip = %+v; want only the named resource's schema, still shared with routeros_switch_crs", narrowed)
+	}
+}

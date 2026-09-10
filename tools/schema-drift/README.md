@@ -100,7 +100,7 @@ Flags:
 |---|---|---|
 | `-schema FILE` | compiled provider | attribute source: output of `terraform providers schema -json` |
 | `-inspect FILE` | none | restraml `inspect.json[.gz]`; fills the `writable` column |
-| `-resources a,b` | all | resource names and/or menu paths to compare |
+| `-resources a,b` | all | resource names and/or menu paths to compare; a path selects every schema on the menu, a resource name only its own schema and aliases |
 | `-status-fields a,b` | none | extra device fields to treat as read-only |
 | `-md FILE` | `-` (stdout) | Markdown report (`""` to disable) |
 | `-json FILE` | none | JSON report (`-` for stdout) |
@@ -164,6 +164,9 @@ titled ``### `/interface/ethernet/switch` (`routeros_interface_ethernet_switch_c
 the other schema's resources, the "without drift" list carries the same note, and JSON entries
 list them in `shared_with`. The summary's `shared menus` column (`summary.shared_menus`) counts
 such menus; `menus`, `compared`, `skipped` and `failed` count each menu once.
+A shared menu the device lacks, or that could not be read, keeps one entry per schema as well.
+On a shared menu, `-resources` with the menu path compares every schema; with a resource name it
+compares only that resource's schema and aliases, and `shared_with` still names the others.
 
 ## Limits
 

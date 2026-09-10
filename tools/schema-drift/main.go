@@ -87,8 +87,8 @@ func run(schemaFile, inspectFile, resources, statusFields, mdOut, jsonOut string
 	}
 	var selected []*MenuGroup
 	for _, g := range groups {
-		if g.MatchesFilter(filter) {
-			selected = append(selected, g)
+		if sel := g.Select(filter); sel != nil {
+			selected = append(selected, sel)
 		}
 	}
 	if len(selected) == 0 {
@@ -124,7 +124,7 @@ func run(schemaFile, inspectFile, resources, statusFields, mdOut, jsonOut string
 	}
 	comparer := NewComparer(version, inspect, extraStatus)
 
-	// One GET per menu; a menu yields one comparison per distinct schema, or one skipped entry.
+	// One GET per menu; a menu yields one entry per selected schema, compared or skipped.
 	results := make([][]*Comparison, len(selected))
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, max(concurrency, 1))
@@ -139,10 +139,10 @@ func run(schemaFile, inspectFile, resources, statusFields, mdOut, jsonOut string
 			items, err := client.Get(g.Path)
 			switch {
 			case errors.Is(err, ErrMenuAbsent):
-				results[i] = []*Comparison{SkippedComparison(g, err.Error())}
+				results[i] = SkippedComparisons(g, err.Error())
 				return
 			case err != nil:
-				results[i] = []*Comparison{FailedComparison(g, err.Error())}
+				results[i] = FailedComparisons(g, err.Error())
 				return
 			}
 			cmps, err := comparer.Compare(g, items)
@@ -195,13 +195,20 @@ func run(schemaFile, inspectFile, resources, statusFields, mdOut, jsonOut string
 	return 0, nil
 }
 
-// failedMenus lists the menus whose GET failed, for the exit-1 message.
+// failedMenus lists the menus whose GET failed, for the exit-1 message. A shared menu has an entry
+// per schema but is named once.
 func failedMenus(menus []*Comparison) string {
 	var out []string
+	seen := make(map[string]struct{})
 	for _, m := range menus {
-		if m != nil && m.Failed {
-			out = append(out, m.Path+" ("+m.Skipped+")")
+		if m == nil || !m.Failed {
+			continue
 		}
+		if _, dup := seen[m.Path]; dup {
+			continue
+		}
+		seen[m.Path] = struct{}{}
+		out = append(out, m.Path+" ("+m.Skipped+")")
 	}
 	return strings.Join(out, "; ")
 }

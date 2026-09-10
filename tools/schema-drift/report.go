@@ -15,7 +15,7 @@ type Report struct {
 	RouterOS       string        `json:"routeros"`
 	SchemaSource   string        `json:"schema_source"`
 	InspectSource  string        `json:"inspect_source,omitempty"`
-	Menus          []*Comparison `json:"menus"`              // one entry per compared schema; one per menu when skipped
+	Menus          []*Comparison `json:"menus"`              // one entry per selected schema of a menu, compared or skipped
 	NoMenu         []string      `json:"no_menu,omitempty"`  // resources without a RouterOS menu
 	Unmapped       []string      `json:"unmapped,omitempty"` // resources in the schema JSON unknown to the compiled provider
 	Summary        Summary       `json:"summary"`
@@ -221,7 +221,7 @@ func writeMenu(b *strings.Builder, m *Comparison, includeCovered bool) {
 		fmt.Fprintf(b, "Note: %s.\n\n", m.Note)
 	}
 	if len(m.SharedWith) > 0 {
-		fmt.Fprintf(b, "Menu shared with a different schema (%s), compared separately.\n\n", codeList(m.SharedWith))
+		fmt.Fprintf(b, "Menu shared with a different schema (%s), compared in its own entry unless `-resources` left it out.\n\n", codeList(m.SharedWith))
 	}
 	fmt.Fprintf(b, "| RouterOS field | provider attribute | class | source | writable | note |\n|---|---|---|---|---|---|\n")
 	for _, row := range m.Fields {
