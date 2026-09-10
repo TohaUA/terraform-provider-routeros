@@ -54,16 +54,9 @@ func makeSteps(name string) (res []resource.TestStep) {
 			testResourcePrimaryInstanceId(testSystemClockTask),
 		}
 
-		// Everything except the time of day can be read back and compared. The
-		// clock keeps running, so by the time the value is checked it has moved
-		// on -- asserting it equals what was written is a race that can only be
-		// won by finishing within the same second. Applying it is still
-		// exercised; only the equality claim is dropped.
-		if k != "time" {
-			checks = append(checks, resource.TestCheckResourceAttr(testSystemClockTask, k, v))
-		} else {
-			checks = append(checks, resource.TestCheckResourceAttrSet(testSystemClockTask, k))
-		}
+		// State holds the value applied rather than the router's running clock,
+		// so the time of day compares exactly like everything else.
+		checks = append(checks, resource.TestCheckResourceAttr(testSystemClockTask, k, v))
 
 		res = append(res, resource.TestStep{
 			Config: fmt.Sprintf(`%v
@@ -74,5 +67,21 @@ func makeSteps(name string) (res []resource.TestStep) {
 		})
 
 	}
+
+	// A deliberate change to a time already applied has to reach the router. An
+	// earlier version suppressed every difference between two valid times, so
+	// the second of these steps planned nothing and the update never ran.
+	for _, v := range []string{"10:15:30", "11:45:00"} {
+		res = append(res, resource.TestStep{
+			Config: fmt.Sprintf(`%v
+			resource "routeros_system_clock" "set" {
+				time = "%v"
+			}`, providerConfig, v),
+			Check: resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttr(testSystemClockTask, "time", v),
+			),
+		})
+	}
+
 	return
 }
