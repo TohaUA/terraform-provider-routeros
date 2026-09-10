@@ -14,9 +14,12 @@ lab router with `-fail-on-missing`.
    `___skip___` (ignored fields) and the version-dependent rename table in
    `routeros/mikrotik_resource_drift.go`. The tool reads all of that from
    `routeros.Provider()` at run time, so the mapping cannot drift from the provider it is
-   built with; `mapping_test.go` fails when a resource has no menu path. Resources that
-   share a menu (legacy aliases such as `routeros_bridge` / `routeros_interface_bridge`) are
-   compared once and flagged when their attribute sets diverge.
+   built with; `mapping_test.go` fails when a resource has no menu path. Every menu is fetched
+   once. Resources that share a menu with an identical schema (legacy aliases such as
+   `routeros_bridge` / `routeros_interface_bridge`) are compared once; resources with a different
+   schema on the same menu (`routeros_interface_ethernet_switch` and
+   `routeros_interface_ethernet_switch_crs`) are each compared against the device, so every
+   resource's attributes are classified against its own schema.
 2. **Attributes** come from the compiled provider by default, or from a
    `terraform providers schema -json` file (`-schema`) when you want to check a released or
    locally built binary instead of the working tree. Nested blocks are flattened to the dotted
@@ -60,18 +63,24 @@ lab router with `-fail-on-missing`.
 
 ## Running
 
-Environment (the same values you would give the provider):
+Environment: the variables the provider reads (`routeros/provider.go`), with the same precedence
+(the first non-empty one in each row wins), so an environment exported for the provider works
+here unchanged:
 
-| variable | meaning |
+| variables | meaning |
 |---|---|
-| `ROS_HOSTURL` | `https://router` (a `/rest` suffix is tolerated) |
-| `ROS_USERNAME` / `ROS_PASSWORD` | credentials; a read-only user is enough |
-| `ROS_CACERT` | PEM bundle to trust (optional) |
-| `ROS_INSECURE` | `true` to skip certificate verification (optional) |
+| `ROS_HOSTURL`, `MIKROTIK_HOST` | `https://router` (a `/rest` suffix is tolerated) |
+| `ROS_USERNAME`, `MIKROTIK_USER` | username; a read-only user is enough |
+| `ROS_PASSWORD`, `MIKROTIK_PASSWORD` | password |
+| `ROS_CA_CERTIFICATE`, `MIKROTIK_CA_CERTIFICATE` | PEM bundle to trust (optional) |
+| `ROS_INSECURE`, `MIKROTIK_INSECURE` | `true` to skip certificate verification (optional) |
+
+`ROS_CACERT`, the CA variable earlier versions of this tool used, is still read, after both
+provider names.
 
 ```bash
 # from the repository root
-export ROS_HOSTURL=https://router.example ROS_USERNAME=admin ROS_PASSWORD=... ROS_CACERT=/path/ca.pem
+export ROS_HOSTURL=https://router.example ROS_USERNAME=admin ROS_PASSWORD=... ROS_CA_CERTIFICATE=/path/ca.pem
 go run ./tools/schema-drift -md schema-drift.md -json schema-drift.json
 
 # with the writability oracle for the device's version (recommended)
@@ -91,7 +100,7 @@ Flags:
 |---|---|---|
 | `-schema FILE` | compiled provider | attribute source: output of `terraform providers schema -json` |
 | `-inspect FILE` | none | restraml `inspect.json[.gz]`; fills the `writable` column |
-| `-resources a,b` | all | resource names and/or menu paths to compare |
+| `-resources a,b` | all | resource names and/or menu paths to compare; a path selects every schema on the menu, a resource name only its own schema and aliases |
 | `-status-fields a,b` | none | extra device fields to treat as read-only |
 | `-md FILE` | `-` (stdout) | Markdown report (`""` to disable) |
 | `-json FILE` | none | JSON report (`-` for stdout) |
@@ -149,6 +158,15 @@ reason, and resources that have no menu. Each row is
 where `provider attribute` is the name the field would have (or has) in the schema and `note`
 carries "computed-only in provider", "dynamic only", "map attribute" or the inspect verdict.
 The JSON report has the same content (`menus[].fields[]`) for scripting.
+
+A menu shared by resources with different schemas gets one entry per schema: its sections are
+titled ``### `/interface/ethernet/switch` (`routeros_interface_ethernet_switch_crs`)`` and name
+the other schema's resources, the "without drift" list carries the same note, and JSON entries
+list them in `shared_with`. The summary's `shared menus` column (`summary.shared_menus`) counts
+such menus; `menus`, `compared`, `skipped` and `failed` count each menu once.
+A shared menu the device lacks, or that could not be read, keeps one entry per schema as well.
+On a shared menu, `-resources` with the menu path compares every schema; with a resource name it
+compares only that resource's schema and aliases, and `shared_with` still names the others.
 
 ## Limits
 

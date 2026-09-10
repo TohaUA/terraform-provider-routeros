@@ -99,26 +99,63 @@ func TestGroupByMenuAliases(t *testing.T) {
 	if got := strings.Join(g.Names(), ","); got != "routeros_bridge,routeros_interface_bridge" {
 		t.Errorf("/interface/bridge aliases: %s", got)
 	}
-	if d := g.AliasDrift(); len(d) != 0 {
-		t.Errorf("/interface/bridge aliases should share a schema, got drift %v", d)
+	if s := g.Schemas(); len(s) != 1 || len(s[0].Resources) != 2 {
+		t.Errorf("/interface/bridge aliases should share one schema, got %d schemas", len(s))
 	}
 	if len(noMenu) != len(noMenuAllowlist) {
 		t.Errorf("resources without menu: %d, allowlist has %d", len(noMenu), len(noMenuAllowlist))
 	}
-	if !g.MatchesFilter([]string{"routeros_bridge"}) || !g.MatchesFilter([]string{"/interface/bridge"}) ||
-		g.MatchesFilter([]string{"/ip/service"}) || !g.MatchesFilter(nil) {
-		t.Errorf("MatchesFilter mismatch")
+	if g.Select([]string{"routeros_bridge"}) == nil || g.Select([]string{"/interface/bridge"}) == nil ||
+		g.Select([]string{"/ip/service"}) != nil || g.Select(nil) == nil {
+		t.Errorf("Select mismatch")
+	}
+
+	// The CRS switch resources share their menus with the non-CRS ones but are not aliases: their
+	// attributes differ, so every resource there must be compared on its own.
+	for _, path := range []string{"/interface/ethernet/switch", "/interface/ethernet/switch/vlan"} {
+		sg, ok := byPath[path]
+		if !ok || len(sg.Resources) < 2 {
+			t.Errorf("%s: expected the CRS and non-CRS resources on one menu, got %v", path, sg)
+			continue
+		}
+		for _, s := range sg.Schemas() {
+			if len(s.Resources) != 1 {
+				t.Errorf("%s: resources with different schemas merged into one comparison: %v", path, s.Names())
+			}
+		}
 	}
 }
 
-func TestAliasDriftDetectsDivergence(t *testing.T) {
-	g := &MenuGroup{Path: "/x", Resources: []*Resource{
-		{Name: "routeros_a", Attrs: []Attr{{Name: "one"}, {Name: "two"}}},
-		{Name: "routeros_b", Attrs: []Attr{{Name: "one"}, {Name: "three"}}},
-	}}
-	got := strings.Join(g.AliasDrift(), " ")
-	if got != "+three (routeros_b) -two (routeros_b)" {
-		t.Errorf("AliasDrift = %q", got)
+func TestSchemasMergeOnlyIdenticalSchemas(t *testing.T) {
+	base := func(name string) *Resource {
+		return &Resource{Name: name, Path: "/x", IdType: 1, TransformSet: `"a_b: a.b"`, SkipFields: `"c"`,
+			Attrs: []Attr{{Name: "one", Type: "string", Optional: true}, {Name: "two", Type: "bool", Computed: true}}}
+	}
+	alias := base("routeros_alias")
+	alias.IdType = 2                                     // not read by Compare
+	alias.Attrs = []Attr{alias.Attrs[1], alias.Attrs[0]} // attribute order does not matter
+	extra := base("routeros_extra_attr")
+	extra.Attrs = append(extra.Attrs, Attr{Name: "three", Type: "string", Optional: true})
+	flags := base("routeros_flags")
+	flags.Attrs[1].Optional = true // "two" is no longer computed-only
+	kind := base("routeros_type")
+	kind.Attrs[0].Type = "map"
+	ts := base("routeros_transform")
+	ts.TransformSet = `"a_b: a-b"`
+	skip := base("routeros_skip")
+	skip.SkipFields = `"d"`
+
+	g := &MenuGroup{Path: "/x", Resources: []*Resource{base("routeros_a"), alias, extra, flags, kind, ts, skip}}
+	var got []string
+	for _, s := range g.Schemas() {
+		got = append(got, strings.Join(s.Names(), "+"))
+	}
+	want := "routeros_a+routeros_alias routeros_extra_attr routeros_flags routeros_type routeros_transform routeros_skip"
+	if strings.Join(got, " ") != want {
+		t.Errorf("Schemas = %q, want %q", strings.Join(got, " "), want)
+	}
+	if s := g.Schemas()[0]; s.Compared().Name != "routeros_a" {
+		t.Errorf("Compared = %s, want the first resource", s.Compared().Name)
 	}
 }
 
@@ -179,5 +216,42 @@ func TestSDKAndJSONAttrShapesAgree(t *testing.T) {
 	}
 	if maps != 0 {
 		t.Errorf("bgp connection has %d map attributes, expected none", maps)
+	}
+}
+
+// No filter, or the menu's path, selects every schema on a shared menu. A resource name selects only
+// the schema that resource belongs to, with its aliases.
+func TestSelectNarrowsASharedMenuToTheNamedSchema(t *testing.T) {
+	g := sharedSwitchMenu()
+	schemas := func(g *MenuGroup) string {
+		if g == nil {
+			return "<nil>"
+		}
+		var out []string
+		for _, s := range g.SelectedSchemas() {
+			out = append(out, strings.Join(s.Names(), "+"))
+		}
+		return strings.Join(out, " ")
+	}
+	const both = "routeros_switch+routeros_switch_legacy routeros_switch_crs"
+	for _, tc := range []struct {
+		filter []string
+		want   string
+	}{
+		{nil, both},
+		{[]string{"/interface/ethernet/switch"}, both},
+		{[]string{"routeros_switch_crs", "/interface/ethernet/switch"}, both},
+		{[]string{"routeros_switch", "routeros_switch_crs"}, both},
+		{[]string{" routeros_switch_crs "}, "routeros_switch_crs"},
+		{[]string{"routeros_switch_legacy"}, "routeros_switch+routeros_switch_legacy"},
+		{[]string{"routeros_other", ""}, "<nil>"},
+		{[]string{""}, "<nil>"},
+	} {
+		if got := schemas(g.Select(tc.filter)); got != tc.want {
+			t.Errorf("Select(%q) = %s, want %s", tc.filter, got, tc.want)
+		}
+	}
+	if got := schemas(g); got != both {
+		t.Errorf("after Select the group itself selects %s; Select must narrow a copy", got)
 	}
 }

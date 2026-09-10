@@ -11,30 +11,30 @@ import (
 	"time"
 )
 
-// runAgainst starts a fake device that answers the version probe and /ip/settings normally and
-// lets the caller decide what /ip/service does, then runs the tool against those two menus.
-func runAgainst(t *testing.T, service func(w http.ResponseWriter)) (int, error, *Report) {
+// runTool starts a fake device that answers the version probe and the given menus, and 404 for any
+// other menu, then runs the tool with -fail-on-missing against the -resources selection.
+func runTool(t *testing.T, resources string, menus map[string]func(w http.ResponseWriter)) (int, error, *Report) {
 	t.Helper()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/rest/system/resource":
+		if r.URL.Path == "/rest/system/resource" {
 			_, _ = w.Write([]byte(`{"version":"7.24 (stable)"}`))
-		case "/rest/ip/settings":
-			_, _ = w.Write([]byte(`[]`))
-		case "/rest/ip/service":
-			service(w)
-		default:
-			w.WriteHeader(http.StatusNotFound)
+			return
 		}
+		if serve, ok := menus[r.URL.Path]; ok {
+			serve(w)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
 	}))
 	defer srv.Close()
 
+	clearConnEnv(t)
 	t.Setenv("ROS_HOSTURL", srv.URL)
 	t.Setenv("ROS_USERNAME", "reader")
 	t.Setenv("ROS_PASSWORD", "secret")
 
 	jsonOut := filepath.Join(t.TempDir(), "report.json")
-	code, err := run("", "", "/ip/settings,/ip/service", "", "", jsonOut, false, true, 5*time.Second, 2)
+	code, err := run("", "", resources, "", "", jsonOut, false, true, 5*time.Second, 2)
 
 	var report *Report
 	if raw, rErr := os.ReadFile(jsonOut); rErr == nil {
@@ -44,6 +44,16 @@ func runAgainst(t *testing.T, service func(w http.ResponseWriter)) (int, error, 
 		}
 	}
 	return code, err, report
+}
+
+// runAgainst runs the tool against /ip/settings, which answers normally, and /ip/service, which
+// answers the way the caller decides.
+func runAgainst(t *testing.T, service func(w http.ResponseWriter)) (int, error, *Report) {
+	t.Helper()
+	return runTool(t, "/ip/settings,/ip/service", map[string]func(w http.ResponseWriter){
+		"/rest/ip/settings": func(w http.ResponseWriter) { _, _ = w.Write([]byte(`[]`)) },
+		"/rest/ip/service":  service,
+	})
 }
 
 // A menu that cannot be read must fail the run even though -fail-on-missing found no drift,
@@ -115,6 +125,51 @@ func TestRunSkipsAbsentMenu(t *testing.T) {
 			}
 			if report.Summary.Failed != 0 || report.Summary.Skipped != 1 || report.Summary.Compared != 1 {
 				t.Errorf("summary = %+v; want compared 1, skipped 1, failed 0", report.Summary)
+			}
+		})
+	}
+}
+
+// On a menu the provider maps with two schemas, -resources with one resource's name compares that
+// schema only: the other is named in shared_with but gets no entry, so its fields cannot fail
+// -fail-on-missing. The menu path compares both. A menu the device lacks keeps the same entries.
+func TestRunResourceFilterOnASharedMenu(t *testing.T) {
+	const (
+		path  = "/interface/ethernet/switch"
+		plain = "routeros_interface_ethernet_switch"
+		crs   = "routeros_interface_ethernet_switch_crs"
+	)
+	present := map[string]func(w http.ResponseWriter){
+		"/rest" + path: func(w http.ResponseWriter) { _, _ = w.Write([]byte(`[]`)) },
+	}
+	absent := map[string]func(w http.ResponseWriter){}
+	both := []string{plain + " shared with " + crs, crs + " shared with " + plain}
+
+	for _, tc := range []struct {
+		name, resources string
+		menus           map[string]func(w http.ResponseWriter)
+		want            []string
+		skipped         int
+	}{
+		{"resource name", crs, present, []string{crs + " shared with " + plain}, 0},
+		{"menu path", path, present, both, 0},
+		{"resource name, menu absent", plain, absent, []string{plain + " shared with " + crs}, 1},
+		{"menu path, menu absent", path, absent, both, 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			code, err, report := runTool(t, tc.resources, tc.menus)
+			if code != 0 || err != nil {
+				t.Fatalf("code = %d, err = %v; want 0 and no error", code, err)
+			}
+			var got []string
+			for _, m := range report.Menus {
+				got = append(got, strings.Join(m.Resources, ",")+" shared with "+strings.Join(m.SharedWith, ","))
+			}
+			if strings.Join(got, "; ") != strings.Join(tc.want, "; ") {
+				t.Errorf("entries = %q, want %q", got, tc.want)
+			}
+			if s := report.Summary; s.Menus != 1 || s.SharedMenus != 1 || s.Skipped != tc.skipped {
+				t.Errorf("summary = %+v; want 1 menu, 1 shared menu, %d skipped", s, tc.skipped)
 			}
 		})
 	}

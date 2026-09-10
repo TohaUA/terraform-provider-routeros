@@ -87,8 +87,8 @@ func run(schemaFile, inspectFile, resources, statusFields, mdOut, jsonOut string
 	}
 	var selected []*MenuGroup
 	for _, g := range groups {
-		if g.MatchesFilter(filter) {
-			selected = append(selected, g)
+		if sel := g.Select(filter); sel != nil {
+			selected = append(selected, sel)
 		}
 	}
 	if len(selected) == 0 {
@@ -124,7 +124,8 @@ func run(schemaFile, inspectFile, resources, statusFields, mdOut, jsonOut string
 	}
 	comparer := NewComparer(version, inspect, extraStatus)
 
-	results := make([]*Comparison, len(selected))
+	// One GET per menu; a menu yields one entry per selected schema, compared or skipped.
+	results := make([][]*Comparison, len(selected))
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, max(concurrency, 1))
 	var firstErr error
@@ -138,13 +139,13 @@ func run(schemaFile, inspectFile, resources, statusFields, mdOut, jsonOut string
 			items, err := client.Get(g.Path)
 			switch {
 			case errors.Is(err, ErrMenuAbsent):
-				results[i] = SkippedComparison(g, err.Error())
+				results[i] = SkippedComparisons(g, err.Error())
 				return
 			case err != nil:
-				results[i] = FailedComparison(g, err.Error())
+				results[i] = FailedComparisons(g, err.Error())
 				return
 			}
-			cmp, err := comparer.Compare(g, items)
+			cmps, err := comparer.Compare(g, items)
 			if err != nil {
 				mu.Lock()
 				if firstErr == nil {
@@ -153,14 +154,16 @@ func run(schemaFile, inspectFile, resources, statusFields, mdOut, jsonOut string
 				mu.Unlock()
 				return
 			}
-			results[i] = cmp
+			results[i] = cmps
 		}(i, g)
 	}
 	wg.Wait()
 	if firstErr != nil {
 		return 1, firstErr
 	}
-	report.Menus = results
+	for _, cmps := range results {
+		report.Menus = append(report.Menus, cmps...)
+	}
 	report.Summarize()
 
 	// 4. Output.
@@ -192,13 +195,20 @@ func run(schemaFile, inspectFile, resources, statusFields, mdOut, jsonOut string
 	return 0, nil
 }
 
-// failedMenus lists the menus whose GET failed, for the exit-1 message.
+// failedMenus lists the menus whose GET failed, for the exit-1 message. A shared menu has an entry
+// per schema but is named once.
 func failedMenus(menus []*Comparison) string {
 	var out []string
+	seen := make(map[string]struct{})
 	for _, m := range menus {
-		if m != nil && m.Failed {
-			out = append(out, m.Path+" ("+m.Skipped+")")
+		if m == nil || !m.Failed {
+			continue
 		}
+		if _, dup := seen[m.Path]; dup {
+			continue
+		}
+		seen[m.Path] = struct{}{}
+		out = append(out, m.Path+" ("+m.Skipped+")")
 	}
 	return strings.Join(out, "; ")
 }

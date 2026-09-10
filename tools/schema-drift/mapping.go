@@ -224,54 +224,73 @@ func jsonType(raw json.RawMessage) string {
 // ---------------------------------------------------------------------------------------------
 // Menu groups.
 
-// MenuGroup is one RouterOS menu together with every resource that maps to it
-// (legacy aliases such as routeros_bridge / routeros_interface_bridge share a menu).
+// MenuGroup is one RouterOS menu together with every resource that maps to it. Resources share a
+// menu either as legacy aliases with the same schema (routeros_bridge / routeros_interface_bridge)
+// or as different resources with different schemas (routeros_interface_ethernet_switch and
+// routeros_interface_ethernet_switch_crs on /interface/ethernet/switch); Schemas tells them apart.
+// The menu is fetched once per group either way.
 type MenuGroup struct {
 	Path      string
-	Resources []*Resource // sorted by name; Resources[0] is the one compared
+	Resources []*Resource // sorted by name
+
+	selected map[string]struct{} // resource names Select narrowed the group to; nil keeps every schema
 }
 
-// Primary returns the resource whose attributes are compared for the menu.
-func (g *MenuGroup) Primary() *Resource { return g.Resources[0] }
+// MenuSchema is one distinct schema on a menu: the resources whose attributes and name-translation
+// metadata are identical, so that comparing any one of them classifies every field the same way.
+type MenuSchema struct {
+	Resources []*Resource // in group order; Resources[0] is the one compared
+}
+
+// Compared returns the resource whose attributes are compared for the schema.
+func (s *MenuSchema) Compared() *Resource { return s.Resources[0] }
+
+// Names lists the resource names of the schema.
+func (s *MenuSchema) Names() []string { return resourceNames(s.Resources) }
 
 // Names lists the resource names of the group.
-func (g *MenuGroup) Names() []string {
-	out := make([]string, 0, len(g.Resources))
+func (g *MenuGroup) Names() []string { return resourceNames(g.Resources) }
+
+// Schemas splits the group into its distinct schemas, ordered by their first resource. A menu used
+// only by aliases yields one schema; every schema needs its own comparison against the device.
+func (g *MenuGroup) Schemas() []*MenuSchema {
+	var out []*MenuSchema
+	byKey := make(map[string]*MenuSchema)
 	for _, r := range g.Resources {
+		k := schemaKey(r)
+		s, ok := byKey[k]
+		if !ok {
+			s = &MenuSchema{}
+			byKey[k] = s
+			out = append(out, s)
+		}
+		s.Resources = append(s.Resources, r)
+	}
+	return out
+}
+
+// schemaKey renders everything Compare reads from a resource: every attribute with its type and
+// flags, the transform set and the skip fields, independent of their order. Resources with the same
+// key classify every device field identically. The id type is not part of it; Compare ignores it.
+func schemaKey(r *Resource) string {
+	parts := make([]string, 0, len(r.Attrs))
+	for _, a := range r.Attrs {
+		parts = append(parts, fmt.Sprintf("attr %q %s optional=%t required=%t computed=%t", a.Name, a.Type, a.Optional, a.Required, a.Computed))
+	}
+	for k, v := range routeros.MetaTransformSetMap(r.TransformSet, false) {
+		parts = append(parts, fmt.Sprintf("transform %q %q", k, v))
+	}
+	for k := range routeros.MetaSkipFieldsSet(r.SkipFields) {
+		parts = append(parts, fmt.Sprintf("skip %q", k))
+	}
+	sort.Strings(parts)
+	return strings.Join(parts, "\n")
+}
+
+func resourceNames(rs []*Resource) []string {
+	out := make([]string, 0, len(rs))
+	for _, r := range rs {
 		out = append(out, r.Name)
-	}
-	return out
-}
-
-// AliasDrift reports attribute names present in one alias but not in another, as
-// "+name" / "-name" relative to the primary resource. Empty when all aliases agree.
-func (g *MenuGroup) AliasDrift() []string {
-	if len(g.Resources) < 2 {
-		return nil
-	}
-	base := attrNames(g.Primary().Attrs)
-	var out []string
-	for _, r := range g.Resources[1:] {
-		other := attrNames(r.Attrs)
-		for n := range other {
-			if _, ok := base[n]; !ok {
-				out = append(out, "+"+n+" ("+r.Name+")")
-			}
-		}
-		for n := range base {
-			if _, ok := other[n]; !ok {
-				out = append(out, "-"+n+" ("+r.Name+")")
-			}
-		}
-	}
-	sort.Strings(out)
-	return out
-}
-
-func attrNames(a []Attr) map[string]struct{} {
-	out := make(map[string]struct{}, len(a))
-	for _, x := range a {
-		out[x.Name] = struct{}{}
 	}
 	return out
 }
@@ -301,24 +320,65 @@ func GroupByMenu(resources map[string]*Resource) (groups []*MenuGroup, noMenu []
 	return groups, noMenu
 }
 
-// MatchesFilter reports whether the group is selected by a list of resource names and/or menu paths.
-func (g *MenuGroup) MatchesFilter(filter []string) bool {
+// Select returns the part of the group that a list of resource names and/or menu paths asks for, or
+// nil when the list selects nothing on this menu. No list, or the menu's path, selects every schema.
+// A resource name selects the schema that resource belongs to, aliases included, but not a different
+// schema that only shares the menu: its rows were not asked for, and its missing fields must not
+// decide -fail-on-missing. The group itself is left as it is.
+func (g *MenuGroup) Select(filter []string) *MenuGroup {
 	if len(filter) == 0 {
-		return true
+		return g
 	}
+	names := make(map[string]struct{})
 	for _, f := range filter {
 		f = strings.TrimSpace(f)
 		if f == "" {
 			continue
 		}
 		if f == g.Path {
-			return true
+			return g
 		}
 		for _, r := range g.Resources {
 			if f == r.Name {
-				return true
+				names[f] = struct{}{}
 			}
 		}
 	}
-	return false
+	if len(names) == 0 {
+		return nil
+	}
+	sel := *g
+	sel.selected = names
+	return &sel
+}
+
+// SelectedSchemas returns the schemas Select kept, in Schemas order; every schema when the group was
+// not narrowed to named resources.
+func (g *MenuGroup) SelectedSchemas() []*MenuSchema {
+	schemas := g.Schemas()
+	if g.selected == nil {
+		return schemas
+	}
+	var out []*MenuSchema
+	for _, s := range schemas {
+		for _, r := range s.Resources {
+			if _, ok := g.selected[r.Name]; ok {
+				out = append(out, s)
+				break
+			}
+		}
+	}
+	return out
+}
+
+// SharedWith lists the resources of every other schema on the menu, whether or not Select kept it:
+// the menu is shared with them either way.
+func (g *MenuGroup) SharedWith(s *MenuSchema) []string {
+	var out []string
+	for _, other := range g.Schemas() {
+		if other.Compared().Name != s.Compared().Name {
+			out = append(out, other.Names()...)
+		}
+	}
+	return out
 }

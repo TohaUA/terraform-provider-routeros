@@ -51,9 +51,9 @@ type Comparison struct {
 	Rows        int      `json:"rows"`         // items returned by the device
 	DynamicRows int      `json:"dynamic_rows"` // items with dynamic=true
 	Fields      []Row    `json:"fields"`
-	AliasDrift  []string `json:"alias_drift,omitempty"`
-	Skipped     string   `json:"skipped,omitempty"` // reason the menu was not compared
-	Failed      bool     `json:"failed,omitempty"`  // the menu was unreadable (transport/HTTP error), not absent
+	SharedWith  []string `json:"shared_with,omitempty"` // resources on the same menu with a different schema; each has its own entry unless -resources left it out
+	Skipped     string   `json:"skipped,omitempty"`     // reason the menu was not compared
+	Failed      bool     `json:"failed,omitempty"`      // the menu was unreadable (transport/HTTP error), not absent
 	Note        string   `json:"note,omitempty"`
 }
 
@@ -212,13 +212,31 @@ func (m *menuContext) expectedField(a Attr) string {
 	return routeros.SnakeToKebab(a.Name)
 }
 
-// Compare classifies every device key of a menu against the primary resource of the group, every
-// add/set argument of the inspect tree that the device did not return, and every provider
-// attribute against the device keys.
-func (c *Comparer) Compare(g *MenuGroup, items []map[string]string) (*Comparison, error) {
-	res := g.Primary()
-	out := &Comparison{Path: g.Path, Resources: g.Names(), Rows: len(items), AliasDrift: g.AliasDrift()}
-	m, err := c.newMenuContext(g.Path, res)
+// Compare compares the items a device returned for a menu with every schema of the group that Select
+// kept and returns one Comparison per schema, in MenuGroup.Schemas order. Aliases share a schema and so
+// one comparison; a resource with a different schema on the same menu gets its own, so that its
+// attributes are never judged against another resource's schema.
+func (c *Comparer) Compare(g *MenuGroup, items []map[string]string) ([]*Comparison, error) {
+	schemas := g.SelectedSchemas()
+	out := make([]*Comparison, 0, len(schemas))
+	for _, s := range schemas {
+		cmp, err := c.compareSchema(g.Path, s, items)
+		if err != nil {
+			return nil, err
+		}
+		cmp.SharedWith = g.SharedWith(s)
+		out = append(out, cmp)
+	}
+	return out, nil
+}
+
+// compareSchema classifies every device key of a menu against one schema, every add/set argument of
+// the inspect tree that the device did not return, and every provider attribute against the device
+// keys.
+func (c *Comparer) compareSchema(path string, s *MenuSchema, items []map[string]string) (*Comparison, error) {
+	res := s.Compared()
+	out := &Comparison{Path: path, Resources: s.Names(), Rows: len(items)}
+	m, err := c.newMenuContext(path, res)
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +246,7 @@ func (c *Comparer) Compare(g *MenuGroup, items []map[string]string) (*Comparison
 
 	// 1. Device -> provider.
 	for field, dk := range keys {
-		row := Row{Field: field, Source: SourceDevice, DynamicOnly: !dk.static, Writable: c.writable(g.Path, field)}
+		row := Row{Field: field, Source: SourceDevice, DynamicOnly: !dk.static, Writable: c.writable(path, field)}
 		row.Attr, row.Class, row.Note = m.classify(field)
 		if row.Class == "" {
 			parent := row.Attr
@@ -245,7 +263,7 @@ func (c *Comparer) Compare(g *MenuGroup, items []map[string]string) (*Comparison
 	}
 
 	// 2. Inspect -> provider: writable fields the device did not return (unset, or no items at all).
-	if args, ok := c.Inspect.Menu(g.Path); ok {
+	if args, ok := c.Inspect.Menu(path); ok {
 		for field := range args {
 			if _, seen := keys[field]; seen || inSet(inspectPositionalArgs, field) {
 				continue
@@ -280,7 +298,7 @@ func (c *Comparer) Compare(g *MenuGroup, items []map[string]string) (*Comparison
 			if a.Type == "map" && hasPrefixKey(keys, mt+".") {
 				continue
 			}
-			row := Row{Field: mt, Attr: a.Name, Class: ClassSchemaOnly, Source: SourceSchema, Writable: c.writable(g.Path, mt)}
+			row := Row{Field: mt, Attr: a.Name, Class: ClassSchemaOnly, Source: SourceSchema, Writable: c.writable(path, mt)}
 			switch {
 			case a.ReadOnly():
 				row.Note = "computed-only in provider"
@@ -347,20 +365,29 @@ func hasPrefixKey(keys map[string]*deviceKey, prefix string) bool {
 	return false
 }
 
-// SkippedComparison records a menu that could not be compared because the device does not
-// have it. That is a normal outcome and does not fail the run.
-func SkippedComparison(g *MenuGroup, reason string) *Comparison {
-	return &Comparison{Path: g.Path, Resources: g.Names(), Skipped: reason, AliasDrift: g.AliasDrift()}
+// SkippedComparisons records a menu that could not be compared because the device does not have it.
+// That is a normal outcome and does not fail the run. Like Compare, it returns one entry per selected
+// schema, so shared_with and summary.shared_menus describe a shared menu the same way whether or not
+// the device has it.
+func SkippedComparisons(g *MenuGroup, reason string) []*Comparison {
+	schemas := g.SelectedSchemas()
+	out := make([]*Comparison, 0, len(schemas))
+	for _, s := range schemas {
+		out = append(out, &Comparison{Path: g.Path, Resources: s.Names(), SharedWith: g.SharedWith(s), Skipped: reason})
+	}
+	return out
 }
 
-// FailedComparison records a menu whose GET failed for a reason other than the menu being absent
+// FailedComparisons records a menu whose GET failed for a reason other than the menu being absent
 // (authentication, permissions, 5xx, timeout, TLS or a malformed body). The menu still shows up in
 // the report so the operator sees what was unreadable, but the run itself is not a success:
 // run reports exit 1 when any menu failed.
-func FailedComparison(g *MenuGroup, reason string) *Comparison {
-	c := SkippedComparison(g, "GET failed: "+reason)
-	c.Failed = true
-	return c
+func FailedComparisons(g *MenuGroup, reason string) []*Comparison {
+	out := SkippedComparisons(g, "GET failed: "+reason)
+	for _, c := range out {
+		c.Failed = true
+	}
+	return out
 }
 
 // String renders a row for logs.
