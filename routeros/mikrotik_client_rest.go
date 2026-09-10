@@ -63,7 +63,7 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 			return err
 		}
 
-		ColorizedDebug(c.ctx, "request body:  "+string(b))
+		ColorizedDebug(c.ctx, "request body:  "+redactJSON(b))
 		data = bytes.NewBuffer(b)
 	}
 
@@ -92,7 +92,7 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
 		var errRes errorResponse
 
-		ColorizedDebug(c.ctx, fmt.Sprintf("error response body:\n%s", body))
+		ColorizedDebug(c.ctx, fmt.Sprintf("error response body:\n%s", redactJSON(body)))
 
 		if err = json.Unmarshal(body, &errRes); err != nil {
 			return fmt.Errorf("json.Unmarshal - %v", err)
@@ -102,7 +102,7 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 		}
 	}
 
-	ColorizedDebug(c.ctx, "response body: "+string(body))
+	ColorizedDebug(c.ctx, "response body: "+redactJSON(body))
 
 	// Cast single return values to an array.
 	if !isJsonArray(body) {
