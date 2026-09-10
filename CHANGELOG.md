@@ -1,3 +1,9 @@
+## [1.101.2](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.1...v1.101.2) (2026-09-10)
+
+### Bug Fixes
+
+* **schema-drift:** read the provider's environment variables and compare every schema on a shared menu ([#27](https://github.com/TohaUA/terraform-provider-routeros/issues/27)) ([e646db9](https://github.com/TohaUA/terraform-provider-routeros/commit/e646db9faa815d55159f2c1964a8f304f2d78378))
+
 ## [1.101.1](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.0...v1.101.1) (2026-09-10)
 
 ### Bug Fixes
