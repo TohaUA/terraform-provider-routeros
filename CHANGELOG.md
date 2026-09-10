@@ -1,3 +1,9 @@
+## [1.101.5](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.4...v1.101.5) (2026-09-10)
+
+### Bug Fixes
+
+* **wifi,capsman,firewall,bridge,ethernet:** stop handlers writing the shared schema's skip list ([#32](https://github.com/TohaUA/terraform-provider-routeros/issues/32)) ([1e95ef3](https://github.com/TohaUA/terraform-provider-routeros/commit/1e95ef3d0ac3d7c6acbde638c570f4c5e7139b76))
+
 ## [1.101.4](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.3...v1.101.4) (2026-09-10)
 
 ### Bug Fixes
