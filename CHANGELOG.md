@@ -1,3 +1,9 @@
+## [1.101.1](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.0...v1.101.1) (2026-09-10)
+
+### Bug Fixes
+
+* **client:** pool synchronous API sessions with a per-request deadline ([#25](https://github.com/TohaUA/terraform-provider-routeros/issues/25)) ([584e8c1](https://github.com/TohaUA/terraform-provider-routeros/commit/584e8c16b09b4da68241fea19871058cf3818ebf)), closes [go-routeros/routeros#33](https://github.com/go-routeros/routeros/issues/33) [#34](https://github.com/TohaUA/terraform-provider-routeros/issues/34) [#32](https://github.com/TohaUA/terraform-provider-routeros/issues/32) [#16](https://github.com/TohaUA/terraform-provider-routeros/issues/16)
+
 ## [1.101.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.100.0...v1.101.0) (2026-09-10)
 
 ### Features
