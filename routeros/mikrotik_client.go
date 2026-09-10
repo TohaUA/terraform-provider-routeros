@@ -2,6 +2,7 @@ package routeros
 
 import (
 	"context"
+	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/hex"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-routeros/routeros/v3"
@@ -45,6 +47,107 @@ const (
 
 type ExtraParams struct {
 	SuppressSysODelWarn bool
+}
+
+// Provider configuration happens many times in one process: the acceptance
+// suite configures once per test case, and a long-lived worker reconfigures on
+// every run. Each configuration used to dial a fresh API connection, and build
+// a fresh http.Transport with its own pool, and nothing ever released either --
+// the only Close in the provider is on a response body. RouterOS caps
+// concurrent connections, so a long enough process exhausted the device and the
+// next connection simply hung, taking whatever operation was in flight with it.
+//
+// Connections are therefore kept and reused per distinct credential set. That
+// matches how the provider already behaves within a single run, where one
+// configuration serves every resource concurrently -- Async() exists for
+// exactly that -- so this widens the sharing rather than introducing it.
+var (
+	connectionMu    sync.Mutex
+	apiConnections  = map[string]*routeros.Client{}
+	restConnections = map[string]*http.Client{}
+)
+
+func boolKey(v bool) string {
+	if v {
+		return "1"
+	}
+
+	return "0"
+}
+
+// connectionKey identifies a credential set. The password is hashed rather than
+// held in a map key so it cannot surface in a dump of provider state.
+func connectionKey(parts ...string) string {
+	h := sha256.New()
+	for _, part := range parts {
+		h.Write([]byte(part))
+		h.Write([]byte{0})
+	}
+
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+// dialAPI returns a live API connection for the given credentials, reusing one
+// already open where possible. A cached connection is probed before being
+// handed back: the device may have restarted since it was opened, and returning
+// a dead connection would be worse than the leak this replaces.
+func dialAPI(key, host, username, password string, useTLS bool, tlsConf *tls.Config) (*routeros.Client, error) {
+	connectionMu.Lock()
+	defer connectionMu.Unlock()
+
+	if client, ok := apiConnections[key]; ok {
+		if _, err := client.Run("/system/identity/print"); err == nil {
+			return client, nil
+		}
+
+		_ = client.Close()
+		delete(apiConnections, key)
+	}
+
+	var client *routeros.Client
+	var err error
+
+	if useTLS {
+		client, err = routeros.DialTLS(host, username, password, tlsConf)
+	} else {
+		client, err = routeros.Dial(host, username, password)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// The synchronous client has an infinite wait issue
+	// when an error occurs while creating multiple resources.
+	client.Async()
+
+	apiConnections[key] = client
+
+	return client, nil
+}
+
+// restClient returns the HTTP client for the given credentials. Reused for the
+// same reason as the API connection: a new http.Transport per configuration
+// means a new idle connection pool per configuration, and nothing closes them.
+func restClient(key string, timeout time.Duration, tlsConf *tls.Config) *http.Client {
+	connectionMu.Lock()
+	defer connectionMu.Unlock()
+
+	if client, ok := restConnections[key]; ok {
+		return client
+	}
+
+	client := &http.Client{
+		// ... By default, CreateContext has a 20 minute timeout ...
+		// but MT REST API timeout is in 60 seconds for any operation.
+		// Make the timeout smaller so that the lifetime of the context is less than the lifetime of the session.
+		Timeout: timeout,
+		Transport: &http.Transport{
+			TLSClientConfig: tlsConf,
+		},
+	}
+	restConnections[key] = client
+
+	return client
 }
 
 func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
@@ -131,18 +234,13 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 			},
 		}
 
-		if useTLS {
-			api.Client, err = routeros.DialTLS(api.HostURL, api.Username, api.Password, &tlsConf)
-		} else {
-			api.Client, err = routeros.Dial(api.HostURL, api.Username, api.Password)
-		}
+		api.Client, err = dialAPI(
+			connectionKey(api.HostURL, api.Username, api.Password, caCertificate, "api", boolKey(useTLS)),
+			api.HostURL, api.Username, api.Password, useTLS, &tlsConf,
+		)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
-
-		// The synchronous client has an infinite wait issue
-		// when an error occurs while creating multiple resources.
-		api.Async()
 
 		if RouterOSVersion == "" {
 			ros, diags := GetRouterOSVersion(api)
@@ -168,15 +266,12 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 		},
 	}
 
-	rest.Client = &http.Client{
-		// ... By default, CreateContext has a 20 minute timeout ...
-		// but MT REST API timeout is in 60 seconds for any operation.
-		// Make the timeout smaller so that the lifetime of the context is less than the lifetime of the session.
-		Timeout: time.Duration(d.Get("rest_timeout").(int)) * time.Second,
-		Transport: &http.Transport{
-			TLSClientConfig: &tlsConf,
-		},
-	}
+	restTimeout := time.Duration(d.Get("rest_timeout").(int)) * time.Second
+	rest.Client = restClient(
+		connectionKey(rest.HostURL, rest.Username, rest.Password, caCertificate, "rest",
+			boolKey(tlsConf.InsecureSkipVerify), restTimeout.String()),
+		restTimeout, &tlsConf,
+	)
 
 	if RouterOSVersion == "" {
 		ros, diags := GetRouterOSVersion(rest)
