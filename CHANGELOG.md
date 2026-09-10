@@ -1,3 +1,9 @@
+## [1.101.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.100.0...v1.101.0) (2026-09-10)
+
+### Features
+
+* **system-package:** add the local-update package source and update menus ([#21](https://github.com/TohaUA/terraform-provider-routeros/issues/21)) ([fe6bd0a](https://github.com/TohaUA/terraform-provider-routeros/commit/fe6bd0a2b77c05c28d78c470e1c27739067ac628))
+
 ## [1.100.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.99.1...v1.100.0) (2026-09-09)
 
 ### Features
