@@ -60,18 +60,24 @@ lab router with `-fail-on-missing`.
 
 ## Running
 
-Environment (the same values you would give the provider):
+Environment: the variables the provider reads (`routeros/provider.go`), with the same precedence
+(the first non-empty one in each row wins), so an environment exported for the provider works
+here unchanged:
 
-| variable | meaning |
+| variables | meaning |
 |---|---|
-| `ROS_HOSTURL` | `https://router` (a `/rest` suffix is tolerated) |
-| `ROS_USERNAME` / `ROS_PASSWORD` | credentials; a read-only user is enough |
-| `ROS_CACERT` | PEM bundle to trust (optional) |
-| `ROS_INSECURE` | `true` to skip certificate verification (optional) |
+| `ROS_HOSTURL`, `MIKROTIK_HOST` | `https://router` (a `/rest` suffix is tolerated) |
+| `ROS_USERNAME`, `MIKROTIK_USER` | username; a read-only user is enough |
+| `ROS_PASSWORD`, `MIKROTIK_PASSWORD` | password |
+| `ROS_CA_CERTIFICATE`, `MIKROTIK_CA_CERTIFICATE` | PEM bundle to trust (optional) |
+| `ROS_INSECURE`, `MIKROTIK_INSECURE` | `true` to skip certificate verification (optional) |
+
+`ROS_CACERT`, the CA variable earlier versions of this tool used, is still read, after both
+provider names.
 
 ```bash
 # from the repository root
-export ROS_HOSTURL=https://router.example ROS_USERNAME=admin ROS_PASSWORD=... ROS_CACERT=/path/ca.pem
+export ROS_HOSTURL=https://router.example ROS_USERNAME=admin ROS_PASSWORD=... ROS_CA_CERTIFICATE=/path/ca.pem
 go run ./tools/schema-drift -md schema-drift.md -json schema-drift.json
 
 # with the writability oracle for the device's version (recommended)

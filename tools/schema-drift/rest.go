@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -26,39 +27,90 @@ type Client struct {
 // (HTTP 404, or HTTP 400 "no such command or directory" for a package that is not installed).
 var ErrMenuAbsent = errors.New("menu absent on device")
 
-// NewClientFromEnv builds a client from ROS_HOSTURL, ROS_USERNAME, ROS_PASSWORD, ROS_CACERT
-// (path to a PEM bundle) and ROS_INSECURE ("true" skips certificate verification).
-func NewClientFromEnv(timeout time.Duration) (*Client, error) {
-	host := strings.TrimSpace(os.Getenv("ROS_HOSTURL"))
-	if host == "" {
-		return nil, errors.New("ROS_HOSTURL is not set")
+// Environment variables per connection setting, in precedence order: the first non-empty one wins.
+// These are the names routeros.Provider() reads through schema.MultiEnvDefaultFunc
+// (routeros/provider.go), in the same order, so one exported environment serves both the provider
+// and this tool; rest_test.go fails when they diverge. ROS_CACERT is not a provider variable: it is
+// the name this tool used before and is kept, last, so existing setups keep working.
+var (
+	envHostURL  = []string{"ROS_HOSTURL", "MIKROTIK_HOST"}
+	envUsername = []string{"ROS_USERNAME", "MIKROTIK_USER"}
+	envPassword = []string{"ROS_PASSWORD", "MIKROTIK_PASSWORD"}
+	envCACert   = []string{"ROS_CA_CERTIFICATE", "MIKROTIK_CA_CERTIFICATE", "ROS_CACERT"}
+	envInsecure = []string{"ROS_INSECURE", "MIKROTIK_INSECURE"}
+)
+
+// connEnv is the connection configuration resolved from the environment.
+type connEnv struct {
+	HostURL   string
+	Username  string
+	Password  string
+	CACert    string // path to a PEM bundle; "" when unset
+	CACertVar string // the variable CACert came from, for error messages
+	Insecure  bool
+}
+
+// lookupEnv returns the value of the first variable in names that is set to a non-empty value,
+// together with that variable's name, like schema.MultiEnvDefaultFunc.
+func lookupEnv(getenv func(string) string, names []string) (value, name string) {
+	for _, n := range names {
+		if v := getenv(n); v != "" {
+			return v, n
+		}
 	}
-	user := os.Getenv("ROS_USERNAME")
-	if user == "" {
-		return nil, errors.New("ROS_USERNAME is not set")
+	return "", ""
+}
+
+// resolveEnv reads the connection settings through getenv (os.Getenv outside tests).
+func resolveEnv(getenv func(string) string) (connEnv, error) {
+	var e connEnv
+	e.HostURL, _ = lookupEnv(getenv, envHostURL)
+	if e.HostURL = strings.TrimSpace(e.HostURL); e.HostURL == "" {
+		return e, fmt.Errorf("%s is not set", strings.Join(envHostURL, " or "))
 	}
-	tlsConf := &tls.Config{}
-	if strings.EqualFold(os.Getenv("ROS_INSECURE"), "true") {
-		tlsConf.InsecureSkipVerify = true
+	if e.Username, _ = lookupEnv(getenv, envUsername); e.Username == "" {
+		return e, fmt.Errorf("%s is not set", strings.Join(envUsername, " or "))
 	}
-	if ca := os.Getenv("ROS_CACERT"); ca != "" {
-		pem, err := os.ReadFile(ca)
+	e.Password, _ = lookupEnv(getenv, envPassword)
+	e.CACert, e.CACertVar = lookupEnv(getenv, envCACert)
+	if v, name := lookupEnv(getenv, envInsecure); v != "" {
+		// The SDK converts a TypeBool default with strconv.ParseBool, so accept exactly what it accepts.
+		b, err := strconv.ParseBool(v)
 		if err != nil {
-			return nil, fmt.Errorf("ROS_CACERT: %w", err)
+			return e, fmt.Errorf("%s: %q is not a boolean", name, v)
+		}
+		e.Insecure = b
+	}
+	return e, nil
+}
+
+// NewClientFromEnv builds a client from the provider's environment variables: host URL, username,
+// password, CA certificate (path to a PEM bundle) and insecure ("true" skips certificate
+// verification). See envHostURL and the other env* lists for the accepted names.
+func NewClientFromEnv(timeout time.Duration) (*Client, error) {
+	env, err := resolveEnv(os.Getenv)
+	if err != nil {
+		return nil, err
+	}
+	tlsConf := &tls.Config{InsecureSkipVerify: env.Insecure}
+	if env.CACert != "" {
+		pem, err := os.ReadFile(env.CACert)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", env.CACertVar, err)
 		}
 		pool, err := x509.SystemCertPool()
 		if err != nil || pool == nil {
 			pool = x509.NewCertPool()
 		}
 		if !pool.AppendCertsFromPEM(pem) {
-			return nil, fmt.Errorf("ROS_CACERT: no certificates found in %s", ca)
+			return nil, fmt.Errorf("%s: no certificates found in %s", env.CACertVar, env.CACert)
 		}
 		tlsConf.RootCAs = pool
 	}
 	return &Client{
-		Base:     normalizeBase(host),
-		Username: user,
-		Password: os.Getenv("ROS_PASSWORD"),
+		Base:     normalizeBase(env.HostURL),
+		Username: env.Username,
+		Password: env.Password,
 		HTTP: &http.Client{
 			Timeout:   timeout,
 			Transport: &http.Transport{TLSClientConfig: tlsConf},

@@ -13,7 +13,8 @@ test:
 	go test -timeout 30s github.com/terraform-routeros/terraform-provider-routeros
 
 # Compare the resource schemas with a live RouterOS device (GET only).
-# Needs ROS_HOSTURL, ROS_USERNAME, ROS_PASSWORD and optionally ROS_CACERT / ROS_INSECURE in the environment.
+# Needs the provider's connection variables in the environment: ROS_HOSTURL, ROS_USERNAME, ROS_PASSWORD and optionally
+# ROS_CA_CERTIFICATE / ROS_INSECURE, or their MIKROTIK_* equivalents (see tools/schema-drift/README.md).
 # Optional: SCHEMA=schema.json (from `terraform providers schema -json`), INSPECT=inspect-7.24.json[.gz],
 #           RESOURCES=routeros_ip_service,/interface/bridge, DRIFT_FLAGS="-all -fail-on-missing".
 SCHEMA_DRIFT_MD ?= schema-drift.md

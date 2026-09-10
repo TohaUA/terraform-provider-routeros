@@ -268,10 +268,13 @@ read back.
 
 `tools/schema-drift` compares every resource schema with what a live router returns for the
 resource's menu (GET only) and lists the fields that exist on one side only. Run it once per
-RouterOS release to turn "support 7.xx" into a checklist:
+RouterOS release to turn "support 7.xx" into a checklist. It reads the same connection variables as
+the provider: `ROS_HOSTURL` or `MIKROTIK_HOST`, `ROS_USERNAME` or `MIKROTIK_USER`, `ROS_PASSWORD` or
+`MIKROTIK_PASSWORD`, and optionally `ROS_CA_CERTIFICATE` or `MIKROTIK_CA_CERTIFICATE` and
+`ROS_INSECURE` or `MIKROTIK_INSECURE`:
 
 ```bash
-export ROS_HOSTURL=https://router.example ROS_USERNAME=admin ROS_PASSWORD=... ROS_CACERT=/path/ca.pem
+export ROS_HOSTURL=https://router.example ROS_USERNAME=admin ROS_PASSWORD=... ROS_CA_CERTIFICATE=/path/ca.pem
 curl -sSL https://tikoci.github.io/restraml/7.24/inspect.json -o /tmp/inspect-7.24.json   # optional oracle
 make schema-drift INSPECT=/tmp/inspect-7.24.json                                          # writes schema-drift.md / .json
 ```

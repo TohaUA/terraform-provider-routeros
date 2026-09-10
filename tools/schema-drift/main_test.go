@@ -29,6 +29,7 @@ func runAgainst(t *testing.T, service func(w http.ResponseWriter)) (int, error, 
 	}))
 	defer srv.Close()
 
+	clearConnEnv(t)
 	t.Setenv("ROS_HOSTURL", srv.URL)
 	t.Setenv("ROS_USERNAME", "reader")
 	t.Setenv("ROS_PASSWORD", "secret")
