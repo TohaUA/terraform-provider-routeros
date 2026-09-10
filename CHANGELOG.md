@@ -1,3 +1,9 @@
+## [1.101.3](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.2...v1.101.3) (2026-09-10)
+
+### Bug Fixes
+
+* **system-certificate:** apply trust_store and trusted after an import ([#31](https://github.com/TohaUA/terraform-provider-routeros/issues/31)) ([2076796](https://github.com/TohaUA/terraform-provider-routeros/commit/2076796f5630fd2866e03614d23312aec3db7992))
+
 ## [1.101.2](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.1...v1.101.2) (2026-09-10)
 
 ### Bug Fixes
