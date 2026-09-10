@@ -51,7 +51,7 @@ jobs:
 
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6.1.0
 
       # Single source of truth for the version under test: the Dockerfile builds
       # that CHR image and the tests read ROS_VERSION to decide which
@@ -87,7 +87,7 @@ jobs:
             routeros-test
 
       - name: Cache restore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25  # v5.1.0
         with:
           path: |
             ~/.cache/go-build
@@ -97,7 +97,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Setup Go environment
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16  # v6.5.0
         with:
           go-version-file: go.mod
           check-latest: true
@@ -111,7 +111,7 @@ jobs:
         run: go build -v .
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v4
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e  # v4.0.1
 
       - name: Container check
         run: |
