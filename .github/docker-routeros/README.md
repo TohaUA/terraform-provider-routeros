@@ -33,11 +33,12 @@ Three things differ from upstream:
    transfer is intermittent CI — a truncated stream fails the extract and cannot be retried once
    started, and upstream's fallback to the bare `.vdi` cannot help because MikroTik publishes only
    the `.zip` and that URL answers 404.
-3. `entrypoint_with_four_interfaces.sh` passes `-accel kvm:tcg`. Its comment promised `-enable-kvm`
+3. `entrypoint_with_four_interfaces.sh` passes `-machine accel=kvm:tcg`. Its comment promised `-enable-kvm`
    while the command passed no acceleration flag at all, so every guest ran under software
    emulation — an order of magnitude slower, and slow enough that RouterOS sometimes had not
-   finished booting before CI gave up waiting. `kvm:tcg` rather than `-enable-kvm` because the
-   latter aborts on a host without `/dev/kvm` instead of degrading to emulation.
+   finished booting before CI gave up waiting. The list has to go through `-machine`, since `-accel` takes a
+   single accelerator and rejects `kvm:tcg`; both are preferred over `-enable-kvm`, which aborts on
+   a host without `/dev/kvm` instead of degrading to emulation.
 
 Everything else is byte-identical, so re-syncing stays a diff against upstream rather than a merge
 of divergent trees. Items 2 and 3 are worth offering upstream.
