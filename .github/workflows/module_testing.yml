@@ -68,6 +68,7 @@ jobs:
             --cap-add=NET_ADMIN \
             --device /dev/net/tun \
             --device /dev/kvm \
+            -e ROUTEROS_MEMORY=2048 \
             -p 443:443 \
             -p 8728:8728 \
             -p 8729:8729 \

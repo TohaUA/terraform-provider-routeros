@@ -63,6 +63,9 @@ prepare_intf $default_dev4 $QEMU_BRIDGE_ETH4
 #   The list form has to go through -machine: -accel takes a single
 #   accelerator and rejects "kvm:tcg" outright. Preferred over -enable-kvm,
 #   which aborts on a host without /dev/kvm instead of degrading.
+# -m: guest RAM. Overridable because the default of 512 is sized for a router
+#   sitting idle, not one servicing a few hundred acceptance tests back to
+#   back; CI raises it via ROUTEROS_MEMORY.
 # -nographic: disable SDL graphics.
 # -serial mon:stdio: use "monitored stdio" as our serial output.
 # -nic: Use a TAP interface with our custom up/down scripts.
@@ -73,7 +76,7 @@ exec qemu-system-x86_64 \
    -nographic -serial mon:stdio \
    -machine accel=kvm:tcg \
    -vnc 0.0.0.0:0 \
-   -m 512 \
+   -m ${ROUTEROS_MEMORY:-512} \
    -smp 4,sockets=1,cores=4,threads=1 \
    -nic tap,id=qemu1,mac=${MAC_BASE}1,script=$QEMU_IFUP,downscript=$QEMU_IFDOWN \
    -nic tap,id=qemu2,mac=${MAC_BASE}2,script=$QEMU_IFUP2,downscript=$QEMU_IFDOWN2 \
