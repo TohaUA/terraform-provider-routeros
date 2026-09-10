@@ -265,6 +265,12 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 				// nested block) or null. Nothing was configured, so there is nothing to send.
 				ctyBlock := rawConfig.GetAttr(terraformSnakeName)
 				if ctyBlock.IsNull() || !ctyBlock.IsKnown() || ctyBlock.LengthInt() == 0 {
+					// A block that is not Computed and was removed from the configuration is a real
+					// change, not a router-owned block: RouterOS keeps every property a `set` leaves
+					// out, so sending nothing would silently keep the old settings on the router.
+					if ctyBlock.IsKnown() && !terraformMetadata.Computed && d.HasChange(terraformSnakeName) {
+						unsetRemovedBlock(item, mikrotikKebabName, terraformSnakeName, terraformMetadata.Elem.(*schema.Resource), d)
+					}
 					continue
 				}
 
@@ -353,6 +359,52 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 	}
 
 	return item, meta
+}
+
+// unsetRemovedBlock Unset the properties of a nested block that the configuration no longer declares.
+// "input" + "accept_communities" -> item["!input.accept-communities"] = ""
+//
+// Only the properties carrying a non-zero value in the previous state are unset. The state zero-fills
+// every property of a block, so a zero value cannot be told apart from one that was never set, and a
+// property the router reported or accepted is known to exist on this RouterOS version, whereas a blanket
+// unset would also name properties that other versions do not have and fail the whole `set`.
+// Required properties are unset too: Required only binds while the block is declared, and leaving one
+// behind keeps a partial block on the router, which the next Read reports back as a block to remove
+// again (a BGP connection's `local.role`). Read-only properties are never sent.
+func unsetRemovedBlock(item MikrotikItem, mikrotikKebabName, terraformSnakeName string, block *schema.Resource, d *schema.ResourceData) {
+	old, _ := d.GetChange(terraformSnakeName)
+	list, ok := old.([]interface{})
+	if !ok || len(list) == 0 || list[0] == nil {
+		return
+	}
+
+	for fieldName, value := range list[0].(map[string]interface{}) {
+		fieldSchema, ok := block.Schema[fieldName]
+		// Skip read-only properties.
+		if !ok || (fieldSchema.Computed && !fieldSchema.Optional) {
+			continue
+		}
+
+		switch value := value.(type) {
+		case string:
+			ok = value != ""
+		case int:
+			ok = value != 0
+		case float64:
+			ok = value != 0
+		case bool:
+			ok = value
+		case *schema.Set:
+			ok = value.Len() > 0
+		default:
+			ok = false
+		}
+		if !ok {
+			continue
+		}
+
+		item["!"+SnakeToKebab(mikrotikKebabName+"."+fieldName)] = ""
+	}
 }
 
 // MikrotikResourceDataToTerraform Unmarshal Mikrotik resource (incoming data: JSON, etc.) to TF resource schema.
@@ -627,6 +679,21 @@ func MikrotikResourceDataToTerraform(item MikrotikItem, s map[string]*schema.Sch
 
 	// Lists processing.
 	for name, list := range nestedLists {
+		// A non-Computed block is read only when the resource data already carries it. RouterOS
+		// reports a nested block's properties whether or not anything set them, and at defaults
+		// that are not Go zero values (a BGP template's input.affinity=0, input.ignore-as-path-len=true;
+		// a connection's input.allow-as=0 after the block was unset on 7.24). Rebuilding the block
+		// from those would plan its removal again on every run for a configuration that leaves it
+		// out. A block the configuration declares is in the resource data and still round-trips,
+		// with any value changed on the router showing as drift. What this gives up: while a block
+		// is not in the state, settings made in it outside Terraform do not show as drift, and an
+		// import does not populate it. This mirrors how a Computed block the configuration does
+		// not declare is treated on the way out.
+		if !s[name].Computed {
+			if existing, _ := d.Get(name).([]interface{}); len(existing) == 0 {
+				continue
+			}
+		}
 		if err = d.Set(name, []interface{}{list}); err != nil {
 			diags = append(diags, diag.FromErr(err)...)
 		}
