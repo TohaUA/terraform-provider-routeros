@@ -1,3 +1,9 @@
+## [1.101.7](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.6...v1.101.7) (2026-09-10)
+
+### Bug Fixes
+
+* **log:** keep sensitive values out of request and response debug logs ([#35](https://github.com/TohaUA/terraform-provider-routeros/issues/35)) ([d9800b5](https://github.com/TohaUA/terraform-provider-routeros/commit/d9800b54c822e4bd73d82b1359ea693a1e17b58d))
+
 ## [1.101.6](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.5...v1.101.6) (2026-09-10)
 
 ### Bug Fixes
