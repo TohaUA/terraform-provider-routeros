@@ -1,3 +1,9 @@
+## [1.101.4](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.3...v1.101.4) (2026-09-10)
+
+### Bug Fixes
+
+* **serialize:** never send an unchanged sensitive value the configuration does not declare ([#29](https://github.com/TohaUA/terraform-provider-routeros/issues/29)) ([5430d4e](https://github.com/TohaUA/terraform-provider-routeros/commit/5430d4efd098bc77cc57baba3e5e3cf2faf52490)), closes [#21](https://github.com/TohaUA/terraform-provider-routeros/issues/21) [#21](https://github.com/TohaUA/terraform-provider-routeros/issues/21)
+
 ## [1.101.3](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.2...v1.101.3) (2026-09-10)
 
 ### Bug Fixes
