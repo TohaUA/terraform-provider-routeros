@@ -19,13 +19,18 @@ import (
 // and the account named here lives on the source router, not on this one.
 //
 // The password is the field the resource lives or dies by: an entry without one cannot authenticate to
-// the source router, so it has to reach the device. It is also the field most likely to churn a plan.
-// RouterOS hides stored secrets from an account that does not carry the
-// `sensitive` policy, so a provider account without it reads the entry back with a mask in place of the
-// password, and the mask lands in the state. The diff that follows is left in place on purpose: a
-// suppression wide enough to swallow the mask would swallow a genuine password rotation as well, and a
-// rotation that silently never reaches the device is the worse of the two failures. Give the provider
-// account the `sensitive` policy for a quiet plan, or accept a credential rewritten on every apply.
+// the source router, so it has to reach the device. RouterOS hides stored secrets from an account that
+// does not carry the `sensitive` policy, so a provider account without it reads the entry back with a mask
+// in place of the password, and the mask lands in the state. A declared password is then compared against
+// the mask on every plan, and each apply writes the real password again. That churn is left in place on
+// purpose: a suppression wide enough to swallow the mask would swallow a genuine rotation as well, and a
+// rotation that silently never reaches the device is the worse failure. Give the provider account the
+// `sensitive` policy for a quiet plan.
+//
+// An entry whose configuration declares no password, such as an imported one, is handled differently.
+// Its diff is suppressed so the plan does not offer to write a password nobody set, and the serializer
+// never writes back a sensitive value that configuration does not declare, so changing the entry's user
+// or address leaves the credential on the source router as it was.
 //
 // https://help.mikrotik.com/docs/display/ROS/Upgrading+and+installation
 func ResourceSystemPackageLocalUpdateSource() *schema.Resource {
@@ -44,17 +49,10 @@ func ResourceSystemPackageLocalUpdateSource() *schema.Resource {
 			Optional:    true,
 			Sensitive:   true,
 			Description: "Password of the account the client authenticates to the package source with.",
-			// Only for the entry nobody declared a password for: the plan stays quiet on an imported or
-			// device-made source rather than offering to rewrite a password no configuration ever set. A
-			// declared password still diffs. The quiet is the plan's alone. Once something else on the
-			// entry changes, the serializer sends every non-empty state value, so a mask that a provider
-			// account without the `sensitive` policy read back is what lands on the device in place of
-			// the credential. Only two other passwords in this provider suppress their own diff this way,
-			// interface_lte_apn and interface_w60g, and both are silent about it, so know it before
-			// importing an entry and editing its user rather than reading it off a neighbour.
-			// The suppression stays anyway, because both alternatives are worse: without it an imported
-			// entry diffs forever and the apply sends an empty password, which wipes the credential
-			// instead of masking it, and skipping the field keeps it out of the request as well.
+			// Keeps an entry with no declared password out of the plan. Nothing is written for it either:
+			// the serializer never sends an unchanged sensitive value that configuration does not declare,
+			// so a mask read back into state cannot replace the credential. A declared password still diffs
+			// and is still sent, which is what lets a rotation reach the device.
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"user": {
