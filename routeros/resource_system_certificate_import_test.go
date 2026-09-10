@@ -46,6 +46,12 @@ func TestAccSystemCertificatesTest_import(t *testing.T) {
 							resource.TestCheckResourceAttr("routeros_system_certificate.external", "name", "external.crt"),
 							resource.TestCheckResourceAttr("routeros_system_certificate.external", "common_name", "External Certificate"),
 							resource.TestCheckResourceAttr("routeros_system_certificate.external", "private_key", "true"),
+							// The import command cannot carry trust-store, so it has to be set
+							// after the import in the same apply. ExpectNonEmptyPlan above would
+							// hide a trust_store diff in the plan, so the state and the device
+							// are what must show the configured value on this first step.
+							resource.TestCheckResourceAttr("routeros_system_certificate.external", "trust_store", "www"),
+							testCheckMikrotikItemAttr("routeros_system_certificate.external", &externalCrt, "trust-store", "www"),
 						),
 					},
 				},
@@ -94,6 +100,8 @@ resource "routeros_file" "cert" {
 resource "routeros_system_certificate" "external" {
 	name        = "external.crt"
 	common_name = data.routeros_x509.cert.common_name
+	# Not the device default (all), so a certificate that kept the default fails the checks.
+	trust_store = "www"
 	import {
 		cert_file_name  = routeros_file.cert.name
 		key_file_name   = routeros_file.key.name

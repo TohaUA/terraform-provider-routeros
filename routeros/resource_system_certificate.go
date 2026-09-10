@@ -498,6 +498,16 @@ func ResourceSystemCertificate() *schema.Resource {
 			return diag.Errorf("more than one resource found: name=%v", certName)
 		}
 
+		// The import command only carries the file and its passphrase, so the certificate
+		// lands with the device defaults: trust-store=all offers it to every service.
+		// Apply the settings the configuration declares before reading it back, otherwise
+		// they are only converged by a second apply.
+		if item := certImportSettings(resSchema, d); len(item) > 0 {
+			if _, err := UpdateItem(&ItemId{Id, d.Id()}, resSchema[MetaResourcePath].Default.(string), item, m.(Client)); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
 		return ResourceRead(ctx, resSchema, d, m)
 	}
 
@@ -610,4 +620,23 @@ func ResourceSystemCertificate() *schema.Resource {
 
 		Schema: resSchema,
 	}
+}
+
+// certImportSettings builds the request that applies the top-level settings to a certificate
+// right after it has been imported. Only the fields an in-place update can change (Optional and
+// not ForceNew: trust_store, trusted) are candidates. The ForceNew template fields such as
+// common_name describe the certificate the file brought in and cannot be set on it, and name is
+// already sent with the import. The serializer drops every candidate the configuration does not
+// declare, so an import that declares none of them yields an empty item and nothing is sent.
+func certImportSettings(s map[string]*schema.Schema, d *schema.ResourceData) MikrotikItem {
+	settable := make(map[string]*schema.Schema)
+	for name, field := range s {
+		// The metadata fields carry the resource path and id type the serializer needs.
+		if reMetadataFields.MatchString(name) || (field.Optional && !field.ForceNew) {
+			settable[name] = field
+		}
+	}
+
+	item, _ := TerraformResourceDataToMikrotik(settable, d)
+	return item
 }
