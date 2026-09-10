@@ -2,6 +2,7 @@ package routeros
 
 import (
 	"context"
+	"maps"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -32,10 +33,8 @@ func ResourceWifiAccessList() *schema.Resource {
 	resSchema := map[string]*schema.Schema{
 		MetaResourcePath: PropResourcePath("/interface/wifi/access-list"),
 		MetaId:           PropId(Id),
-		// The update handler below sets this field's Default to skip
-		// `place_before`; without the key in the schema that write is a nil
-		// dereference, and every update of an access-list entry crashed the
-		// plugin.
+		// Empty here on purpose. The update handler below skips `place_before`
+		// on its own copy of this map; see the comment there.
 		MetaSkipFields: PropSkipFields(),
 
 		"action": {
@@ -122,12 +121,15 @@ func ResourceWifiAccessList() *schema.Resource {
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),
 		UpdateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-			resSchema[MetaSkipFields].Default = `"place_before"`
-			defer func() {
-				resSchema[MetaSkipFields].Default = ``
-			}()
+			// place_before only positions a new entry, so an update must not
+			// send it. Skip it on a copy of the schema made for this call:
+			// resSchema is shared by every invocation and Terraform applies
+			// resources in parallel, so writing its skip list here made a
+			// concurrent create drop place-before and land at the end of the list.
+			s := maps.Clone(resSchema)
+			s[MetaSkipFields] = PropSkipFields(KeyPlaceBefore)
 
-			return ResourceUpdate(ctx, resSchema, d, m)
+			return ResourceUpdate(ctx, s, d, m)
 		},
 		DeleteContext: DefaultDelete(resSchema),
 
