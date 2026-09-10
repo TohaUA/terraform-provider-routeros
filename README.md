@@ -30,12 +30,13 @@ the fork's. When comparing, always say "fork v1.100.0" or "upstream v1.100.0" ex
 ### Installing the fork
 
 The fork is **not published on registry.terraform.io** — `TohaUA/routeros` returns 404 there today.
-Until it is, install it as a local build and keep `source = "terraform-routeros/routeros"` in your
-`required_providers`. Nothing in your state, your `.terraform.lock.hcl` or your `-debug` workflow
-has to change, because `main.go` deliberately keeps `ProviderAddr = "terraform-routeros/routeros"`.
+Until it is, install it locally and keep `source = "terraform-routeros/routeros"` in your
+`required_providers`. Your state and your `-debug` workflow do not have to change, because `main.go`
+deliberately keeps `ProviderAddr = "terraform-routeros/routeros"`; whether `.terraform.lock.hcl`
+has to change depends on which of the two options below you use.
 
 Either point Terraform at a working copy with `dev_overrides` (no lock file entry is used, and
-`terraform init` is skipped for this provider):
+`terraform init` is skipped for this provider, so nothing in `.terraform.lock.hcl` has to change):
 
 ```hcl
 # ~/.terraformrc
@@ -51,8 +52,9 @@ provider_installation {
 go build -o terraform-provider-routeros .
 ```
 
-…or unpack a release archive into a `filesystem_mirror` in the packed layout, which does go through
-the lock file and works in CI and air-gapped environments:
+…or copy the release zips, unchanged and still zipped, into a `filesystem_mirror` in the packed
+layout, which does go through the lock file and works in CI and air-gapped environments. Put one zip
+in place for every platform you run Terraform on:
 
 ```
 <mirror>/registry.terraform.io/terraform-routeros/routeros/terraform-provider-routeros_<version>_<os>_<arch>.zip
@@ -69,6 +71,25 @@ provider_installation {
     exclude = ["registry.terraform.io/terraform-routeros/routeros"]
   }
 }
+```
+
+The fork's versions (`1.100.0` and up) are not upstream's, so a lock file that still records an
+upstream version such as `1.99.1` cannot be satisfied from the mirror: a plain `terraform init` fails
+with "the previously-selected version 1.99.1 is no longer available". Move the lock file to the
+fork with `-upgrade` (a `version` constraint in `required_providers`, if you have one, must allow
+the fork's version):
+
+```bash
+terraform init -upgrade
+```
+
+That records the checksum for the platform `init` runs on only. If the same lock file is used on
+other platforms (CI, colleagues), add them from the mirror, listing every platform including your
+own, and commit the result:
+
+```bash
+terraform providers lock -fs-mirror=/path/to/mirror -platform=linux_amd64 -platform=darwin_arm64
+git add .terraform.lock.hcl
 ```
 
 ### If the fork is ever published as `TohaUA/routeros`
@@ -119,9 +140,13 @@ gpg --verify terraform-provider-routeros_<version>_SHA256SUMS.sig \
 sha256sum -c --ignore-missing terraform-provider-routeros_<version>_SHA256SUMS
 ```
 
-The fingerprint of that key, and the ASCII-armored public key itself, will be committed here once
-the first signed release has been cut; until then treat downloads as unverified and prefer building
-from a pinned commit.
+The releases so far, `v1.100.0` and `v1.101.0`, are signed with the RSA key whose fingerprint is
+`BEB0718C309F7444D6763A07500B12768CF5188A`. The signature itself carries that fingerprint, so
+`gpg --list-packets terraform-provider-routeros_<version>_SHA256SUMS.sig` shows it (as
+`issuer fpr v4`) without needing the key. The public key is not yet published with this repository,
+so there is nothing here for the `gpg --import` step to import. Until it is, `sha256sum -c` only
+shows that a download matches the release's `SHA256SUMS`, not who produced it; where that matters,
+prefer building from a pinned commit.
 
 ### Compatibility
 
