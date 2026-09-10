@@ -68,6 +68,11 @@ func (do *driftObjects) index(version uint64) int {
 // Obtaining a map to match TF attributes and MT parameters for further transformation.
 // Direct output (for TF to MT serialization) and reverse output (MT to TF) are provided.
 func (do *driftObjects) GetDriftMap(ros, resName string, reverse bool) (res map[string]string) {
+	// An empty version is as fatal as a malformed one. The provider sets it before
+	// any resource is serialized, and a moment without it (another provider
+	// configuration in the same process re-detecting its version) must not quietly
+	// fall back to no renames: that sends attribute names the router does not use,
+	// such as address instead of available-from on 7.24.
 	version, err := parseRouterOSVersion(ros)
 	if err != nil {
 		log.Fatal(err)

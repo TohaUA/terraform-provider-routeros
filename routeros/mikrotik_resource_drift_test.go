@@ -1,6 +1,9 @@
 package routeros
 
 import (
+	"errors"
+	"os"
+	"os/exec"
 	"reflect"
 	"testing"
 
@@ -143,5 +146,26 @@ func TestParseRouterOSVersionExtraParts(t *testing.T) {
 		if got != tt.want {
 			t.Errorf("parseRouterOSVersion(%q) = %d, want %d", tt.version, got, tt.want)
 		}
+	}
+}
+
+// An empty RouterOS version stops the process, exactly like a malformed one. The
+// provider sets the version before any resource is serialized, so an empty one means
+// something ran out of order, and carrying on without the renames would silently send
+// attribute names the router does not use. log.Fatal exits the process, so the call
+// runs in a child test binary.
+func TestGetDriftMapWithoutAVersionIsFatal(t *testing.T) {
+	if os.Getenv("ROUTEROS_DRIFT_FATAL_CHILD") == "1" {
+		driftAttributeSlice.GetDriftMap("", "/ip/service", false)
+		return
+	}
+
+	cmd := exec.Command(os.Args[0], "-test.run=^TestGetDriftMapWithoutAVersionIsFatal$")
+	cmd.Env = append(os.Environ(), "ROUTEROS_DRIFT_FATAL_CHILD=1")
+	out, err := cmd.CombinedOutput()
+
+	var exitErr *exec.ExitError
+	if !errors.As(err, &exitErr) {
+		t.Fatalf("GetDriftMap with an empty version returned instead of stopping the process (err: %v, output: %s)", err, out)
 	}
 }

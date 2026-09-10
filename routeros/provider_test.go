@@ -135,6 +135,13 @@ func testSetTransportEnv(t *testing.T, testName string) {
 }
 
 func testAccPreCheck(t *testing.T) {
+	// resource.Test only runs a PreCheck under TF_ACC. A test that calls this
+	// directly, such as TestClientTransport_SendRequest, needs the same rule, or a
+	// plain `go test` fails it for lacking a router it was never meant to reach.
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("acceptance test: set TF_ACC, ROS_HOSTURL and ROS_USERNAME to run it")
+	}
+
 	if os.Getenv("ROS_HOSTURL") == "" ||
 		os.Getenv("ROS_USERNAME") == "" {
 		t.Fatal("Environment variables (ROS_HOSTURL & ROS_USERNAME) must be set for testing")
