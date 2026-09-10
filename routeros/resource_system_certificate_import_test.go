@@ -29,6 +29,15 @@ func TestAccSystemCertificatesTest_import(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						Config: testAccSystemCertificatesImportConfig(),
+						// Importing a certificate consumes the .crt and .key it was
+						// read from -- RouterOS removes them once absorbed, which is
+						// the point of importing rather than storing a private key in
+						// the file list. The routeros_file resources that carried them
+						// are therefore gone by the time the plan runs, and it offers
+						// to put them back. That is the device behaving correctly, not
+						// drift, so the plan is expected to be non-empty. The checks
+						// below still assert the certificate itself landed.
+						ExpectNonEmptyPlan: true,
 						Check: resource.ComposeTestCheckFunc(
 							testResourcePrimaryInstanceId(testSystemCertificatesImportAddress),
 							// external_crt

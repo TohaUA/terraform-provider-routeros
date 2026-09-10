@@ -32,7 +32,7 @@ func TestAccBgpEvpnTest_basic(t *testing.T) {
 						Check: resource.ComposeTestCheckFunc(
 							testResourcePrimaryInstanceId(testBgpEvpn),
 							resource.TestCheckResourceAttr(testBgpEvpn, "name", "bgp-evpn-1"),
-							resource.TestCheckResourceAttr(testBgpEvpn, "instance", "bgp-instance-1"),
+							resource.TestCheckResourceAttr(testBgpEvpn, "instance", "bgp-instance-evpn"),
 							resource.TestCheckResourceAttr(testBgpEvpn, "vni", "1010"),
 						),
 					},
@@ -47,7 +47,7 @@ func testAccBgpEvpnConfig() string {
 	return fmt.Sprintf(`%v
 resource "routeros_routing_bgp_instance" "test" {
   as   = "65000"
-  name = "bgp-instance-1"
+  name = "bgp-instance-evpn"
 }
 
 resource "routeros_routing_bgp_evpn" "test" {

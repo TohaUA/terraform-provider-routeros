@@ -40,11 +40,16 @@ func TestAccBGPConnectionTest_basic(t *testing.T) {
 
 func testAccBGPConnectionConfig() string {
 	return providerConfig + `
+resource "routeros_routing_bgp_instance" "test" {
+	as   = "65550"
+	name = "bgp-instance-conn"
+}
+
 resource "routeros_routing_bgp_connection" "test" {
+	instance                = resource.routeros_routing_bgp_instance.test.name
 	address_families        = "ip"
-	as                      = "65550/5"
+	as                      = "65550"
 	cisco_vpls_nlri_len_fmt = "auto-bits"
-	cluster_id              = "0.0.0.0"
 	connect                 = true
 	hold_time               = "infinity"
 	input {
@@ -52,11 +57,9 @@ resource "routeros_routing_bgp_connection" "test" {
 		accept_ext_communities    = "222"
 		accept_large_communities  = "444"
 		accept_nlri               = ""
-		accept_unknown            = ""
 		affinity                  = "alone"
 		allow_as                  = "0"
 		filter                    = ""
-		ignore_as_path_len        = true
 		limit_process_routes_ipv4 = 5
 		limit_process_routes_ipv6 = 2
 	}
@@ -88,11 +91,10 @@ resource "routeros_routing_bgp_connection" "test" {
 	remote {
 		address    = "172.17.0.1"
 		allowed_as = "1111"
-		as         = "12345/5"
+		as         = "12345"
 		port       = "11223"
 		ttl        = "5"
 	}
-	router_id     = "0.0.0.1"
 	routing_table = "main"
 	save_to       = "bgp.dump"
 	tcp_md5_key   = "poipoipoipoipoi"

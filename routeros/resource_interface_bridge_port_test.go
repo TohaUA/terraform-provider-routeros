@@ -40,7 +40,10 @@ resource "routeros_interface_bridge_port" "test_port" {
 	interface = "ether1"
 	pvid 	  = 200
 	disabled  = true
-	priority  = "80"
+	# Hex: RouterOS reports this field as 0x80 and 7.24 rejects the plain decimal
+	# form with "input does not match any value of priority". The provider's own
+	# validator parses with base 0, so both notations were always accepted here.
+	priority  = "0x80"
   }
 
 `

@@ -1,5 +1,26 @@
 name: Go Client Tests
+
+# Every run boots a RouterOS VM under qemu for about fifteen minutes, so a
+# superseded run is expensive to leave going.
+#
+# The group is the branch name rather than github.ref on purpose: a
+# pull_request run sees refs/pull/N/merge while a workflow_dispatch run of the
+# same branch sees refs/heads/<branch>, so grouping on github.ref puts them in
+# different buckets and both run to completion on the same commit.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
 on:
+  # Manual runs can narrow the suite. A full pass is ~15 minutes, most of it
+  # tests unrelated to whatever is being fixed, which makes a fix-and-check
+  # cycle far more expensive than it needs to be.
+  workflow_dispatch:
+    inputs:
+      run:
+        description: 'Regex passed to go test -run (empty runs everything)'
+        required: false
+        default: ''
   pull_request:
     branches:
       - 'main'
@@ -8,33 +29,51 @@ on:
       - 'main.go'
       - 'routeros/*.go'
       - '.github/workflows/*.yml'
+      # The container the tests run against is built from the repository now,
+      # so changes to it have to re-run the tests.
+      - '.github/docker-routeros/**'
+      - '.github/scripts/*.go'
 jobs:
   build:
     name: Build
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
-    strategy:
-      matrix:
-        experimental: [false]
-        os: [ubuntu-latest]
-        routeros_version:
-          - "7.12"
-          - "7.15"
-          - "7.16"
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Container check
-        run: |
-          echo "Wait for the container to finish launching..."
-          while true; do
-            docker logs ${{ job.services.routeros.id }} 2>&1 | grep MikroTik && break
-            # docker logs ${{ job.services.routeros.id }} 2>&1
-            echo "waiting..."
-            sleep 10
-          done
-
       - name: Check out code into the Go module directory
         uses: actions/checkout@v6
+
+      # Single source of truth for the version under test: the Dockerfile builds
+      # that CHR image and the tests read ROS_VERSION to decide which
+      # version-gated cases apply. Deriving one from the other means they cannot
+      # drift into silently skipping tests or asserting the wrong behaviour.
+      - name: Read the RouterOS version from the Dockerfile
+        id: ros
+        run: |
+          version=$(grep -oP '^ENV ROUTEROS_VERSION="\K[^"]+' .github/docker-routeros/Dockerfile)
+          if [ -z "$version" ]; then
+            echo "Could not read ROUTEROS_VERSION from .github/docker-routeros/Dockerfile"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Testing against RouterOS $version"
+
+      - name: Build the RouterOS container
+        run: docker build -t routeros-test .github/docker-routeros
+
+      # Started before the Go setup so the guest boots while the toolchain and
+      # modules are being prepared; the wait below is what actually gates the tests.
+      - name: Start RouterOS
+        run: |
+          docker run -d --name routeros \
+            --cap-add=NET_ADMIN \
+            --device /dev/net/tun \
+            --device /dev/kvm \
+            -e ROUTEROS_MEMORY=2048 \
+            -p 443:443 \
+            -p 8728:8728 \
+            -p 8729:8729 \
+            --entrypoint /routeros/entrypoint_with_four_interfaces.sh \
+            routeros-test
 
       - name: Cache restore
         uses: actions/cache/restore@v5
@@ -52,44 +91,83 @@ jobs:
           go-version-file: go.mod
           check-latest: true
         id: go
-  
+
       - name: Get dependencies
-        run: | 
+        run: |
           go mod download
 
       - name: Build
         run: go build -v .
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Container check
+        run: |
+          echo "Wait for the container to finish launching..."
+          deadline=$((SECONDS + 600))
+          while true; do
+            if docker logs routeros 2>&1 | grep -q MikroTik; then
+              echo "RouterOS is up."
+              break
+            fi
+            if ! docker inspect -f '{{.State.Running}}' routeros 2>/dev/null | grep -q true; then
+              echo "The container exited before RouterOS finished booting:"
+              docker logs routeros 2>&1 | tail -50
+              exit 1
+            fi
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "RouterOS did not boot within 10 minutes:"
+              docker logs routeros 2>&1 | tail -50
+              exit 1
+            fi
+            echo "waiting..."
+            sleep 10
+          done
+
+      # The banner in the container log is the login prompt, which RouterOS
+      # prints before the API service accepts logins -- connections to 8728 are
+      # accepted and then reset while the guest finishes booting. The setup
+      # script already retries for about 90 seconds; retrying the script itself
+      # covers a guest that needs longer than that under software emulation.
       - name: Preparing RouterOS for testing
         run: |
-          go run .github/scripts/setup_routeros.go
+          for attempt in 1 2 3 4 5; do
+            if go run .github/scripts/setup_routeros.go; then
+              echo "RouterOS accepted the API login on attempt $attempt"
+              exit 0
+            fi
+            echo "attempt $attempt did not get through; the guest may still be booting"
+            sleep 20
+          done
+          echo "RouterOS never accepted an API login:"
+          docker logs routeros 2>&1 | tail -60
+          exit 1
         env:
           ROS_USERNAME: admin
           ROS_PASSWORD: ''
           ROS_IP_ADDRESS: 127.0.0.1
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v4
-
+      # TEST_RUN comes through the environment rather than being interpolated
+      # into the script: it is user-supplied text, and expanding it inline is
+      # how a workflow input becomes shell.
       - name: Run client tests
-        run: go test -timeout 30m -v ./routeros
+        run: |
+          if [ -n "$TEST_RUN" ]; then
+            echo "Narrowed to: $TEST_RUN"
+            go test -timeout 30m -v -run "$TEST_RUN" ./routeros
+          else
+            go test -timeout 30m -v ./routeros
+          fi
         env:
           ROS_HOSTURL: https://127.0.0.1
           ROS_USERNAME: admin
           ROS_PASSWORD: ''
           ROS_INSECURE: true
           TF_ACC: 1
-          ROS_VERSION: ${{ matrix.routeros_version }}
+          ROS_VERSION: ${{ steps.ros.outputs.version }}
+          TEST_RUN: ${{ github.event.inputs.run }}
 
-    services:
-      routeros:
-        image: vaerhme/routeros:v${{ matrix.routeros_version }}
-        ports:
-          - 443:443
-          - 8728:8728
-          - 8729:8729
-        options: >-
-          --cap-add=NET_ADMIN
-          --entrypoint /routeros/entrypoint_with_four_interfaces.sh
-          --device /dev/net/tun
-          --device /dev/kvm
+      - name: RouterOS logs
+        if: failure()
+        run: docker logs routeros 2>&1 | tail -200

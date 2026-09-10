@@ -836,6 +836,56 @@ var (
 		return strings.EqualFold(old, new)
 	}
 
+	// BoolishStringEqual compares string fields whose value RouterOS spells in
+	// more than one way. Some menus accept "true"/"false" but read back
+	// "yes"/"no" -- 7.24 does this for /ip/cloud ddns-enabled -- which is a
+	// permanent diff for anyone who wrote the other spelling.
+	BoolishStringEqual = func(k, old, new string, d *schema.ResourceData) bool {
+		normalize := func(s string) string {
+			switch strings.ToLower(strings.TrimSpace(s)) {
+			case "yes", "true":
+				return "true"
+			case "no", "false":
+				return "false"
+			default:
+				return s
+			}
+		}
+
+		return normalize(old) == normalize(new)
+	}
+
+	// ClockTimeEqual suppresses the diff on a wall-clock field. The device's
+	// clock advances between the write and the next read, so comparing the two
+	// for equality reports a change on every plan for as long as the resource
+	// exists -- the value read back is never the value written. Setting a clock
+	// is a one-shot action rather than convergent state, so any two readable
+	// times are treated as equal.
+	ClockTimeEqual = func(k, old, new string, d *schema.ResourceData) bool {
+		if AlwaysPresentNotUserProvided(k, old, new, d) {
+			return true
+		}
+
+		readable := func(s string) bool {
+			_, err := time.Parse("15:04:05", strings.TrimSpace(s))
+			return err == nil
+		}
+
+		return readable(old) && readable(new)
+	}
+
+	// TextBlockEqual compares multi-line text that RouterOS rewrites on the way
+	// back out. Script sources are stored with CRLF line endings and a trailing
+	// newline regardless of what was sent, so a byte comparison against the
+	// configuration never matches.
+	TextBlockEqual = func(k, old, new string, d *schema.ResourceData) bool {
+		normalize := func(s string) string {
+			return strings.TrimRight(strings.ReplaceAll(s, "\r\n", "\n"), "\n\r\t ")
+		}
+
+		return normalize(old) == normalize(new)
+	}
+
 	BitsEqual = func(k, old, new string, d *schema.ResourceData) bool {
 		if old == "" {
 			return false
