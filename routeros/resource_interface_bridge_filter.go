@@ -364,13 +364,12 @@ func ResourceInterfaceBridgeFilter() *schema.Resource {
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),
 		UpdateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-			skip := resSchema[MetaSkipFields].Default.(string)
-			resSchema[MetaSkipFields].Default = skip + `,"place_before"`
-			defer func() {
-				resSchema[MetaSkipFields].Default = skip
-			}()
-
-			return ResourceUpdate(ctx, resSchema, d, m)
+			// place_before only positions a new rule, so an update must not
+			// send it. Add it to the skip list of a copy made for this call:
+			// resSchema is shared by every invocation, and writing its Default
+			// here raced with concurrent creates, and two overlapping updates
+			// could leave place_before in the shared list for the rest of the run.
+			return ResourceUpdate(ctx, schemaWithSkipFields(resSchema, KeyPlaceBefore), d, m)
 		},
 		DeleteContext: DefaultDelete(resSchema),
 		Importer: &schema.ResourceImporter{

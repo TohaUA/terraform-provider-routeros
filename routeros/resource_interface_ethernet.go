@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -375,12 +376,22 @@ func updateEthernetInterface(ctx context.Context, s map[string]*schema.Schema, d
 func updateSchemaWithRouterCapabilities(s map[string]*schema.Schema, item MikrotikItem) map[string]*schema.Schema {
 	// Dynamic schema, counters for tx_queue${number}_packets, changes from router to router, read only counters.
 	// Just drop them as they don't have much sense in the context of a terraform provider
+	var skip []string
 	for key := range item {
 		if strings.HasPrefix(key, "tx-queue") {
-			s[MetaSkipFields].Default = skipFieldInSchema(s[MetaSkipFields].Default, KebabToSnake(key))
+			skip = append(skip, KebabToSnake(key))
 		}
 	}
-	return s
+	if len(skip) == 0 {
+		return s
+	}
+	slices.Sort(skip)
+
+	// Skip them on a copy made for this read. s is the resource's shared schema:
+	// appending to its Default here, as this used to, raced with every other
+	// ethernet interface being created, updated or read at the same time, and
+	// grew the shared list by the same names on every read, for good.
+	return schemaWithSkipFields(s, skip...)
 }
 
 func findInterfaceByDefaultName(s map[string]*schema.Schema, d *schema.ResourceData, c Client) (MikrotikItem, error) {
@@ -397,8 +408,4 @@ func findInterfaceByDefaultName(s map[string]*schema.Schema, d *schema.ResourceD
 
 	ethernetInterface := (*items)[0]
 	return ethernetInterface, nil
-}
-
-func skipFieldInSchema(defaults interface{}, field string) string {
-	return fmt.Sprintf("%s,\"%s\"", defaults, field)
 }
