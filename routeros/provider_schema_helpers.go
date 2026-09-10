@@ -2,6 +2,7 @@ package routeros
 
 import (
 	"fmt"
+	"maps"
 	"regexp"
 	"slices"
 	"strconv"
@@ -140,6 +141,37 @@ func PropSkipFields(s ...string) *schema.Schema {
 			return true
 		},
 	}
+}
+
+// schemaWithSkipFields returns a copy of s whose MetaSkipFields list also names
+// fields, for a handler that has to skip them on one call only. The declared
+// list is kept verbatim and the new names are appended in the same quoted,
+// comma-separated form, so loadSkipFields reads back exactly the union.
+//
+// s is a resource's schema map, shared by every invocation of the resource, and
+// Terraform runs those concurrently. A handler that writes
+// s[MetaSkipFields].Default races with every other call reading it, so it has
+// to build a copy with this instead.
+func schemaWithSkipFields(s map[string]*schema.Schema, fields ...string) map[string]*schema.Schema {
+	skip := PropSkipFields()
+	if declared, ok := s[MetaSkipFields]; ok {
+		// The *schema.Schema in s is shared as well, so copy the entry itself.
+		entry := *declared
+		skip = &entry
+	}
+
+	list, _ := skip.Default.(string)
+	switch added := toQuotedCommaSeparatedString(fields...); {
+	case list == "":
+		list = added
+	case added != "":
+		list += "," + added
+	}
+	skip.Default = list
+
+	c := maps.Clone(s)
+	c[MetaSkipFields] = skip
+	return c
 }
 
 // PropSetUnsetFields
