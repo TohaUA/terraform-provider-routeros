@@ -679,6 +679,17 @@ func MikrotikResourceDataToTerraform(item MikrotikItem, s map[string]*schema.Sch
 
 	// Lists processing.
 	for name, list := range nestedLists {
+		// RouterOS keeps reporting some properties of a nested block at their defaults after they
+		// were unset (a BGP connection's input.allow-as=0 on 7.24), so a block the configuration
+		// removed would be read back as a block of zero values and planned for removal again. A
+		// non-Computed block holding only zero values is therefore left out, unless the resource
+		// data already carries the block: one the configuration declares, even at its defaults,
+		// still round-trips, and a non-default value is still read and shows up as drift.
+		if !s[name].Computed && blockHoldsZeroValues(list) {
+			if existing, _ := d.Get(name).([]interface{}); len(existing) == 0 {
+				continue
+			}
+		}
 		if err = d.Set(name, []interface{}{list}); err != nil {
 			diags = append(diags, diag.FromErr(err)...)
 		}
@@ -691,6 +702,40 @@ func MikrotikResourceDataToTerraform(item MikrotikItem, s map[string]*schema.Sch
 	}
 
 	return diags
+}
+
+// blockHoldsZeroValues reports whether every property read for a nested block holds the zero
+// value of its type: "", 0, false, or a list of such values.
+func blockHoldsZeroValues(block map[string]interface{}) bool {
+	for _, v := range block {
+		if !isZeroValue(v) {
+			return false
+		}
+	}
+	return true
+}
+
+func isZeroValue(v interface{}) bool {
+	switch v := v.(type) {
+	case nil:
+		return true
+	case string:
+		return v == ""
+	case int:
+		return v == 0
+	case float64:
+		return v == 0
+	case bool:
+		return !v
+	case []interface{}:
+		for _, e := range v {
+			if !isZeroValue(e) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
 
 func MikrotikResourceDataToTerraformDatasource(items *[]MikrotikItem, resourceDataKeyName string, s map[string]*schema.Schema, d *schema.ResourceData) diag.Diagnostics {
