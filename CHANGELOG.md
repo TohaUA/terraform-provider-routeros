@@ -1,3 +1,9 @@
+## [1.101.9](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.8...v1.101.9) (2026-09-10)
+
+### Bug Fixes
+
+* **serialize:** unset the properties of a removed nested block ([#33](https://github.com/TohaUA/terraform-provider-routeros/issues/33)) ([07bf99b](https://github.com/TohaUA/terraform-provider-routeros/commit/07bf99beec143b51a9c0aa79dc829b5cf5ef681a)), closes [#9](https://github.com/TohaUA/terraform-provider-routeros/issues/9)
+
 ## [1.101.8](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.7...v1.101.8) (2026-09-10)
 
 ### Bug Fixes
