@@ -368,7 +368,9 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 // every property of a block, so a zero value cannot be told apart from one that was never set, and a
 // property the router reported or accepted is known to exist on this RouterOS version, whereas a blanket
 // unset would also name properties that other versions do not have and fail the whole `set`.
-// Required properties cannot be unset and are left alone.
+// Required properties are unset too: Required only binds while the block is declared, and leaving one
+// behind keeps a partial block on the router, which the next Read reports back as a block to remove
+// again (a BGP connection's `local.role`). Read-only properties are never sent.
 func unsetRemovedBlock(item MikrotikItem, mikrotikKebabName, terraformSnakeName string, block *schema.Resource, d *schema.ResourceData) {
 	old, _ := d.GetChange(terraformSnakeName)
 	list, ok := old.([]interface{})
@@ -378,8 +380,8 @@ func unsetRemovedBlock(item MikrotikItem, mikrotikKebabName, terraformSnakeName 
 
 	for fieldName, value := range list[0].(map[string]interface{}) {
 		fieldSchema, ok := block.Schema[fieldName]
-		// Skip Required and read-only properties.
-		if !ok || fieldSchema.Required || (fieldSchema.Computed && !fieldSchema.Optional) {
+		// Skip read-only properties.
+		if !ok || (fieldSchema.Computed && !fieldSchema.Optional) {
 			continue
 		}
 

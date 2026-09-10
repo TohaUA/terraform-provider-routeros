@@ -147,7 +147,8 @@ func Test_terraformResourceDataToMikrotik_ComputedBlockDeclaredInConfig(t *testi
 // The configuration drops a previously declared `input` block (Optional, not Computed). RouterOS
 // keeps every property a `set` leaves out, so the properties the state carried must be unset,
 // while the Computed `output` block present in the same state stays untouched. On the connection
-// the `local` block is dropped too: its Optional properties are unset, the Required `role` is not.
+// the `local` block is dropped too: every property it carried is unset, the Required `role` included,
+// since Required binds only while the block is declared and a leftover role would bring the block back.
 func Test_terraformResourceDataToMikrotik_RemovedBlockIsUnset(t *testing.T) {
 	blockTestSetVersion(t, "7.24")
 
@@ -195,7 +196,7 @@ func Test_terraformResourceDataToMikrotik_RemovedBlockIsUnset(t *testing.T) {
 
 			want := []string{"!input.filter", "!input.affinity", "!input.allow-as", "!input.ignore-as-path-len"}
 			if tc.hasLocal {
-				want = append(want, "!local.address")
+				want = append(want, "!local.address", "!local.role")
 			}
 			for _, key := range want {
 				if got, ok := item[key]; !ok || got != "" {
@@ -206,8 +207,6 @@ func Test_terraformResourceDataToMikrotik_RemovedBlockIsUnset(t *testing.T) {
 				switch {
 				case key == "!input.accept-nlri":
 					t.Errorf("%s nullBlocks=%v: accept_nlri was empty in the state, nothing to unset (item: %v)", tc.name, nullBlocks, item)
-				case key == "!local.role":
-					t.Errorf("%s nullBlocks=%v: the Required local.role must not be unset (item: %v)", tc.name, nullBlocks, item)
 				case strings.HasPrefix(key, "input.") || strings.HasPrefix(key, "local."):
 					t.Errorf("%s nullBlocks=%v: a removed block must not send values, got %s (item: %v)", tc.name, nullBlocks, key, item)
 				case strings.HasPrefix(key, "output.") || strings.HasPrefix(key, "!output."):
