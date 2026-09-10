@@ -1,6 +1,7 @@
 package routeros
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -8,6 +9,19 @@ import (
 
 const testBGPConnectionMinVersion = "7.12"
 const testBGPConnectionAddress = "routeros_routing_bgp_connection.test"
+
+const testBGPConnectionInput = `
+	input {
+		accept_communities        = "111"
+		accept_ext_communities    = "222"
+		accept_large_communities  = "444"
+		accept_nlri               = ""
+		affinity                  = "alone"
+		allow_as                  = "0"
+		filter                    = ""
+		limit_process_routes_ipv4 = 5
+		limit_process_routes_ipv6 = 2
+	}`
 
 func TestAccBGPConnectionTest_basic(t *testing.T) {
 	if !testCheckMinVersion(t, testBGPConnectionMinVersion) {
@@ -26,10 +40,20 @@ func TestAccBGPConnectionTest_basic(t *testing.T) {
 				CheckDestroy:      testCheckResourceDestroy("/routing/bgp/connection", "routeros_routing_bgp_connection"),
 				Steps: []resource.TestStep{
 					{
-						Config: testAccBGPConnectionConfig(),
+						Config: testAccBGPConnectionConfig(testBGPConnectionInput),
 						Check: resource.ComposeTestCheckFunc(
 							testResourcePrimaryInstanceId(testBGPConnectionAddress),
 							resource.TestCheckResourceAttr(testBGPConnectionAddress, "name", "neighbor-test"),
+						),
+					},
+					{
+						// Removing the `input` block must unset its properties on the router: RouterOS keeps
+						// whatever a `set` leaves out, so the post-apply plan is only empty when Read no longer
+						// reports any `input.*` property.
+						Config: testAccBGPConnectionConfig(""),
+						Check: resource.ComposeTestCheckFunc(
+							testResourcePrimaryInstanceId(testBGPConnectionAddress),
+							resource.TestCheckResourceAttr(testBGPConnectionAddress, "input.#", "0"),
 						),
 					},
 				},
@@ -38,8 +62,8 @@ func TestAccBGPConnectionTest_basic(t *testing.T) {
 	}
 }
 
-func testAccBGPConnectionConfig() string {
-	return providerConfig + `
+func testAccBGPConnectionConfig(input string) string {
+	return fmt.Sprintf(`%v
 resource "routeros_routing_bgp_instance" "test" {
 	as   = "65550"
 	name = "bgp-instance-conn"
@@ -51,18 +75,7 @@ resource "routeros_routing_bgp_connection" "test" {
 	as                      = "65550"
 	cisco_vpls_nlri_len_fmt = "auto-bits"
 	connect                 = true
-	hold_time               = "infinity"
-	input {
-		accept_communities        = "111"
-		accept_ext_communities    = "222"
-		accept_large_communities  = "444"
-		accept_nlri               = ""
-		affinity                  = "alone"
-		allow_as                  = "0"
-		filter                    = ""
-		limit_process_routes_ipv4 = 5
-		limit_process_routes_ipv6 = 2
-	}
+	hold_time               = "infinity"%v
 	keepalive_time = "4m"
 	listen         = true
 	local {
@@ -101,6 +114,6 @@ resource "routeros_routing_bgp_connection" "test" {
 	templates     = []
 	use_bfd       = "true"
 	vrf           = "main"
-}	  
-`
+}
+`, providerConfig, input)
 }

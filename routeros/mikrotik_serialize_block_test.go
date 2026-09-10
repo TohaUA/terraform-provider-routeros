@@ -2,6 +2,7 @@ package routeros
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -140,6 +141,80 @@ func Test_terraformResourceDataToMikrotik_ComputedBlockDeclaredInConfig(t *testi
 	}
 	if got := item["output.filter-chain"]; got != "x" {
 		t.Errorf("output.filter-chain = %q, want %q (item: %v)", got, "x", item)
+	}
+}
+
+// The configuration drops a previously declared `input` block (Optional, not Computed). RouterOS
+// keeps every property a `set` leaves out, so the properties the state carried must be unset,
+// while the Computed `output` block present in the same state stays untouched. On the connection
+// the `local` block is dropped too: its Optional properties are unset, the Required `role` is not.
+func Test_terraformResourceDataToMikrotik_RemovedBlockIsUnset(t *testing.T) {
+	blockTestSetVersion(t, "7.24")
+
+	for _, tc := range []struct {
+		name     string
+		mk       func() *schema.Resource
+		hasLocal bool
+	}{
+		{"connection", ResourceRoutingBgpConnection, true},
+		{"template", ResourceRoutingBgpTemplate, false},
+	} {
+		for _, nullBlocks := range []bool{false, true} {
+			res := tc.mk()
+			ty, attrs := blockTestNullRawConfig(res)
+			attrs["name"] = cty.StringVal("peer1")
+			attrs["as"] = cty.StringVal("65000")
+			stateAttrs := map[string]string{
+				"id": "*1", "name": "peer1", "as": "65000",
+				"input.#": "1", "input.0.filter": "in", "input.0.affinity": "alone",
+				"input.0.allow_as": "2", "input.0.ignore_as_path_len": "true", "input.0.accept_nlri": "",
+				"output.#": "1", "output.0.filter_chain": "out",
+			}
+			blocks := []string{"input", "output"}
+			if tc.hasLocal {
+				stateAttrs["local.#"] = "1"
+				stateAttrs["local.0.address"] = "127.0.0.1"
+				stateAttrs["local.0.role"] = "ebgp"
+				blocks = append(blocks, "local")
+			}
+			if !nullBlocks {
+				// Terraform core sends an absent nested block as an empty list.
+				for _, block := range blocks {
+					attrs[block] = cty.ListValEmpty(ty.AttributeType(block).ElementType())
+				}
+			}
+			state := &terraform.InstanceState{ID: "*1", Attributes: stateAttrs, RawConfig: cty.ObjectVal(attrs)}
+
+			item, recovered := blockTestApplyUpdate(t, res, state, map[string]interface{}{
+				"name": "peer1", "as": "65000",
+			})
+			if recovered != nil {
+				t.Errorf("%s nullBlocks=%v: TerraformResourceDataToMikrotik panicked: %v", tc.name, nullBlocks, recovered)
+				continue
+			}
+
+			want := []string{"!input.filter", "!input.affinity", "!input.allow-as", "!input.ignore-as-path-len"}
+			if tc.hasLocal {
+				want = append(want, "!local.address")
+			}
+			for _, key := range want {
+				if got, ok := item[key]; !ok || got != "" {
+					t.Errorf("%s nullBlocks=%v: %s = %q (present: %v), want an unset (item: %v)", tc.name, nullBlocks, key, got, ok, item)
+				}
+			}
+			for key := range item {
+				switch {
+				case key == "!input.accept-nlri":
+					t.Errorf("%s nullBlocks=%v: accept_nlri was empty in the state, nothing to unset (item: %v)", tc.name, nullBlocks, item)
+				case key == "!local.role":
+					t.Errorf("%s nullBlocks=%v: the Required local.role must not be unset (item: %v)", tc.name, nullBlocks, item)
+				case strings.HasPrefix(key, "input.") || strings.HasPrefix(key, "local."):
+					t.Errorf("%s nullBlocks=%v: a removed block must not send values, got %s (item: %v)", tc.name, nullBlocks, key, item)
+				case strings.HasPrefix(key, "output.") || strings.HasPrefix(key, "!output."):
+					t.Errorf("%s nullBlocks=%v: the Computed output block must stay untouched, got %s (item: %v)", tc.name, nullBlocks, key, item)
+				}
+			}
+		}
 	}
 }
 

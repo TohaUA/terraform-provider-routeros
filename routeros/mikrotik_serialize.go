@@ -265,6 +265,12 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 				// nested block) or null. Nothing was configured, so there is nothing to send.
 				ctyBlock := rawConfig.GetAttr(terraformSnakeName)
 				if ctyBlock.IsNull() || !ctyBlock.IsKnown() || ctyBlock.LengthInt() == 0 {
+					// A block that is not Computed and was removed from the configuration is a real
+					// change, not a router-owned block: RouterOS keeps every property a `set` leaves
+					// out, so sending nothing would silently keep the old settings on the router.
+					if ctyBlock.IsKnown() && !terraformMetadata.Computed && d.HasChange(terraformSnakeName) {
+						unsetRemovedBlock(item, mikrotikKebabName, terraformSnakeName, terraformMetadata.Elem.(*schema.Resource), d)
+					}
 					continue
 				}
 
@@ -353,6 +359,50 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 	}
 
 	return item, meta
+}
+
+// unsetRemovedBlock Unset the properties of a nested block that the configuration no longer declares.
+// "input" + "accept_communities" -> item["!input.accept-communities"] = ""
+//
+// Only the properties carrying a non-zero value in the previous state are unset. The state zero-fills
+// every property of a block, so a zero value cannot be told apart from one that was never set, and a
+// property the router reported or accepted is known to exist on this RouterOS version, whereas a blanket
+// unset would also name properties that other versions do not have and fail the whole `set`.
+// Required properties cannot be unset and are left alone.
+func unsetRemovedBlock(item MikrotikItem, mikrotikKebabName, terraformSnakeName string, block *schema.Resource, d *schema.ResourceData) {
+	old, _ := d.GetChange(terraformSnakeName)
+	list, ok := old.([]interface{})
+	if !ok || len(list) == 0 || list[0] == nil {
+		return
+	}
+
+	for fieldName, value := range list[0].(map[string]interface{}) {
+		fieldSchema, ok := block.Schema[fieldName]
+		// Skip Required and read-only properties.
+		if !ok || fieldSchema.Required || (fieldSchema.Computed && !fieldSchema.Optional) {
+			continue
+		}
+
+		switch value := value.(type) {
+		case string:
+			ok = value != ""
+		case int:
+			ok = value != 0
+		case float64:
+			ok = value != 0
+		case bool:
+			ok = value
+		case *schema.Set:
+			ok = value.Len() > 0
+		default:
+			ok = false
+		}
+		if !ok {
+			continue
+		}
+
+		item["!"+SnakeToKebab(mikrotikKebabName+"."+fieldName)] = ""
+	}
 }
 
 // MikrotikResourceDataToTerraform Unmarshal Mikrotik resource (incoming data: JSON, etc.) to TF resource schema.
