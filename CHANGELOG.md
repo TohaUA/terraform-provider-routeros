@@ -1,3 +1,9 @@
+## [1.101.6](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.5...v1.101.6) (2026-09-10)
+
+### Bug Fixes
+
+* **drift:** let `go test ./routeros/` run to the end without a router ([#34](https://github.com/TohaUA/terraform-provider-routeros/issues/34)) ([2b6e07d](https://github.com/TohaUA/terraform-provider-routeros/commit/2b6e07dab694d07a51cdcd856369290732090645))
+
 ## [1.101.5](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.4...v1.101.5) (2026-09-10)
 
 ### Bug Fixes
