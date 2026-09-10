@@ -1,3 +1,9 @@
+## [1.101.8](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.7...v1.101.8) (2026-09-10)
+
+### Bug Fixes
+
+* **system-clock:** keep the applied date and time, and write them only on change ([#28](https://github.com/TohaUA/terraform-provider-routeros/issues/28)) ([42e5d7d](https://github.com/TohaUA/terraform-provider-routeros/commit/42e5d7d2d5efde85f8c033fb263f2fe670f077eb)), closes [#23](https://github.com/TohaUA/terraform-provider-routeros/issues/23)
+
 ## [1.101.7](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.6...v1.101.7) (2026-09-10)
 
 ### Bug Fixes
