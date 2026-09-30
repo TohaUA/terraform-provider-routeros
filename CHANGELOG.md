@@ -1,3 +1,9 @@
+## [1.101.10](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.9...v1.101.10) (2026-09-30)
+
+### Bug Fixes
+
+* **ip_address:** make vrf read-only so updates stop failing on RouterOS 7.21+ ([#36](https://github.com/TohaUA/terraform-provider-routeros/issues/36)) ([d94512b](https://github.com/TohaUA/terraform-provider-routeros/commit/d94512b2a17dc21f03b69ae8c6c29129a99eb759)), closes [#910](https://github.com/TohaUA/terraform-provider-routeros/issues/910) [terraform-routeros/terraform-provider-routeros#984](https://github.com/terraform-routeros/terraform-provider-routeros/issues/984) [TohaUA/home-network#93](https://github.com/TohaUA/home-network/issues/93)
+
 ## [1.101.9](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.8...v1.101.9) (2026-09-10)
 
 ### Bug Fixes
