@@ -23,7 +23,7 @@ func DatasourceWiFiEasyConnect() *schema.Resource {
 				Description: "Authentication type; can be WEP or WPA or WPA2-EAP, or nopass for no password. " +
 					"Or, omit for no password.",
 				Default:      "WPA",
-				ValidateFunc: validation.StringInSlice([]string{"WEP", "WPA2", "WPA2-EAP", "nopass"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"WEP", "WPA", "WPA2", "WPA2-EAP", "nopass"}, false),
 			},
 			"ssid": {
 				Type:     schema.TypeString,
@@ -105,7 +105,14 @@ func datasourceQRGenerate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	text += ";"
 
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(text))))
+	// The ID is shown unredacted in the plan and the state, so it is derived from the
+	// network identity only. A hash of text would carry the password (P:) and could be
+	// brute-forced offline.
+	id := fmt.Sprintf("T:%v;S:%v;",
+		d.Get("type").(string),
+		mecardEscape.ReplaceAllString(d.Get("ssid").(string), "\\$1"),
+	)
+	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(id))))
 
 	buf := bytes.NewBuffer(nil)
 	qrterminal.GenerateWithConfig(text, qrterminal.Config{

@@ -148,3 +148,38 @@ func fileDelete(ctx context.Context, id string, m interface{}) diag.Diagnostics 
 	}
 	return nil
 }
+
+// fileDeleteBestEffort removes a file that RouterOS may already have removed by itself,
+// such as a file it consumed on import. A file that is gone is not an error; any other
+// failure is logged, because the caller has nothing left to roll back.
+func fileDeleteBestEffort(ctx context.Context, id string, m interface{}) {
+	diags := fileDelete(ctx, id, m)
+	if diags == nil {
+		return
+	}
+
+	res, err := ReadItems(&ItemId{Id, id}, "/file", m.(Client))
+	if err == nil && len(*res) == 0 {
+		ColorizedDebug(ctx, fmt.Sprintf("The file '%v' has already been removed by RouterOS", id))
+		return
+	}
+
+	ColorizedMessage(ctx, WARN, "Temporary file deletion error, remove it from the router manually",
+		map[string]interface{}{"id": id, "diags": diags})
+}
+
+// fileDeleteByNameBestEffort removes a file the caller tried to create but has no ID for:
+// the device may have written it even though the create returned an error, for example
+// when the response carried no ID (ROS 7.12.x) or the transport failed afterwards.
+func fileDeleteByNameBestEffort(ctx context.Context, name string, m interface{}) {
+	res, err := ReadItems(&ItemId{Name, name}, "/file", m.(Client))
+	if err != nil {
+		ColorizedMessage(ctx, WARN, "Temporary file lookup error, check the router for it and remove it manually",
+			map[string]interface{}{"name": name, "error": err})
+		return
+	}
+
+	for _, item := range *res {
+		fileDeleteBestEffort(ctx, item.GetID(Id), m)
+	}
+}
