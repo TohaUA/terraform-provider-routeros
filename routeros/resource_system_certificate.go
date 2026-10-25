@@ -445,14 +445,20 @@ func ResourceSystemCertificate() *schema.Resource {
 
 			bl["key_file_name"] = name
 
-			// File is deleted by the MT after import.
-			// https://github.com/terraform-routeros/terraform-provider-routeros/issues/660
-			_, diags := fileCreate(ctx, name, data, m)
+			keyFileId, diags := fileCreate(ctx, name, data, m)
 			if diags != nil {
+				// The device may have written the key without returning its ID.
+				fileDeleteByNameBestEffort(ctx, name, m)
 				return diags
 			}
 
 			ColorizedDebug(ctx, fmt.Sprintf("The private key has been placed on file '%v'", name))
+
+			// RouterOS deletes the file itself after a successful import, but keeps it when
+			// the certificate or the key import fails. Remove it on every path so that the
+			// private key is never left on router storage.
+			// https://github.com/terraform-routeros/terraform-provider-routeros/issues/660
+			defer fileDeleteBestEffort(ctx, keyFileId, m)
 		}
 
 		params := MikrotikItem{KeyName: d.Get(KeyName).(string), "file-name": bl["cert_file_name"].(string)}
