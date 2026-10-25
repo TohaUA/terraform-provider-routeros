@@ -47,11 +47,13 @@ func ResourceUserManagerUser() *schema.Resource {
 		KeyName: PropName("Username for session authentication."),
 		"otp_secret": {
 			Type:        schema.TypeString,
+			Sensitive:   true,
 			Optional:    true,
 			Description: "A token of a one-time code that will be attached to the password.",
 		},
 		"password": {
 			Type:        schema.TypeString,
+			Sensitive:   true,
 			Optional:    true,
 			Description: "The password of the user for session authentication.",
 		},

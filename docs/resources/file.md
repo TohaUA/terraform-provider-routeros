@@ -18,7 +18,7 @@ resource "routeros_file" "test" {
 
 ### Optional
 
-- `contents` (String) The actual content of the file
+- `contents` (String, Sensitive) The actual content of the file
 
 ### Read-Only
 
