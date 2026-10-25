@@ -164,7 +164,7 @@ Optional:
 
 - `cert_file_content` (String) Certificate in PEM format.
 - `cert_file_name` (String) Certificate file name that will be imported.
-- `key_file_content` (String) Key in PEM format.
+- `key_file_content` (String, Sensitive) Key in PEM format.
 - `key_file_name` (String) Key file name that will be imported.
 - `passphrase` (String, Sensitive) File passphrase if there is such.
 

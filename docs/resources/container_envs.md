@@ -17,7 +17,7 @@ resource "routeros_container_envs" "test_envs" {
 
 - `key` (String) Key of the environment variable.
 - `name` (String) Name of the environment variables list.
-- `value` (String) Value of the environment variable.
+- `value` (String) Value of the environment variable. It is not marked sensitive, so a secret placed here appears in plan output, state and debug logs.
 
 ### Optional
 

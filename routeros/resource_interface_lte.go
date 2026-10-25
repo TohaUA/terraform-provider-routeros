@@ -94,6 +94,7 @@ func ResourceInterfaceLte() *schema.Resource {
 		},
 		"pin": {
 			Type:        schema.TypeString,
+			Sensitive:   true,
 			Optional:    true,
 			Description: "SIM Card's PIN code.",
 		},

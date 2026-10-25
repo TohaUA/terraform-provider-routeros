@@ -34,7 +34,7 @@ resource "routeros_snmp_community" "mything" {
 - `disabled` (Boolean)
 - `encryption_password` (String, Sensitive) The password used for encryption (SNMPv3).
 - `encryption_protocol` (String) encryption protocol to be used to encrypt the communication (SNMPv3). AES (see rfc3826) available since v6.16.
-- `name` (String) Community Name.
+- `name` (String) Community Name. For SNMPv1/v2c the name is the shared secret. It is not marked sensitive, because it is also the identifier of the community and logs are redacted by attribute name, so it appears in plan output, state and debug logs.
 - `read_access` (Boolean) Whether read access is enabled for this community.
 - `security` (String) Security features.
 - `write_access` (Boolean) Whether write access is enabled for this community.

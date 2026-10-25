@@ -150,8 +150,9 @@ func ResourceInterfaceWirelessSecurityProfiles() *schema.Resource {
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"mschapv2_password": {
-			Type:     schema.TypeString,
-			Optional: true,
+			Type:      schema.TypeString,
+			Sensitive: true,
+			Optional:  true,
 			Description: "Password to use for authentication when `eap-ttls-mschapv2` or `peap` authentication method is " +
 				"being used. This property only has effect on Stations.",
 		},

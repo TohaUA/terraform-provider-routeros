@@ -112,6 +112,7 @@ func ResourceWifiSecurity() *schema.Resource {
 		},
 		"eap_password": {
 			Type:        schema.TypeString,
+			Sensitive:   true,
 			Optional:    true,
 			Description: "Password to use when the chosen EAP method requires one.",
 		},
@@ -212,6 +213,7 @@ func ResourceWifiSecurity() *schema.Resource {
 		KeyName: PropName("Name of the security profile."),
 		"passphrase": {
 			Type:        schema.TypeString,
+			Sensitive:   true,
 			Optional:    true,
 			Description: "Passphrase to use for PSK authentication types.",
 		},

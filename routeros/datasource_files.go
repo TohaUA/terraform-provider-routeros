@@ -18,6 +18,10 @@ func DatasourceFiles() *schema.Resource {
 			"files": {
 				Type:     schema.TypeList,
 				Computed: true,
+				// Terraform core sees this Computed-only list as one attribute and
+				// hides it only by this flag; the nested flag on contents keeps
+				// contents in the log redaction set.
+				Sensitive: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -25,8 +29,9 @@ func DatasourceFiles() *schema.Resource {
 							Computed: true,
 						},
 						"contents": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:      schema.TypeString,
+							Sensitive: true,
+							Computed:  true,
 						},
 						"creation_time": {
 							Type:     schema.TypeString,

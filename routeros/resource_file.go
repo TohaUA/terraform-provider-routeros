@@ -16,6 +16,7 @@ func ResourceFile() *schema.Resource {
 
 		"contents": {
 			Type:        schema.TypeString,
+			Sensitive:   true,
 			ForceNew:    true,
 			Optional:    true,
 			Description: "The actual content of the file",

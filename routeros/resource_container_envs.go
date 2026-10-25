@@ -21,9 +21,10 @@ func ResourceContainerEnvs() *schema.Resource {
 			Description: "Key of the environment variable.",
 		},
 		"value": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "Value of the environment variable.",
+			Type:     schema.TypeString,
+			Required: true,
+			Description: "Value of the environment variable. It is not marked sensitive, so a secret placed here " +
+				"appears in plan output, state and debug logs.",
 		},
 	}
 
