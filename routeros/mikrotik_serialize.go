@@ -296,6 +296,14 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 						isEmpty(fieldNameInState, fieldSchema, d, ctyList.GetAttr(fieldName)) {
 						continue
 					}
+
+					// Same guard as for top-level fields: an unchanged sensitive value that configuration
+					// does not declare is never written back, since state may hold the mask RouterOS
+					// returns instead of the secret.
+					if fieldSchema.Optional && fieldSchema.Sensitive && !d.HasChange(fieldNameInState) &&
+						ctyList.GetAttr(fieldName).IsNull() {
+						continue
+					}
 					fieldName = SnakeToKebab(mikrotikKebabName + "." + fieldName)
 
 					// Serialization of sets.

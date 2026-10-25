@@ -2,7 +2,6 @@ package routeros
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 /*
@@ -49,7 +48,7 @@ func ResourceWifiSecurityMultiPassphrase() *schema.Resource {
 			Sensitive: true,
 			Description: "The passphrase to use for PSK authentication types. Multiple users can use the same passphrase. " +
 				"Not compatible with WPA3-PSK.",
-			ValidateFunc: validation.StringLenBetween(8, 64),
+			ValidateFunc: ValidationSecretLenBetween(8, 64),
 		},
 		KeyVlanId: PropVlanIdRw("vlan-id that will be assigned to clients using this passphrase Only supported on wifi-qcom "+
 			"interfaces, if wifi-qcom-ac AP has a client that uses a passphrase that has vlan-id associated with "+
