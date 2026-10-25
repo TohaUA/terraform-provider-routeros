@@ -347,7 +347,7 @@ func ResourceInterfaceWirelessSecurityProfiles() *schema.Resource {
 			Description: "`WPA` pre-shared key mode requires all devices in a BSS to have common secret key. Value of " +
 				"this key can be an arbitrary text. Commonly referred to as the network password for WPA mode. property " +
 				"only has effect when wpa-psk is added to authentication-types.",
-			ValidateFunc: validation.StringLenBetween(8, 64),
+			ValidateFunc: ValidationSecretLenBetween(8, 64),
 		},
 		"wpa2_pre_shared_key": {
 			Type:      schema.TypeString,
@@ -356,7 +356,7 @@ func ResourceInterfaceWirelessSecurityProfiles() *schema.Resource {
 			Description: "`WPA2` pre-shared key mode requires all devices in a BSS to have common secret key. Value of " +
 				"this key can be an arbitrary text. Commonly referred to as the network password for WPA2 mode. property " +
 				"only has effect when wpa2-psk is added to authentication-types.",
-			ValidateFunc: validation.StringLenBetween(8, 64),
+			ValidateFunc: ValidationSecretLenBetween(8, 64),
 		},
 	}
 

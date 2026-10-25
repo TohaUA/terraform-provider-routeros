@@ -624,6 +624,26 @@ var (
 		}
 	}
 
+	// ValidationSecretLenBetween returns a SchemaValidateFunc which tests if the provided value is a string
+	// whose length is between minLen and maxLen (inclusive). Unlike validation.StringLenBetween, the error
+	// reports only the length and never the value, so it is safe to use on Sensitive fields: the SDK copies
+	// the validator's error text into the diagnostic shown by `terraform plan`.
+	ValidationSecretLenBetween = func(minLen, maxLen int) schema.SchemaValidateFunc {
+		return func(i interface{}, k string) (warnings []string, errors []error) {
+			v, ok := i.(string)
+			if !ok {
+				errors = append(errors, fmt.Errorf("expected type of %s to be string", k))
+				return warnings, errors
+			}
+
+			if len(v) < minLen || len(v) > maxLen {
+				errors = append(errors, fmt.Errorf("expected length of %s in [%d,%d], got %d chars", k, minLen, maxLen, len(v)))
+			}
+
+			return warnings, errors
+		}
+	}
+
 	ValidationAutoYesNo = validation.StringInSlice([]string{"auto", "yes", "no"}, false)
 	ValidationIpAddress = validation.StringMatch(
 		regexp.MustCompile(`^$|^!?(\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/([0-9]|[0-9]|[1-2][0-9]|3[0-2]))?)$`),

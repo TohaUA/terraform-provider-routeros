@@ -92,7 +92,7 @@ func ResourceCapsManSecurity() *schema.Resource {
 			Optional:     true,
 			Description:  "WPA or WPA2 pre-shared key.",
 			Sensitive:    true,
-			ValidateFunc: validation.StringLenBetween(8, 63),
+			ValidateFunc: ValidationSecretLenBetween(8, 63),
 		},
 		"tls_certificate": {
 			Type:     schema.TypeString,
