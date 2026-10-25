@@ -75,9 +75,11 @@ func ResourceSNMPCommunity() *schema.Resource {
 		},
 
 		"name": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Community Name.",
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "Community Name. For SNMPv1/v2c the name is the shared secret. It is not marked sensitive, " +
+				"because it is also the identifier of the community and logs are redacted by attribute name, so it " +
+				"appears in plan output, state and debug logs.",
 		},
 		"read_access": {
 			Type:        schema.TypeBool,

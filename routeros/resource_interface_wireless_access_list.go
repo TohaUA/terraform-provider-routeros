@@ -78,6 +78,7 @@ func ResourceInterfaceWirelessAccessList() *schema.Resource {
 		KeyMacAddress: PropMacAddressRw("Rule matches client with the specified MAC address. Value 00:00:00:00:00:00 matches always.", false),
 		"management_protection_key": {
 			Type:        schema.TypeString,
+			Sensitive:   true,
 			Description: "Management protection shared secret.",
 			Optional:    true,
 		},
@@ -90,11 +91,13 @@ func ResourceInterfaceWirelessAccessList() *schema.Resource {
 		},
 		"private_key": {
 			Type:        schema.TypeString,
+			Sensitive:   true,
 			Optional:    true,
 			Description: "Only for `WEP` modes (HEX).",
 		},
 		"private_pre_shared_key": {
 			Type:        schema.TypeString,
+			Sensitive:   true,
 			Optional:    true,
 			Description: "Used in `WPA PSK` mode.",
 		},

@@ -26,8 +26,9 @@ func ResourceSystemNtpServer() *schema.Resource {
 		MetaId:           PropId(Id),
 
 		"auth_key": {
-			Type:     schema.TypeString,
-			Optional: true,
+			Type:      schema.TypeString,
+			Sensitive: true,
+			Optional:  true,
 			Description: "NTP symmetric key, used for authentication between the NTP client and server. Key Identifier " +
 				"(Key ID) - an integer identifying the cryptographic key used to generate the message-authentication code.",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,

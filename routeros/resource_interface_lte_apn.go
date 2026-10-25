@@ -96,6 +96,7 @@ func ResourceInterfaceLteApn() *schema.Resource {
 		},
 		"password": {
 			Type:             schema.TypeString,
+			Sensitive:        true,
 			Optional:         true,
 			Description:      "Password used if any of the authentication protocols are active.",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
