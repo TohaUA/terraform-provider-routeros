@@ -13,10 +13,6 @@
 #     default in this repository, hence the explicit `permissions:` block:
 #       - contents: write        push the chore(release) commit + tag, create
 #                                the GitHub release, upload goreleaser assets
-#       - issues/pull-requests: write
-#                                @semantic-release/github wants these for its
-#                                success/fail comments; they are disabled in
-#                                .releaserc, so the grant is belt-and-braces
 #     A push made with GITHUB_TOKEN never triggers another workflow run, so the
 #     release commit cannot re-trigger this job (the chore(release) guard below
 #     is kept for manual/PAT pushes).
@@ -42,6 +38,10 @@
 #     step runs `make docs` (go generate), which must use the go.mod toolchain
 #     and not whatever the runner image happens to ship. The single early step
 #     serves GoReleaser too, so there is no second setup-go later in the job.
+#   * semantic-release owns versioning, notes, and tags. GoReleaser owns the
+#     GitHub release: it uploads artifacts to a draft before publishing it.
+#     Publishing from @semantic-release/github first locks immutable releases
+#     before GoReleaser can attach their signed binaries.
 #
 name: Release
 
@@ -56,8 +56,10 @@ on:
 
 permissions:
   contents: write
-  issues: write
-  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
 
@@ -98,19 +100,24 @@ jobs:
             "@semantic-release/commit-analyzer@9.0.2"
             "@semantic-release/exec@6.0.3"
             "@semantic-release/git@10.0.1"
-            "@semantic-release/github@8.0.7"
             "@semantic-release/release-notes-generator@10.0.3"
             "conventional-changelog-conventionalcommits@8.0.0"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
+      - name: Save release notes
+        if: steps.release.outputs.new_release_published == 'true'
+        run: printf '%s\n' "$RELEASE_NOTES" > "$RUNNER_TEMP/release-notes.md"
+        env:
+          RELEASE_NOTES: ${{ steps.release.outputs.new_release_notes }}
+
       - name: Run GoReleaser
         if: steps.release.outputs.new_release_published == 'true'
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94  # v7.2.3
         with:
           version: '~> v2'
-          args: release --clean
+          args: release --clean --release-notes "${{ runner.temp }}/release-notes.md"
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           # GitHub sets this automatically
