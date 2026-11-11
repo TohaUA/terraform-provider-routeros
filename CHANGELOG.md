@@ -1,3 +1,9 @@
+## [1.101.12](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.11...v1.101.12) (2026-11-11)
+
+### Bug Fixes
+
+* **release:** upload assets before publishing immutable releases ([#62](https://github.com/TohaUA/terraform-provider-routeros/issues/62)) ([be02b87](https://github.com/TohaUA/terraform-provider-routeros/commit/be02b87d5e5738c220c7945d255438d96574d1f3))
+
 ## [1.101.11](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.10...v1.101.11) (2026-11-11)
 
 ### Bug Fixes
