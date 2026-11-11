@@ -1,9 +1,12 @@
 package routeros
 
 import (
+	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testSystemCertificatesAddress = "routeros_system_certificate.root_ca"
@@ -249,6 +252,79 @@ resource "routeros_system_certificate" "scep_client" {
   sign_via_scep {
     scep_url           = "http://scep.server/scep/test_updated"
     challenge_password = "12345"
+  }
+}
+`
+}
+
+const testSystemCertificateKeyCleanupName = "key-cleanup.crt"
+
+var uuidFileName = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
+
+// An import from key_file_content uploads the private key to a UUID-named file.
+// RouterOS removes it only after a successful import, so a failed import must not
+// leave the key in the file list.
+func TestAccSystemCertificate_importFailureCleansUp(t *testing.T) {
+	// ROS 7.12.x does not return IDs for created files.
+	if !testCheckMinVersion(t, testFileMinVersion) {
+		t.Skipf("Test skipped, the minimum required version is %v", testFileMinVersion)
+	}
+
+	for _, name := range testNames {
+		t.Run(name, func(t *testing.T) {
+			resource.Test(t, resource.TestCase{
+				PreCheck: func() {
+					testAccPreCheck(t)
+					testSetTransportEnv(t, name)
+				},
+				ProviderFactories: testAccProviderFactories,
+				Steps: []resource.TestStep{
+					{
+						Config: testAccSystemCertificateKeyCleanupConfig(),
+						// The device declines the import: REST names the import URL,
+						// the API reports a device error.
+						ExpectError: regexp.MustCompile(`certificate/import|from RouterOS device|resource not found`),
+					},
+					{
+						// The failed create leaves nothing in the state, so an empty
+						// configuration is enough to run the device check.
+						Config: providerConfig,
+						Check:  testCheckNoLeftoverKeyFile(),
+					},
+				},
+			})
+		})
+	}
+}
+
+// testCheckNoLeftoverKeyFile fails when a UUID-named upload is still in /file.
+func testCheckNoLeftoverKeyFile() resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := testAccProvider.Meta().(Client)
+
+		files, err := ReadItems(nil, "/file", client)
+		if err != nil {
+			return err
+		}
+		for _, f := range *files {
+			if uuidFileName.MatchString(f["name"]) {
+				return fmt.Errorf("the uploaded file %q is still on the router after the failed import", f["name"])
+			}
+		}
+		return nil
+	}
+}
+
+func testAccSystemCertificateKeyCleanupConfig() string {
+	return providerConfig + `
+resource "routeros_system_certificate" "key_cleanup" {
+  name        = "` + testSystemCertificateKeyCleanupName + `"
+  common_name = "External Certificate"
+  import {
+    # The key is uploaded before this missing certificate makes the import fail.
+    # Malformed key content alone can be silently ignored by RouterOS.
+    cert_file_name   = "key-cleanup-missing.crt"
+    key_file_content = "this is not a private key"
   }
 }
 `
