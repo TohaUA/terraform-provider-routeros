@@ -264,11 +264,10 @@ var uuidFileName = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9
 // An import from key_file_content uploads the private key to a UUID-named file.
 // RouterOS removes it only after a successful import, so a failed import must not
 // leave the key in the file list.
-func TestAccSystemCertificate_importKeyFailureCleansUp(t *testing.T) {
+func TestAccSystemCertificate_importFailureCleansUp(t *testing.T) {
 	// ROS 7.12.x does not return IDs for created files.
 	if !testCheckMinVersion(t, testFileMinVersion) {
-		t.Logf("Test skipped, the minimum required version is %v", testFileMinVersion)
-		return
+		t.Skipf("Test skipped, the minimum required version is %v", testFileMinVersion)
 	}
 
 	for _, name := range testNames {
@@ -284,7 +283,7 @@ func TestAccSystemCertificate_importKeyFailureCleansUp(t *testing.T) {
 						Config: testAccSystemCertificateKeyCleanupConfig(),
 						// The device declines the import: REST names the import URL,
 						// the API reports a device error.
-						ExpectError: regexp.MustCompile(`certificate/import|from RouterOS device`),
+						ExpectError: regexp.MustCompile(`certificate/import|from RouterOS device|resource not found`),
 					},
 					{
 						// The failed create leaves nothing in the state, so an empty
@@ -298,22 +297,10 @@ func TestAccSystemCertificate_importKeyFailureCleansUp(t *testing.T) {
 	}
 }
 
-// testCheckNoLeftoverKeyFile fails when a UUID-named upload is still in /file. The
-// certificate half of the failed import may have landed, so it is removed here to
-// keep the device clean for the other tests.
+// testCheckNoLeftoverKeyFile fails when a UUID-named upload is still in /file.
 func testCheckNoLeftoverKeyFile() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(Client)
-
-		certs, err := ReadItemsFiltered([]string{"name=" + testSystemCertificateKeyCleanupName}, "/certificate", client)
-		if err != nil {
-			return err
-		}
-		for _, c := range *certs {
-			if err := DeleteItem(&ItemId{Id, c.GetID(Id)}, "/certificate", client); err != nil {
-				return err
-			}
-		}
 
 		files, err := ReadItems(nil, "/file", client)
 		if err != nil {
@@ -334,22 +321,10 @@ resource "routeros_system_certificate" "key_cleanup" {
   name        = "` + testSystemCertificateKeyCleanupName + `"
   common_name = "External Certificate"
   import {
-    cert_file_content = <<EOT
------BEGIN CERTIFICATE-----
-MIIBlTCCATugAwIBAgIINLsws71B5zIwCgYIKoZIzj0EAwIwHzEdMBsGA1UEAwwU
-RXh0ZXJuYWwgQ2VydGlmaWNhdGUwHhcNMjQwNTE3MjEyOTUzWhcNMjUwNTE3MjEy
-OTUzWjAfMR0wGwYDVQQDDBRFeHRlcm5hbCBDZXJ0aWZpY2F0ZTBZMBMGByqGSM49
-AgEGCCqGSM49AwEHA0IABKE1g0Qj4ujIold9tklu2z4BUu/K7xDFF5YmedtOfJyM
-1/80APNboqn71y4m4XNE1JNtQuR2bSZPHVrzODkR16ujYTBfMA8GA1UdEwEB/wQF
-MAMBAf8wDgYDVR0PAQH/BAQDAgG2MB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEF
-BQcDAjAdBgNVHQ4EFgQUNXd5bvluIV9YAhGc5yMHc6OzXpMwCgYIKoZIzj0EAwID
-SAAwRQIhAODte/qS6CE30cvnQpxP/ObWBPIPZnHtkFHIIC1AOSXwAiBGCGQE+aJY
-W72Rw0Y1ckvlt6sU0urkzGuj5wxVF/gSYA==
------END CERTIFICATE-----
-EOT
-    # Not a key: the key import has to fail.
+    # The key is uploaded before this missing certificate makes the import fail.
+    # Malformed key content alone can be silently ignored by RouterOS.
+    cert_file_name   = "key-cleanup-missing.crt"
     key_file_content = "this is not a private key"
-    passphrase       = "11111111"
   }
 }
 `
