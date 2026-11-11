@@ -91,11 +91,11 @@ func ResourceInterfaceL2tpServer() *schema.Resource {
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"ipsec_secret": {
-			Type: schema.TypeString,
-			Sensitive: true,
-			Optional: true,
-			Description: "Preshared key used when use-ipsec is enabled.",
-		  DiffSuppressFunc: AlwaysPresentNotUserProvided,	
+			Type:             schema.TypeString,
+			Sensitive:        true,
+			Optional:         true,
+			Description:      "Preshared key used when use-ipsec is enabled.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"accept_proto_version" : {
 			Type:             schema.TypeString,
