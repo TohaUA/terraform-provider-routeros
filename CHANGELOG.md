@@ -1,3 +1,9 @@
+## [1.101.11](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.10...v1.101.11) (2026-11-11)
+
+### Bug Fixes
+
+* **security:** mark secret attributes sensitive and redact file contents ([#38](https://github.com/TohaUA/terraform-provider-routeros/issues/38)) ([331db42](https://github.com/TohaUA/terraform-provider-routeros/commit/331db4257e34752e700c6a32d80671d2b5388c48))
+
 ## [1.101.10](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.9...v1.101.10) (2026-09-30)
 
 ### Bug Fixes
