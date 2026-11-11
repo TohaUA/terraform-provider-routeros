@@ -37,6 +37,8 @@ on:
     paths:
       - 'main.go'
       - 'routeros/*.go'
+      # The unit job builds and tests the tools too, including schema-drift.
+      - 'tools/**'
       # go.mod picks the toolchain and, with go.sum, every dependency the
       # provider is built and tested with. Dependabot's gomod PRs touch
       # nothing else, so without these they merge with no run at all.
