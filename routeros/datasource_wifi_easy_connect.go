@@ -18,10 +18,9 @@ func DatasourceWiFiEasyConnect() *schema.Resource {
 		ReadContext: datasourceQRGenerate,
 		Schema: map[string]*schema.Schema{
 			"type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Description: "Authentication type; can be WEP or WPA or WPA2-EAP, or nopass for no password. " +
-					"Or, omit for no password.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Authentication type: WEP, WPA, WPA2, WPA2-EAP, or nopass for no password. Defaults to WPA.",
 				Default:      "WPA",
 				ValidateFunc: validation.StringInSlice([]string{"WEP", "WPA", "WPA2", "WPA2-EAP", "nopass"}, false),
 			},
@@ -35,7 +34,7 @@ func DatasourceWiFiEasyConnect() *schema.Resource {
 				Type:      schema.TypeString,
 				Required:  true,
 				Sensitive: true,
-				Description: "Password, ignored if T is nopass (in which case it may be omitted). Enclose in double " +
+				Description: "Password; use an empty string when type is nopass. Enclose in double " +
 					"quotes if it is an ASCII name, but could be interpreted as hex (i.e. \"ABCD\").",
 			},
 			"hidden": {

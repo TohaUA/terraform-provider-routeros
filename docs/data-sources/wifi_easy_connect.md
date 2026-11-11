@@ -22,7 +22,7 @@ output "qrcode" {
 
 ### Required
 
-- `password` (String, Sensitive) Password, ignored if T is nopass (in which case it may be omitted). Enclose in double quotes if it is an ASCII name, but could be interpreted as hex (i.e. "ABCD").
+- `password` (String, Sensitive) Password; use an empty string when type is nopass. Enclose in double quotes if it is an ASCII name, but could be interpreted as hex (i.e. "ABCD").
 - `ssid` (String) Network SSID. Required. Enclose in double quotes if it is an ASCII name, but could be interpreted as hex (i.e. "ABCD").
 
 ### Optional
@@ -32,7 +32,7 @@ output "qrcode" {
 - `eap_method` (String) (WPA2-EAP only) EAP method, like TTLS or PWD.
 - `eap_phase2` (String) (WPA2-EAP only) Phase 2 method, like `MSCHAPV2`
 - `hidden` (Boolean) True if the network SSID is hidden.
-- `type` (String) Authentication type; can be WEP or WPA or WPA2-EAP, or nopass for no password. Or, omit for no password.
+- `type` (String) Authentication type: WEP, WPA, WPA2, WPA2-EAP, or nopass for no password. Defaults to WPA.
 
 ### Read-Only
 
