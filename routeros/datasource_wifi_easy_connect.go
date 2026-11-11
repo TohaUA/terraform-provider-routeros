@@ -66,6 +66,7 @@ func DatasourceWiFiEasyConnect() *schema.Resource {
 			},
 			"qr_code": {
 				Type:        schema.TypeString,
+				Sensitive:   true,
 				Computed:    true,
 				Description: "QR Code",
 			},

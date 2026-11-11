@@ -18,7 +18,7 @@ resource "routeros_system_script" "script" {
 ### Required
 
 - `name` (String) Name of the script.
-- `source` (String) Script source code.
+- `source` (String) Script source code. It is not marked sensitive, so a secret embedded in the script appears in plan output, state and debug logs.
 
 ### Optional
 

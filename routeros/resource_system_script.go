@@ -82,7 +82,7 @@ policy = ["ftp", "read", "write"]
 		"source": {
 			Type:             schema.TypeString,
 			Required:         true,
-			Description:      "Script source code.",
+			Description:      "Script source code. It is not marked sensitive, so a secret embedded in the script appears in plan output, state and debug logs.",
 			DiffSuppressFunc: TextBlockEqual,
 		},
 	}

@@ -147,6 +147,7 @@ func ResourceSystemCertificate() *schema.Resource {
 					},
 					"key_file_content": {
 						Type:        schema.TypeString,
+						Sensitive:   true,
 						Optional:    true,
 						ForceNew:    true,
 						Description: "Key in PEM format.",

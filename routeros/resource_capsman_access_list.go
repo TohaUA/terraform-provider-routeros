@@ -81,6 +81,7 @@ func ResourceCapsManAccessList() *schema.Resource {
 		KeyPlaceBefore: PropPlaceBefore,
 		"private_passphrase": {
 			Type:        schema.TypeString,
+			Sensitive:   true,
 			Optional:    true,
 			Description: "PSK passphrase for the client if some PSK authentication algorithm is used.",
 		},

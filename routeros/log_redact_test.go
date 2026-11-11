@@ -235,3 +235,111 @@ func TestRedactJSON(t *testing.T) {
 		t.Fatal("redacting the log changed the body that is decoded")
 	}
 }
+
+// Attributes that carry a secret. Each must stay Sensitive, or its value shows
+// in plan output and is logged in clear (the redaction set is built from the
+// Sensitive flags). A path names a nested attribute as "block.attribute".
+func TestSensitiveSecretsInventory(t *testing.T) {
+	p := Provider()
+
+	for _, tc := range []struct {
+		dataSource bool
+		name, path string
+	}{
+		{false, "routeros_wifi_security", "passphrase"},
+		{false, "routeros_wifi_security", "eap_password"},
+		{false, "routeros_wifi_access_list", "passphrase"},
+		{false, "routeros_capsman_access_list", "private_passphrase"},
+		{false, "routeros_interface_wireguard_peer", "private_key"},
+		{false, "routeros_wireguard_peer", "private_key"},
+		{false, "routeros_system_certificate", "import.key_file_content"},
+		{false, "routeros_interface_l2tp_server", "ipsec_secret"},
+		{false, "routeros_interface_lte", "pin"},
+		{false, "routeros_interface_lte_apn", "password"},
+		{false, "routeros_user_manager_user", "password"},
+		{false, "routeros_user_manager_user", "otp_secret"},
+		{false, "routeros_user_manager_advanced", "paypal_password"},
+		{false, "routeros_user_manager_advanced", "web_private_password"},
+		{false, "routeros_interface_wireless_access_list", "private_pre_shared_key"},
+		{false, "routeros_interface_wireless_access_list", "private_key"},
+		{false, "routeros_interface_wireless_access_list", "management_protection_key"},
+		{false, "routeros_interface_wireless_security_profiles", "mschapv2_password"},
+		{false, "routeros_system_ntp_server", "auth_key"},
+		{false, "routeros_file", "contents"},
+		{true, "routeros_files", "files.contents"},
+		{true, "routeros_wifi_easy_connect", "qr_code"},
+	} {
+		t.Run(tc.name+"."+tc.path, func(t *testing.T) {
+			res := p.ResourcesMap[tc.name]
+			if tc.dataSource {
+				res = p.DataSourcesMap[tc.name]
+			}
+			if res == nil {
+				t.Fatalf("%s is not registered", tc.name)
+			}
+
+			parts := strings.Split(tc.path, ".")
+			s := res.Schema
+			for _, block := range parts[:len(parts)-1] {
+				field, ok := s[block]
+				if !ok {
+					t.Fatalf("%s has no block %q", tc.name, block)
+				}
+				elem, ok := field.Elem.(*schema.Resource)
+				if !ok {
+					t.Fatalf("%s.%s is not a nested block", tc.name, block)
+				}
+				s = elem.Schema
+			}
+
+			field, ok := s[parts[len(parts)-1]]
+			if !ok {
+				t.Fatalf("%s has no attribute %q", tc.name, tc.path)
+			}
+			if !field.Sensitive {
+				t.Errorf("%s.%s carries a secret but is not Sensitive", tc.name, tc.path)
+			}
+
+			// Terraform core decides what is hidden, from the core schema. A
+			// Computed-only list becomes one attribute there and takes only
+			// its own Sensitive flag, so a nested flag alone has no effect.
+			core := res.CoreConfigSchema()
+			for _, block := range parts[:len(parts)-1] {
+				if attr, ok := core.Attributes[block]; ok {
+					if !attr.Sensitive {
+						t.Errorf("%s.%s is one attribute in the core schema and is not Sensitive, so %s shows in plan output",
+							tc.name, block, tc.path)
+					}
+					return
+				}
+				nested, ok := core.BlockTypes[block]
+				if !ok {
+					t.Fatalf("%s has no core block %q", tc.name, block)
+				}
+				core = &nested.Block
+			}
+			if attr, ok := core.Attributes[parts[len(parts)-1]]; !ok || !attr.Sensitive {
+				t.Errorf("%s.%s is not Sensitive in the core schema", tc.name, tc.path)
+			}
+		})
+	}
+}
+
+// A file's contents can be a private key (the certificate import uploads the
+// PEM key through /file), so neither transport may log it.
+func TestRedactFileContentsOnBothTransports(t *testing.T) {
+	if !isSensitiveName("contents") {
+		t.Fatal(`"contents" is not in the redaction set`)
+	}
+
+	const secret = "PEMMARKER"
+
+	if logged := redactJSON([]byte(`{"name":"abc","contents":"` + secret + `"}`)); strings.Contains(logged, secret) {
+		t.Errorf("the REST log carries the file contents: %s", logged)
+	}
+
+	words := []string{"/file/add", "=name=abc", "=contents=" + secret}
+	if logged := strings.Join(redactAPIWords(words), " "); strings.Contains(logged, secret) {
+		t.Errorf("the API log carries the file contents: %s", logged)
+	}
+}

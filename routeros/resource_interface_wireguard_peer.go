@@ -125,6 +125,7 @@ func ResourceInterfaceWireguardPeer() *schema.Resource {
 		},
 		"private_key": {
 			Type:             schema.TypeString,
+			Sensitive:        true,
 			Optional:         true,
 			Description:      "A base64 private key. If not specified, it will be automatically generated upon interface creation.",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,

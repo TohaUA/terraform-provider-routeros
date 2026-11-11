@@ -35,7 +35,7 @@ resource "routeros_interface_lte" "test" {
 - `network_mode` (Set of String) Select/force mode for LTE interface to operate with.
 - `nr_band` (Set of Number) 5G NR Frequency band used in communication [5G NR Bands and bandwidths](https://en.wikipedia.org/wiki/5G_NR_frequency_bands).
 - `operator` (Number) Used to lock the device to a specific operator full PLMN number is used for the lock consisting of MCC+MNC. [PLMN codes](https://en.wikipedia.org/wiki/Public_land_mobile_network).
-- `pin` (String) SIM Card's PIN code.
+- `pin` (String, Sensitive) SIM Card's PIN code.
 - `sms_protocol` (String) SMS functionality. `mbim`: uses MBIM driver. `at`: uses AT-Commands. `auto`: selects the appropriate option depending on the modem.
 - `sms_read` (Boolean)
 

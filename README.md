@@ -155,6 +155,23 @@ prefer building from a pinned commit.
 * RouterOS 7.x. Upstream's tested versions are unchanged; the fields added by the fork target
   **RouterOS 7.24** and none of them have been exercised against an older release.
 
+### Upgrading configurations that expose secret values
+
+Secret attributes, file contents, and generated Wi-Fi QR codes are marked sensitive.
+When upgrading from a version that did not mark these values sensitive, add
+`sensitive = true` to outputs that reference them, including outputs derived from
+`routeros_files.files`:
+
+```hcl
+output "qrcode" {
+  value     = data.routeros_wifi_easy_connect.test.qr_code
+  sensitive = true
+}
+```
+
+Sensitivity hides values in ordinary plan and apply output; the values are still
+stored in Terraform state. `terraform output -raw qrcode` explicitly reveals this output.
+
 ### Reporting problems and retiring the fork
 
 Issues are disabled on this fork. Report bugs that also reproduce with the upstream provider to
