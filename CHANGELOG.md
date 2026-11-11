@@ -1,3 +1,9 @@
+## [1.101.13](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.12...v1.101.13) (2026-11-11)
+
+### Bug Fixes
+
+* **security:** clean up imported private keys and avoid password-derived IDs ([#39](https://github.com/TohaUA/terraform-provider-routeros/issues/39)) ([dd6ecd4](https://github.com/TohaUA/terraform-provider-routeros/commit/dd6ecd44ce6b49fbf3c0626bd95a05bf76c4f27c))
+
 ## [1.101.12](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.11...v1.101.12) (2026-11-11)
 
 ### Bug Fixes
