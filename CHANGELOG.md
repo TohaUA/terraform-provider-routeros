@@ -1,3 +1,9 @@
+## [1.101.15](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.14...v1.101.15) (2026-11-12)
+
+### Bug Fixes
+
+* **state:** preserve scalar values during list migration ([#41](https://github.com/TohaUA/terraform-provider-routeros/issues/41)) ([c756a9c](https://github.com/TohaUA/terraform-provider-routeros/commit/c756a9c08bbf3eb8a307ddb8e3e547efcb885edf))
+
 ## [1.101.14](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.13...v1.101.14) (2026-11-12)
 
 ### Bug Fixes
