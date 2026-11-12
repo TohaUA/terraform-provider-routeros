@@ -18,7 +18,7 @@ resource "routeros_tool_netwatch" "test" {
 
 ### Required
 
-- `host` (String) The IP address of the server to be probed. Formats:
+- `host` (String) The IP address of the server to be probed (for `type=dns`, the DNS name to resolve). Formats:
   * ipv4
   * ipv4@vrf
   * ipv6 
@@ -61,6 +61,8 @@ resource "routeros_tool_netwatch" "test" {
   *  icmp - (ping-style) series of ICMP request-response with statistics
   *  tcp-conn - test TCP connection (3-way handshake) to a server specified by IP and port
   *  http-get - do an HTTP Get request and test for a range of correct replies
+  *  https-get - do an HTTPS Get request and test for a range of correct replies
+  *  dns - do a DNS query for `host` against `dns_server`, using `record_type` (RouterOS 7.16+)
   *  simple - simplified ICMP probe, with fewer options than **ICMP** type, used for backward compatibility with the older Netwatch version
 - `up_script` (String) Script to execute on the event of probe state change `fail` --> `OK`.
 
