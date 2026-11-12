@@ -162,6 +162,7 @@ func TestCreateKeepsPlaceBeforeDuringUpdate(t *testing.T) {
 		{"routeros_wifi_access_list", ResourceWifiAccessList()},
 		{"routeros_capsman_access_list", ResourceCapsManAccessList()},
 		{"routeros_ip_firewall_filter", ResourceIPFirewallFilter()},
+		{"routeros_ipv6_firewall_filter", ResourceIPv6FirewallFilter()},
 		{"routeros_ip_firewall_mangle", ResourceIPFirewallMangle()},
 		{"routeros_ip_firewall_nat", ResourceIPFirewallNat()},
 		{"routeros_ip_firewall_raw", ResourceIPFirewallRaw()},
