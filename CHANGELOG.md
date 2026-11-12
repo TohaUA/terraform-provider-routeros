@@ -1,3 +1,9 @@
+## [1.101.14](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.13...v1.101.14) (2026-11-12)
+
+### Bug Fixes
+
+* **security:** keep secrets out of validation errors and guard nested sensitive fields ([#40](https://github.com/TohaUA/terraform-provider-routeros/issues/40)) ([14ef9fa](https://github.com/TohaUA/terraform-provider-routeros/commit/14ef9fad4ebb7f70d54411cbc64d446f96f32a01))
+
 ## [1.101.13](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.12...v1.101.13) (2026-11-11)
 
 ### Bug Fixes
