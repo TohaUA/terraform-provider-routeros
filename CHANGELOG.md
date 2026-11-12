@@ -1,3 +1,9 @@
+## [1.101.16](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.15...v1.101.16) (2026-11-12)
+
+### Bug Fixes
+
+* **helpers:** accept lowercase kilo suffix in bit/byte value parsing ([#42](https://github.com/TohaUA/terraform-provider-routeros/issues/42)) ([8048368](https://github.com/TohaUA/terraform-provider-routeros/commit/80483682052787de73b453292de99749e0987dbc))
+
 ## [1.101.15](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.14...v1.101.15) (2026-11-12)
 
 ### Bug Fixes
