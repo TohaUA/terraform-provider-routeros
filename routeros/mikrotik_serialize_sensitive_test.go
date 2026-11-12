@@ -72,3 +72,83 @@ func TestSensitiveValuesAreNotSentUnlessDeclared(t *testing.T) {
 	}
 	t.Logf("checked %d optional sensitive string fields", checked)
 }
+
+// The same rule holds for an Optional+Sensitive field inside a nested TypeList block: a masked value taken from
+// state must not be sent when configuration declares the block but leaves the secret out.
+func TestNestedListSensitiveValueNotSentUnlessDeclared(t *testing.T) {
+	old := RouterOSVersion
+	RouterOSVersion = "7.24"
+	defer func() { RouterOSVersion = old }()
+
+	const mask = "***"
+
+	res := &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			MetaResourcePath: PropResourcePath("/test/nested"),
+			"block": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"secret": {
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	serialize := func(configSecret cty.Value, stateSecret string) MikrotikItem {
+		vals := map[string]cty.Value{}
+		for attr, attrType := range res.CoreConfigSchema().ImpliedType().AttributeTypes() {
+			vals[attr] = cty.NullVal(attrType)
+		}
+		vals["block"] = cty.ListVal([]cty.Value{cty.ObjectVal(map[string]cty.Value{
+			"name":   cty.StringVal("x"),
+			"secret": configSecret,
+		})})
+
+		d := res.Data(&terraform.InstanceState{
+			ID: "*1",
+			Attributes: map[string]string{
+				"id":             "*1",
+				"block.#":        "1",
+				"block.0.name":   "x",
+				"block.0.secret": stateSecret,
+			},
+			RawConfig: cty.ObjectVal(vals),
+		})
+
+		item, _ := TerraformResourceDataToMikrotik(res.Schema, d)
+		if got := item["block.name"]; got != "x" {
+			t.Fatalf("the declared nested field was not sent: block.name=%q, item=%v", got, item)
+		}
+		return item
+	}
+
+	t.Run("undeclared", func(t *testing.T) {
+		item := serialize(cty.NullVal(cty.String), mask)
+		for key, value := range item {
+			if value == mask {
+				t.Errorf("the request carried %s=%q from state although configuration does not declare block.secret",
+					key, value)
+			}
+		}
+	})
+
+	// The guard must not be broader than the rule: a secret that configuration declares is still sent.
+	t.Run("declared", func(t *testing.T) {
+		item := serialize(cty.StringVal("real"), "real")
+		if got := item["block.secret"]; got != "real" {
+			t.Errorf("the declared nested secret was not sent: block.secret=%q, item=%v", got, item)
+		}
+	})
+}
