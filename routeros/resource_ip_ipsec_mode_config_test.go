@@ -22,13 +22,21 @@ func TestAccIpIpsecModeConfigTest_basic(t *testing.T) {
 				CheckDestroy:      testCheckResourceDestroy("/ip/ipsec/mode-config", "routeros_ip_ipsec_mode_config"),
 				Steps: []resource.TestStep{
 					{
-						Config: testAccIpIpsecModeConfigConfig(),
+						Config: testAccIpIpsecModeConfigConfig("example.com"),
 						Check: resource.ComposeTestCheckFunc(
 							testResourcePrimaryInstanceId(testIpIpsecModeConfig),
 							resource.TestCheckResourceAttr(testIpIpsecModeConfig, "name", "test-cfg"),
 							resource.TestCheckResourceAttr(testIpIpsecModeConfig, "address", "1.2.3.4"),
 							resource.TestCheckResourceAttr(testIpIpsecModeConfig, "split_include.0", "0.0.0.0/0"),
-							resource.TestCheckResourceAttr(testIpIpsecModeConfig, "split_dns.0", "1.1.1.1"),
+							resource.TestCheckTypeSetElemAttr(testIpIpsecModeConfig, "split_dns.*", "example.com"),
+						),
+					},
+					{
+						Config: testAccIpIpsecModeConfigConfig("corp.local"),
+						Check: resource.ComposeTestCheckFunc(
+							resource.TestCheckResourceAttr(testIpIpsecModeConfig, "name", "test-cfg"),
+							resource.TestCheckResourceAttr(testIpIpsecModeConfig, "split_dns.#", "1"),
+							resource.TestCheckTypeSetElemAttr(testIpIpsecModeConfig, "split_dns.*", "corp.local"),
 						),
 					},
 				},
@@ -38,14 +46,14 @@ func TestAccIpIpsecModeConfigTest_basic(t *testing.T) {
 	}
 }
 
-func testAccIpIpsecModeConfigConfig() string {
+func testAccIpIpsecModeConfigConfig(domain string) string {
 	return fmt.Sprintf(`%v
 
 resource "routeros_ip_ipsec_mode_config" "test" {
   name          = "test-cfg"
   address       = "1.2.3.4"
   split_include = ["0.0.0.0/0"]
-  split_dns     = ["1.1.1.1"]
+  split_dns     = [%q]
 }
-`, providerConfig)
+`, providerConfig, domain)
 }
