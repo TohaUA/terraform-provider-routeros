@@ -7,6 +7,9 @@ resource "routeros_interface_vlan" "interface_vlan" {
   interface = "bridge"
   name      = "VLAN_TEST"
   vlan_id   = 50
+
+  # RouterOS 7.25+
+  forced_mac_address = "02:00:00:00:07:25"
 }
 ```
 
@@ -31,6 +34,7 @@ resource "routeros_interface_vlan" "interface_vlan" {
 - `arp_timeout` (String) ARP timeout is time how long ARP record is kept in ARP table after no packets are received from IP. Value auto equals to the value of arp-timeout in IP/Settings, default is 30s. Can use postfix `ms`, `s`, `m`, `h`, `d` for milliseconds, seconds, minutes, hours or days. If no postfix is set then seconds (s) is used.
 - `comment` (String)
 - `disabled` (Boolean)
+- `forced_mac_address` (String) Override the VLAN interface MAC address. Requires RouterOS 7.25 or later.
 - `hw_offloaded` (Boolean)
 - `loop_protect` (String)
 - `loop_protect_disable_time` (String)

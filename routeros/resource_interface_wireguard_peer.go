@@ -63,6 +63,12 @@ func ResourceInterfaceWireguardPeer() *schema.Resource {
 			ValidateFunc:     Validation64k,
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
+		"client_mtu": {
+			Type:             schema.TypeInt,
+			Optional:         true,
+			Description:      "MTU written into the generated client configuration. Requires RouterOS 7.25 or later.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		"current_endpoint_address": {
 			Type:        schema.TypeString,
 			Computed:    true,

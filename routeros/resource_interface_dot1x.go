@@ -135,7 +135,7 @@ func ResourceInterfaceDot1xServer() *schema.Resource {
 		"reauth_timeout": {
 			Type:             schema.TypeString,
 			Optional:         true,
-			Description:      "An option that enables server port re-authentication.",
+			Description:      "An option that enables server port re-authentication. Maps to `reauth-period` on RouterOS 7.25 and later.",
 			DiffSuppressFunc: TimeEqual,
 		},
 		"reject_vlan_id": {

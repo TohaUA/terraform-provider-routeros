@@ -20,6 +20,12 @@ func ResourceRoutingBgpInstance() *schema.Resource {
 		MetaResourcePath: PropResourcePath("/routing/bgp/instance"),
 		MetaId:           PropId(Id),
 
+		"always_compare_med": {
+			Type:             schema.TypeBool,
+			Optional:         true,
+			Description:      "Compare MED values between routes from different neighboring autonomous systems. Requires RouterOS 7.25 or later.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		"as": {
 			Type:     schema.TypeString,
 			Optional: true,

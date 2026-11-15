@@ -11,6 +11,13 @@ func ResourceDhcpServer() *schema.Resource {
 		MetaResourcePath: PropResourcePath("/ip/dhcp-server"),
 		MetaId:           PropId(Id),
 
+		"ipv6_only_preferred": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Description: "Send the IPv6-Only Preferred DHCP option (108) to clients that request it, allowing them " +
+				"to use IPv6 without an IPv4 lease. Requires RouterOS 7.25 or later.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		"add_arp": {
 			Type:        schema.TypeBool,
 			Optional:    true,

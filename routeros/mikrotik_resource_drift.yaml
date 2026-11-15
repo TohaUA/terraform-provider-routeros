@@ -42,3 +42,10 @@
   /ip/service:
     - tf: address
       mt: available-from
+7.25:
+  /interface/bridge:
+    - tf: last_member_interval
+      mt: last-member-query-interval
+  /interface/dot1x/server:
+    - tf: reauth_timeout
+      mt: reauth-period

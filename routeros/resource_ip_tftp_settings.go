@@ -14,6 +14,12 @@ func ResourceIpTFTPSettings() *schema.Resource {
 		MetaResourcePath: PropResourcePath("/ip/tftp/settings"),
 		MetaId:           PropId(Name),
 
+		"vrf": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "VRF used by the TFTP server. Requires RouterOS 7.25 or later.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		"max_block_size": {
 			Type:     schema.TypeInt,
 			Optional: true,

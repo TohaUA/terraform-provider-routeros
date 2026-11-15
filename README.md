@@ -152,8 +152,11 @@ prefer building from a pinned commit.
 
 * Terraform plugin protocol **5.0** (`terraform-registry-manifest.json`); Terraform 1.x, and
   OpenTofu on the same protocol.
-* RouterOS 7.x. Upstream's tested versions are unchanged; the fields added by the fork target
-  **RouterOS 7.24** and none of them have been exercised against an older release.
+* RouterOS 7.x. Most fields added by the fork target **RouterOS 7.24**. New BGP MED comparison,
+  DHCPv4 IPv6-only preference, DHCPv6 DNS entries, VLAN MAC override, WireGuard client MTU,
+  TFTP VRF and SNMP SHA-2 options require **RouterOS 7.25+**, as noted in their resource docs.
+  Leave these options unset on older routers. Existing `last_member_interval` and
+  `reauth_timeout` configuration attributes are translated to the renamed 7.25 API properties.
 
 ### Upgrading configurations that expose secret values
 
@@ -223,7 +226,8 @@ For more in-depth documentation about each of the resources and datasources, ple
 ### Versions tested
 
 - go 1.24.2 and ROS 7.12, 7.15, 7.16 (stable)
-- fork only: the fields added by this fork target ROS 7.24; see [Using this fork](#using-this-fork)
+- fork only: acceptance CI targets ROS 7.24.6 and 7.25.1; new 7.25 fields have version-gated
+  API/REST tests. See [Using this fork](#using-this-fork) for field requirements.
 
 ## Changelog
 
