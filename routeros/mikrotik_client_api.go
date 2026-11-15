@@ -33,6 +33,7 @@ var (
 		crudStart:       "/start",
 		crudStop:        "/stop",
 		crudGenerateKey: "/generate-key",
+		crudExecute:     "",
 	}
 )
 
@@ -56,7 +57,11 @@ func (c *ApiClient) SendRequest(method crudMethod, url *URL, item MikrotikItem, 
 	for fieldName, fieldValue := range item {
 		cmd = append(cmd, fmt.Sprintf("=%s=%s", fieldName, fieldValue))
 	}
-	ColorizedDebug(c.ctx, "request body:  "+strings.Join(redactAPIWords(cmd), " "))
+	if method == crudExecute {
+		ColorizedDebug(c.ctx, "execute command: "+url.Path)
+	} else {
+		ColorizedDebug(c.ctx, "request body:  "+strings.Join(redactAPIWords(cmd), " "))
+	}
 
 	session, err := c.pool.acquire()
 	if err != nil {
@@ -66,10 +71,15 @@ func (c *ApiClient) SendRequest(method crudMethod, url *URL, item MikrotikItem, 
 	resp, err := session.run(cmd, c.pool.timeout)
 	c.pool.release(session, sessionUsable(err))
 	if err != nil {
+		if method == crudExecute {
+			return fmt.Errorf("RouterOS command %s failed", url.Path)
+		}
 		return err
 	}
 
-	ColorizedDebug(c.ctx, "response body: "+redactReply(resp))
+	if method != crudExecute {
+		ColorizedDebug(c.ctx, "response body: "+redactReply(resp))
+	}
 
 	if result == nil {
 		return nil
@@ -100,6 +110,14 @@ func (c *ApiClient) SendRequest(method crudMethod, url *URL, item MikrotikItem, 
 				m[k] = v
 			}
 			*r = append(*r, m)
+		}
+		// Some operational commands put their only result in !done, not !re.
+		if len(resp.Re) == 0 && resp.Done != nil && len(resp.Done.Map) != 0 {
+			row := MikrotikItem{}
+			for k, v := range resp.Done.Map {
+				row[k] = v
+			}
+			*r = append(*r, row)
 		}
 
 		// !done @ [] is empty...

@@ -179,6 +179,7 @@ func ResourceDhcpServer() *schema.Resource {
 				"configuration without waiting for their lease to expire.",
 		},
 	}
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),

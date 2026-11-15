@@ -375,6 +375,7 @@ func ResourceInterfaceBridge() *schema.Resource {
 		// Some properties are not implemented, see: https://wiki.mikrotik.com/wiki/Manual:Interface/Bridge
 	}
 
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),

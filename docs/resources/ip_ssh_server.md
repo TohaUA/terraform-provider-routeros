@@ -26,6 +26,8 @@ RouterOS 7.2x replaced this property with the tri-state `password_authentication
   * both - Allow both local and remote forwarding methods.
 - `host_key_size` (Number) RSA key size when host key is being regenerated.
 - `host_key_type` (String) Select host key type.
+- `known_hosts_trusted_subnets` (Set of String) RouterOS `known-hosts-trusted-subnets` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+- `known_hosts_validation` (Boolean) RouterOS `known-hosts-validation` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `password_authentication` (String) Whether a password login is accepted at all. RouterOS 7.2x replacement for `always_allow_password_login`:
   * no - password login is refused, only public key authentication is left;
   * yes - a password login is always accepted;
@@ -37,6 +39,7 @@ The verify-required option requires a FIDO key signature attest that the user wa
 
 ### Read-Only
 
+- `host_key_fingerprint` (String) RouterOS `host-key-fingerprint` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `id` (String) The ID of this resource.
 
 ## Import

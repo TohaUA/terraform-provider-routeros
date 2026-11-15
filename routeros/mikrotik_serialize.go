@@ -723,6 +723,9 @@ func MikrotikResourceDataToTerraformDatasource(items *[]MikrotikItem, resourceDa
 	var isSystemDatasource bool = (resourceDataKeyName == "")
 	var transformSet map[string]string
 	var skipFields map[string]struct{}
+	if ts, ok := s[MetaTransformSet]; ok {
+		transformSet = loadTransformSet(ts.Default.(string), true)
+	}
 
 	// Resource attribute drift compensation.
 	if drift := driftAttributeSlice.GetDriftMap(RouterOSVersion, s[MetaResourcePath].Default.(string), true); len(drift) > 0 {

@@ -23,6 +23,7 @@ func ResourceIpIpsecPolicyGroup() *schema.Resource {
 		KeyComment: PropCommentRw,
 	}
 
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),

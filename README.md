@@ -152,11 +152,14 @@ prefer building from a pinned commit.
 
 * Terraform plugin protocol **5.0** (`terraform-registry-manifest.json`); Terraform 1.x, and
   OpenTofu on the same protocol.
-* RouterOS 7.x. Most fields added by the fork target **RouterOS 7.24**. New BGP MED comparison,
-  DHCPv4 IPv6-only preference, DHCPv6 DNS entries, VLAN MAC override, WireGuard client MTU,
-  TFTP VRF and SNMP SHA-2 options require **RouterOS 7.25+**, as noted in their resource docs.
-  Leave these options unset on older routers. Existing `last_member_interval` and
-  `reauth_timeout` configuration attributes are translated to the renamed 7.25 API properties.
+* RouterOS 7.x. The fork includes the documented 7.24 → 7.25 API additions,
+  including bridge security, XFRM, PON, PIM/MLD, WiFi network profiles, SSH host
+  verification, operational data sources, and explicit command actions.
+  See the [7.25 coverage and migration guide](docs/guides/routeros_7_25.md).
+  New resources require **RouterOS 7.25+** and the appropriate hardware/packages.
+  Leave newly added fields unset on older routers. Existing `last_member_interval`
+  and `reauth_timeout` attributes retain their Terraform names and translate to
+  the renamed API properties. IPsec RSA keys use the new submenu on 7.20+.
 
 ### Upgrading configurations that expose secret values
 

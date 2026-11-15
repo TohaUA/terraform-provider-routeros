@@ -101,6 +101,7 @@ func ResourceSNMPCommunity() *schema.Resource {
 		},
 	}
 
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),

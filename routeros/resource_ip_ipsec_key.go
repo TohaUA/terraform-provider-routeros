@@ -18,12 +18,21 @@ import (
   }
 */
 
-/*
-	14.10.2025
-	In version 7.20, RSA key generation has been moved to a separate submenu /ip/ipsec/key/rsa.
-	I think MT plans to add support for keys other than RSA.
-	So for now, we will leave this resource unchanged to avoid making another fix that breaks the logic of the program.
-*/
+// Keep the Terraform resource address stable across the RouterOS 7.20 menu move.
+// Resolve at operation time, after provider configuration determines the version.
+func ipsecKeySchema(s map[string]*schema.Schema) map[string]*schema.Schema {
+	version, err := parseRouterOSVersion(RouterOSVersion)
+	minimum, _ := parseRouterOSVersion("7.20")
+	if err != nil || version < minimum {
+		return s
+	}
+	modern := make(map[string]*schema.Schema, len(s))
+	for k, v := range s {
+		modern[k] = v
+	}
+	modern[MetaResourcePath] = PropResourcePath("/ip/ipsec/key/rsa")
+	return modern
+}
 
 // https://help.mikrotik.com/docs/display/ROS/IPsec#IPsec-Keys
 func ResourceIpIpsecKey() *schema.Resource {
@@ -37,7 +46,7 @@ func ResourceIpIpsecKey() *schema.Resource {
 			Required:         true,
 			ForceNew:         true,
 			Description:      "Size of this key.",
-			ValidateFunc:     validation.IntInSlice([]int{1024, 2048, 4096}),
+			ValidateFunc:     validation.IntInSlice([]int{1024, 2048, 4096, 8192}),
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		KeyName: PropName(""),
@@ -45,14 +54,22 @@ func ResourceIpIpsecKey() *schema.Resource {
 
 	return &schema.Resource{
 		CreateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-			return ResourceCreateAndWait(ctxSetCrudMethod(ctx, crudGenerateKey), resSchema, d, m, d.Timeout(schema.TimeoutCreate))
+			return ResourceCreateAndWait(ctxSetCrudMethod(ctx, crudGenerateKey), ipsecKeySchema(resSchema), d, m, d.Timeout(schema.TimeoutCreate))
 		},
-		ReadContext:   DefaultRead(resSchema),
-		UpdateContext: DefaultUpdate(resSchema),
-		DeleteContext: DefaultDelete(resSchema),
+		ReadContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+			return DefaultRead(ipsecKeySchema(resSchema))(ctx, d, m)
+		},
+		UpdateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+			return DefaultUpdate(ipsecKeySchema(resSchema))(ctx, d, m)
+		},
+		DeleteContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+			return DefaultDelete(ipsecKeySchema(resSchema))(ctx, d, m)
+		},
 
 		Importer: &schema.ResourceImporter{
-			StateContext: ImportStateCustomContext(resSchema),
+			StateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+				return ImportStateCustomContext(ipsecKeySchema(resSchema))(ctx, d, m)
+			},
 		},
 
 		Schema: resSchema,

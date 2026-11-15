@@ -38,13 +38,13 @@ func ResourceInterfaceVlan() *schema.Resource {
 			Type:     schema.TypeBool,
 			Optional: true,
 		},
-		KeyHwOffloaded: {
-			Type:     schema.TypeBool,
-			Optional: true,
-		},
+		KeyHwOffloaded: {Type: schema.TypeBool, Computed: true, Description: "Whether the VLAN interface is currently hardware offloaded. Read-only status."},
+		"l3_hw_offloading": {Type: schema.TypeBool, Optional: true, DiffSuppressFunc: AlwaysPresentNotUserProvided,
+			Description: "Enable Layer 3 hardware offloading on supported switch hardware."},
 		KeyVlanId: PropVlanIdRw("Virtual LAN identifier or tag that is used to distinguish VLANs. Must be equal for all computers that belong to the same VLAN.", false),
 	}
 
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),

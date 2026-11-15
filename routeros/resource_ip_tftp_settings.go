@@ -29,13 +29,14 @@ func ResourceIpTFTPSettings() *schema.Resource {
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 	}
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		CreateContext: DefaultSystemCreate(resSchema),
 		ReadContext:   DefaultSystemRead(resSchema),
 		UpdateContext: DefaultSystemUpdate(resSchema),
 		DeleteContext: DefaultSystemDelete(resSchema),
 		Importer: &schema.ResourceImporter{
-			StateContext: ImportStateCustomContext(resSchema),
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: resSchema,

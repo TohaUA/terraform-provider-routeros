@@ -1,0 +1,8 @@
+package routeros
+
+import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+// https://manual.mikrotik.com/docs/7.25/cli-reference/interface/ethernet/switch/rule/reset-counters/
+func ResourceEthernetSwitchRuleResetCounters() *schema.Resource {
+	return newAPI725Action("/interface/ethernet/switch/rule/reset-counters")
+}

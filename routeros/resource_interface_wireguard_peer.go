@@ -152,6 +152,7 @@ func ResourceInterfaceWireguardPeer() *schema.Resource {
 			Description: "The total amount of bytes transmitted to the peer.",
 		},
 	}
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),
