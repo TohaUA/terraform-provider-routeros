@@ -8,6 +8,8 @@ import (
 )
 
 // Generate the Terraform provider documentation using `tfplugindocs`:
+// Generate catalog metadata before tfplugindocs compiles the provider schema.
+//go:generate go run ./tools/schema_changes/generate_7_25.go -input tools/schema_changes/routeros-7.25-api.json -output routeros/routeros_7_25_catalog.go
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
 func main() {

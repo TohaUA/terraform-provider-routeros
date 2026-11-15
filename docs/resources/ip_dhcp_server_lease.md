@@ -38,7 +38,9 @@ resource "routeros_ip_dhcp_server_lease" "dhcp_lease" {
 
 - `active_address` (String) The IP address of the machine currently holding the DHCP lease.
 - `active_agent_circuit_id` (String) The actual Option 82 Agent Circuit ID suboption seen for the client currently holding the lease, as opposed to the `agent_circuit_id` matcher configured on a static lease.
+- `active_agent_circuit_id_ascii` (String) RouterOS `active-agent-circuit-id-ascii` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `active_agent_remote_id` (String) The actual Option 82 Agent Remote ID suboption seen for the client currently holding the lease, as opposed to the `agent_remote_id` matcher configured on a static lease.
+- `active_agent_remote_id_ascii` (String) RouterOS `active-agent-remote-id-ascii` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `active_client_id` (String) Actual client-id of the client.
 - `active_hostname` (String) The hostname of the machine currently holding the DHCP lease.
 - `active_mac_address` (String) The MAC address of of the machine currently holding the DHCP lease.

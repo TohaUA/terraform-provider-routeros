@@ -185,6 +185,7 @@ func ResourceWifiConfiguration() *schema.Resource {
 		},
 	}
 
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		Description:   `*<span style="color:red">This resource requires a minimum version of RouterOS 7.13.</span>*`,
 		CreateContext: DefaultCreate(resSchema),

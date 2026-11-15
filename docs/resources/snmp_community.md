@@ -5,7 +5,7 @@
 ```terraform
 resource "routeros_snmp_community" "test" {
   authentication_password = "authpasswd"
-  authentication_protocol = "MD5"
+  authentication_protocol = "SHA256" # SHA-2 requires RouterOS 7.25+.
   comment                 = "Comment"
   disabled                = true
   encryption_password     = "encpassword"
@@ -29,8 +29,9 @@ resource "routeros_snmp_community" "mything" {
 
 - `addresses` (Set of String) Set of IP (v4 or v6) addresses or CIDR networks from which connections to SNMP server are allowed.
 - `authentication_password` (String, Sensitive) Password used to authenticate the connection to the server (SNMPv3).
-- `authentication_protocol` (String) The protocol used for authentication (SNMPv3).
+- `authentication_protocol` (String) The protocol used for authentication (SNMPv3). SHA256, SHA384 and SHA512 require RouterOS 7.25 or later.
 - `comment` (String)
+- `denied_oids` (Set of String) RouterOS `denied-oids` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `disabled` (Boolean)
 - `encryption_password` (String, Sensitive) The password used for encryption (SNMPv3).
 - `encryption_protocol` (String) encryption protocol to be used to encrypt the communication (SNMPv3). AES (see rfc3826) available since v6.16.

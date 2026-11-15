@@ -127,7 +127,8 @@ func ResourceInterfaceBridge() *schema.Resource {
 			Computed: true,
 			Description: "If a port has fast-leave set to no and a bridge port receives a IGMP Leave message, " +
 				"then a IGMP Snooping enabled bridge will send a IGMP query to make sure that no devices has " +
-				"subscribed to a certain multicast stream on a bridge port.",
+				"subscribed to a certain multicast stream on a bridge port. Maps to `last-member-query-interval` " +
+				"on RouterOS 7.25 and later.",
 			DiffSuppressFunc: TimeEqual,
 			RequiredWith:     []string{"igmp_snooping"},
 		},
@@ -374,6 +375,7 @@ func ResourceInterfaceBridge() *schema.Resource {
 		// Some properties are not implemented, see: https://wiki.mikrotik.com/wiki/Manual:Interface/Bridge
 	}
 
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),

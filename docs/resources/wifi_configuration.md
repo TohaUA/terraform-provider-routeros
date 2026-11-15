@@ -76,6 +76,7 @@ resource "routeros_wifi_configuration" "configuration1" {
 - `disabled` (Boolean)
 - `dtim_period` (Number) A period at which to transmit multicast traffic, when there are client devices in power save mode connected to the AP.
 - `hide_ssid` (Boolean) This property has effect only in AP mode. Setting it to yes can remove this network from the list of wireless networks that are shown by some client software. Changing this setting does not improve the security of the wireless network, because SSID is included in other frames sent by the AP.
+- `hw_protection_threshold` (Number) RouterOS `hw-protection-threshold` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `interworking` (Map of String) Interworking inline settings.
 - `manager` (String) An option to specify the remote CAP mode.
 - `mode` (String) An option to specify the access point operational mode.

@@ -15,6 +15,10 @@ resource "routeros_ipv6_dhcp_server" "test" {
   lease_time   = "1m"
   name         = "test-dhcpv6"
   preference   = 128
+
+  # RouterOS 7.25+: publish client address bindings in DNS.
+  add_dns_entries        = true
+  add_dns_entries_suffix = "example.test"
 }
 ```
 
@@ -28,6 +32,8 @@ resource "routeros_ipv6_dhcp_server" "test" {
 
 ### Optional
 
+- `add_dns_entries` (Boolean) Create dynamic AAAA DNS entries for address bindings using the client FQDN (option 39). Prefix bindings do not create entries. Requires RouterOS 7.25 or later.
+- `add_dns_entries_suffix` (String) Suffix appended to names created by `add_dns_entries`. Requires RouterOS 7.25 or later.
 - `address_lists` (Set of String) Firewall address lists to which the allocated addresses and prefixes will be added if the lease is bound.
 - `address_pool` (String) IPv6 pool, from which to take IPv6 address for the clients. The prefix length of the pool must be 128.
 - `allow_dual_stack_queue` (Boolean) Creates a single simple queue entry for both IPv4 and IPv6 addresses, and uses the MAC address and DUID for identification. Requires IPv6 DHCP Server to have this option enabled as well to work properly.

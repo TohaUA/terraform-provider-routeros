@@ -6,6 +6,9 @@
 resource "routeros_interface_dot1x_server" "ether2" {
   auth_types = ["mac-auth"]
   interface  = "ether2"
+
+  # Translated to reauth-period on RouterOS 7.25+.
+  reauth_timeout = "5m"
 }
 ```
 
@@ -27,7 +30,7 @@ resource "routeros_interface_dot1x_server" "ether2" {
 - `interim_update` (String) Interval between scheduled RADIUS Interim-Update messages.
 - `mac_auth_mode` (String) An option that allows to control User-Name and User-Password RADIUS attributes when using MAC authentication.
 - `radius_mac_format` (String) An option that controls how the MAC address of the client is encoded in the User-Name and User-Password attributes when using MAC authentication.
-- `reauth_timeout` (String) An option that enables server port re-authentication.
+- `reauth_timeout` (String) An option that enables server port re-authentication. Maps to `reauth-period` on RouterOS 7.25 and later.
 - `reject_vlan_id` (Number) Assigned VLAN when authentication failed, and a RADIUS server responded with an Access-Reject message.
 - `retrans_timeout` (String) The time interval between message re-transmissions if no response is received from the supplicant.
 - `server_fail_vlan_id` (Number) Assigned VLAN when RADIUS server is not responding and request timed out.

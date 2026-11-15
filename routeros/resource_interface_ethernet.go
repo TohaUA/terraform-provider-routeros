@@ -293,6 +293,7 @@ func ResourceInterfaceEthernet() *schema.Resource {
 		},
 	}
 
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		CreateContext: updateOnlyDeviceCreate(resSchema),
 		ReadContext:   updateOnlyDeviceRead(resSchema),

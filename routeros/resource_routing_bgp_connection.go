@@ -87,7 +87,7 @@ func ResourceRoutingBgpConnection() *schema.Resource {
 			Description: "List of address families about which this peer will exchange routing information. The " +
 				"remote peer must support (they usually do) BGP capabilities optional parameter to " +
 				"negotiate any other families than IP.",
-			ValidateDiagFunc: ValidationMultiValInSlice([]string{"ip", "ipv6", "l2vpn", "l2vpn-cisco", "vpnv4"}, false, false),
+			ValidateDiagFunc: ValidationMultiValInSlice([]string{"ip", "ipv6", "l2vpn", "l2vpn-cisco", "vpnv4", "vpnv6", "evpn"}, false, false),
 		},
 		"as": {
 			Type:     schema.TypeString,

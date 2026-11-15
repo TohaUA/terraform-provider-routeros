@@ -41,6 +41,7 @@ func ResourceInterfaceEoip() *schema.Resource {
 		},
 	}
 
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		CreateContext: DefaultValidateCreate(resSchema, func(d *schema.ResourceData) diag.Diagnostics {
 			if d.Get("allow_fast_path").(bool) && d.Get("ipsec_secret").(string) != "" {

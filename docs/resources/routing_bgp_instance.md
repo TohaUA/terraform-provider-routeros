@@ -4,6 +4,11 @@
 ## Example Usage
 ```terraform
 resource "routeros_routing_bgp_instance" "test" {
+  name = "bgp-instance"
+  as   = "65000"
+
+  # RouterOS 7.25+
+  always_compare_med = true
 }
 ```
 
@@ -16,6 +21,7 @@ resource "routeros_routing_bgp_instance" "test" {
 
 ### Optional
 
+- `always_compare_med` (Boolean) Compare MED values between routes from different neighboring autonomous systems. Requires RouterOS 7.25 or later.
 - `as` (String) 32-bit BGP autonomous system number. Value can be entered in AS-Plain and AS-Dot formats. The parameter is also used to set up the BGP confederation, in the following format: confederation_as/as. For example, if your AS is 34 and your confederation AS is 43, then as configuration should be as=43/34.
 - `cluster_id` (String) In case this instance is a route reflector: the cluster ID of the router reflector cluster to this instance belongs. This attribute helps to recognize routing updates that come from another route reflector in this cluster and avoid routing information looping. Note that normally there is only one route reflector in a cluster; in this case, `cluster-id` does not need to be configured and BGP router ID is used instead.
 - `comment` (String)

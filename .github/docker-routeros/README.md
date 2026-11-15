@@ -7,9 +7,9 @@ container and exposes the API and REST ports.
 ## Why this lives here
 
 The tests used to pull `vaerhme/routeros:v<version>` from Docker Hub. That image is published
-only up to **v7.22**, and this fork tests against **7.24**, so there was nothing to pull.
+only up to **v7.22**. This fork's acceptance matrix targets **7.24.6** and **7.25.1**.
 
-Building here rather than publishing our own image keeps the version in one file, avoids
+Building here rather than publishing our own image avoids
 redistributing MikroTik's disk image under this account, and — the part that actually matters —
 means a pull request that bumps the version proves the image boots *in the same run that
 consumes it*. A separately published image can drift from the code that depends on it with no
@@ -27,7 +27,7 @@ project's, kept verbatim, and the maintainer attribution in the `Dockerfile` is 
 
 Three things differ from upstream:
 
-1. `ROUTEROS_VERSION`.
+1. `ROUTEROS_VERSION` is a build argument, defaulting to `7.24.6`.
 2. The download is retried and written to disk before extraction instead of being piped into
    `bsdtar`. This image is built on every CI run rather than occasionally, so an intermittent
    transfer is intermittent CI — a truncated stream fails the extract and cannot be retried once
@@ -45,16 +45,16 @@ of divergent trees. Items 2 and 3 are worth offering upstream.
 
 ## Changing the RouterOS version
 
-Edit `ROUTEROS_VERSION` in `Dockerfile`. That is the only place it is written down:
-`module_testing.yml` reads it back out of this file and passes it to the tests as
-`ROS_VERSION`, which is what they use to decide which version-gated cases apply. Keeping
-it in one place is deliberate — a build running one version while the tests believe another
-makes cases skip silently or assert against the wrong behaviour, and neither failure is loud.
+Edit the version matrix in `module_testing.yml`. Each job passes the same version as the
+Docker build argument `ROUTEROS_VERSION` and the test environment variable `ROS_VERSION`,
+so the downloaded CHR image and the version-gated tests agree. Matrix jobs use separate
+runners and do not cancel one another on a test failure. The Dockerfile default selects
+`7.24.6` for local builds; override it with `--build-arg ROUTEROS_VERSION=7.25.1`.
 
 Check the target version exists first; not every RouterOS release ships a CHR `.vdi`:
 
 ```
-curl -sI https://download.mikrotik.com/routeros/7.24/chr-7.24.vdi.zip | head -1
+curl -sI https://download.mikrotik.com/routeros/7.25.1/chr-7.25.1.vdi.zip | head -1
 ```
 
 ## Running it locally
