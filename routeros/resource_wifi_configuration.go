@@ -101,6 +101,13 @@ func ResourceWifiConfiguration() *schema.Resource {
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		KeyDisabled: PropDisabledRw,
+		"distance": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "Link distance in meters, or `indoors` or `dynamic`. Availability and supported distances depend on the WiFi driver and device.",
+			ValidateFunc:     wifiDistanceValidation,
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		"dtim_period": {
 			Type:         schema.TypeInt,
 			Optional:     true,
@@ -122,6 +129,13 @@ func ResourceWifiConfiguration() *schema.Resource {
 			ValidateDiagFunc: ValidationMapKeyNames,
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
+		"hw_protection_mode": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "Hardware protection mode: `none`, `rts-cts`, or `cts-to-self`. Availability depends on the WiFi driver and device.",
+			ValidateFunc:     validation.StringInSlice([]string{"none", "rts-cts", "cts-to-self"}, false),
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		"manager": {
 			Type:         schema.TypeString,
 			Optional:     true,
@@ -132,7 +146,7 @@ func ResourceWifiConfiguration() *schema.Resource {
 			Type:         schema.TypeString,
 			Optional:     true,
 			Description:  "An option to specify the access point operational mode.",
-			ValidateFunc: validation.StringInSlice([]string{"ap", "station", "station-bridge"}, false),
+			ValidateFunc: validation.StringInSlice([]string{"ap", "station", "station-bridge", "station-pseudobridge"}, false),
 		},
 		"multicast_enhance": {
 			Type:         schema.TypeString,

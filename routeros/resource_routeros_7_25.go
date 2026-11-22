@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -19,6 +20,7 @@ type api725Field struct {
 	Kind                          string
 	ReadOnly, Required, Sensitive bool
 	Enum                          []string
+	NumericAlternative            bool
 }
 
 func api725Name(wire string) string {
@@ -49,8 +51,31 @@ func api725Property(f api725Field) *schema.Schema {
 	}
 	if p.Type == schema.TypeString && len(f.Enum) != 0 && !f.ReadOnly {
 		p.ValidateFunc = validation.StringInSlice(f.Enum, false)
+		if f.NumericAlternative {
+			p.ValidateFunc = validation.Any(p.ValidateFunc, validateUnsigned32String)
+		}
 	}
 	return p
+}
+
+func wifiDistanceValidation(value interface{}, key string) ([]string, []error) {
+	s, ok := value.(string)
+	if ok && (s == "indoors" || s == "dynamic") {
+		return nil, nil
+	}
+	if ok {
+		return validateUnsigned32String(value, key)
+	}
+	return nil, []error{fmt.Errorf("%s must be an unsigned 32-bit distance in meters, indoors, or dynamic", key)}
+}
+
+func validateUnsigned32String(value interface{}, key string) ([]string, []error) {
+	if s, ok := value.(string); ok {
+		if _, err := strconv.ParseUint(s, 10, 32); err == nil {
+			return nil, nil
+		}
+	}
+	return nil, []error{fmt.Errorf("%s must be an unsigned 32-bit integer", key)}
 }
 
 func api725Schema(path string) map[string]*schema.Schema {

@@ -53,3 +53,9 @@ an `add` table: for example, SSH known hosts only support replacement. Use
 record confirmed exceptions in `runtime_overrides`. Regenerate metadata, examples,
 and docs after approved source changes. The fetcher intentionally does not rewrite
 provider schemas or silently absorb documentation changes.
+
+Repeated property rows can describe different driver capabilities. Preserve these
+in `api_variants` instead of retaining only the last row. For example, WiFi profile
+`distance` accepts both a numeric value and `indoors`/`dynamic`; its
+`numeric_alternative` flag keeps the generated validator from rejecting meters.
+Do not treat enum membership as proof that every radio supports that value.
