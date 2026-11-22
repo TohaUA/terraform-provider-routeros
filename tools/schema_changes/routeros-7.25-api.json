@@ -9343,12 +9343,15 @@
         },
         {
           "wire": "configuration.distance",
-          "type": "int",
+          "type": "string",
           "readonly": false,
           "required": false,
           "enum": [],
           "api_type": "num",
-          "sensitive": false
+          "sensitive": false,
+          "numeric_alternative": true,
+          "decimal_places": 3,
+          "runtime_type": "Decimal kilometers, 0..4294967.295; excess fractional digits are truncated by RouterOS 7.25.1."
         },
         {
           "wire": "configuration.hw-retries",
@@ -10619,7 +10622,9 @@
               "type": "enum (indoors | dynamic) { indoors:0, dynamic:0xffffffff }",
               "description": ""
             }
-          ]
+          ],
+          "decimal_places": 3,
+          "runtime_type": "Decimal kilometers, 0..4294967.295; excess fractional digits are truncated by RouterOS 7.25.1."
         },
         {
           "wire": "installation",
@@ -17729,6 +17734,51 @@
         }
       ],
       "flags": {}
+    },
+    "app/restart": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/app/restart/",
+      "runtime_source": "/console/inspect request=child,syntax path=app,restart on disposable CHR 7.25.1 with container package",
+      "fields": [
+        {
+          "wire": "numbers",
+          "type": "string",
+          "required": true,
+          "readonly": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "List of item numbers"
+        }
+      ]
+    },
+    "app/update": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/app/update/",
+      "runtime_source": "/console/inspect request=child,syntax path=app,update on disposable CHR 7.25.1 with container package",
+      "fields": [
+        {
+          "wire": "numbers",
+          "type": "string",
+          "required": true,
+          "readonly": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "List of item numbers"
+        }
+      ]
+    },
+    "app/cleanup": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/app/cleanup/",
+      "runtime_source": "/console/inspect request=child,syntax path=app,cleanup on disposable CHR 7.25.1 with container package",
+      "fields": [
+        {
+          "wire": "numbers",
+          "type": "string",
+          "required": true,
+          "readonly": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "List of item numbers"
+        }
+      ]
     }
   },
   "registrations": {
@@ -17779,7 +17829,9 @@
     "interface/ethernet/pon": "7.25.1 console/inspect confirms set accepts name, status and olt-max-mtu; status is not a read-only flag in this menu",
     "routing/pimsm/interface-template": "7.25.1 console/inspect add/set arguments do not include comment",
     "routing/pimsm/igmp-interface-template": "7.25.1 console/inspect add/set arguments do not include comment",
-    "interface/eoipv6": "7.25.1 add/set accepts comment; dscp is a numeric-or-inherit string (default inherit), despite the reference num type; mtu likewise accepts numeric-or-auto strings (default auto)"
+    "interface/eoipv6": "7.25.1 add/set accepts comment; dscp is a numeric-or-inherit string (default inherit), despite the reference num type; mtu likewise accepts numeric-or-auto strings (default auto)",
+    "app": "7.25.1 console/inspect add/set use network-pvid and do not expose check-certificate. Required custom name is supplied through YAML. See routeros-7.25-features.json for captured command arguments.",
+    "interface/wifi/configuration.distance": "7.25.1 console/inspect declares a decimal number in 0..4294967.295. Live API accepts 0.1 and 1.5, truncates 1.2345 to 1.234, and rejects 4294967.296. The versioned WiFi manual specifies kilometers. Named values belong to separate driver-specific reference variants."
   },
   "target_version": "7.25.1"
 }

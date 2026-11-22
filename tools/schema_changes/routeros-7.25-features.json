@@ -1,0 +1,167 @@
+{
+  "target_version": "7.25.1",
+  "scope": "Release-note features beyond property-name delta coverage. Complements routeros-7.25-api.json; not a catalog of all historical RouterOS functionality.",
+  "sources": [
+    {
+      "url": "https://forum.mikrotik.com/t/7-25-stable-is-released/273987"
+    },
+    {
+      "url": "https://manual.mikrotik.com/docs/7.25/containers/apps/",
+      "sha256": "1898ae0f356f282947b5099cc47b56abd8cb622b24de23b2b9abb57104e82c9b"
+    },
+    {
+      "url": "https://manual.mikrotik.com/docs/7.25/wireless/wifi/#configuration-properties"
+    }
+  ],
+  "features": [
+    {
+      "id": "wifi-profile-distance",
+      "status": "implemented",
+      "resource": "routeros_wifi_configuration",
+      "attributes": [
+        "distance"
+      ],
+      "validation": "TestRouterOS725WifiProfileFeatures; TestRouterOS725WifiReferenceVariants; TestAccWifi7251Distance (API and REST on CHR 7.25.1)",
+      "limits": "Decimal kilometers, 0..4294967.295, truncated to three decimal places. Named driver variants preserved. Physical radio behavior unverified."
+    },
+    {
+      "id": "wifi-profile-hardware-protection",
+      "status": "implemented",
+      "resource": "routeros_wifi_configuration",
+      "attributes": [
+        "hw_protection_mode"
+      ],
+      "validation": "TestRouterOS725WifiProfileFeatures",
+      "limits": "Driver and radio dependent."
+    },
+    {
+      "id": "wifi-station-pseudobridge",
+      "status": "implemented",
+      "resource": "routeros_wifi_configuration",
+      "attributes": [
+        "mode"
+      ],
+      "validation": "TestRouterOS725WifiProfileFeatures",
+      "limits": "Driver and radio dependent."
+    },
+    {
+      "id": "apps-custom-yaml",
+      "status": "implemented",
+      "resource": "routeros_app",
+      "attributes": [
+        "yaml",
+        "disabled",
+        "status",
+        "running"
+      ],
+      "validation": "TestAppYAML; TestAppLifecycle; TestAccApp7251; TestAccApp7251Deployment (API and REST on CHR 7.25.1)",
+      "limits": "Container package/device mode and configured App storage/networking required. YAML retains service privileged and networkRouterIP placeholders."
+    },
+    {
+      "id": "apps-global-settings",
+      "status": "implemented",
+      "resource": "routeros_app_settings",
+      "attributes": [
+        "disk",
+        "router_ip",
+        "lan_bridge",
+        "registry_mirrors",
+        "app_store_urls"
+      ],
+      "validation": "TestAccApp7251"
+    },
+    {
+      "id": "apps-explicit-operations",
+      "status": "implemented",
+      "resources": [
+        "routeros_app_restart",
+        "routeros_app_update",
+        "routeros_app_cleanup"
+      ],
+      "validation": "TestAppActionLifecycle; TestAppActionPlanning; TestAccApp7251Deployment (API and REST on CHR 7.25.1)",
+      "limits": "Operations are explicit, asynchronous, and irreversible where applicable. Refresh/delete never execute an action."
+    },
+    {
+      "id": "bluetooth-output-power",
+      "status": "unverified-contract",
+      "validation": "Inspected official 7.25 CLI reference and live x86 IoT package 7.25.1: root set, advertisers set, scanners set and peripheral-devices set have no power argument.",
+      "limits": "Requires Bluetooth-capable hardware to establish argument name, range, capability conditions and readback. No guessed attribute is exposed."
+    }
+  ],
+  "runtime_contracts": {
+    "app,add": {
+      "source": "/console/inspect request=child,syntax path=app,add on disposable CHR 7.25.1 with container package",
+      "arguments": [
+        "auto-update",
+        "container-command-lines",
+        "copy-from",
+        "devices",
+        "disabled",
+        "environment",
+        "extra-mounts",
+        "firewall-redirects",
+        "network",
+        "network-outgoing-access",
+        "network-pvid",
+        "required-hw-devices",
+        "required-mounts",
+        "secrets",
+        "use-https",
+        "yaml"
+      ]
+    },
+    "app,set": {
+      "source": "/console/inspect request=child,syntax path=app,set on disposable CHR 7.25.1 with container package",
+      "arguments": [
+        "auto-update",
+        "container-command-lines",
+        "devices",
+        "disabled",
+        "environment",
+        "extra-mounts",
+        "firewall-redirects",
+        "network",
+        "network-outgoing-access",
+        "network-pvid",
+        "numbers",
+        "required-hw-devices",
+        "required-mounts",
+        "secrets",
+        "use-https",
+        "yaml"
+      ]
+    },
+    "app,settings,set": {
+      "source": "/console/inspect request=child,syntax path=app,settings,set on disposable CHR 7.25.1 with container package",
+      "arguments": [
+        "app-store-urls",
+        "auto-update",
+        "disk",
+        "download-path",
+        "lan-bridge",
+        "media-path",
+        "registry-mirrors",
+        "router-ip",
+        "show-in-webfig"
+      ]
+    },
+    "app,restart": {
+      "source": "/console/inspect request=child,syntax path=app,restart on disposable CHR 7.25.1 with container package",
+      "arguments": [
+        "numbers"
+      ]
+    },
+    "app,update": {
+      "source": "/console/inspect request=child,syntax path=app,update on disposable CHR 7.25.1 with container package",
+      "arguments": [
+        "numbers"
+      ]
+    },
+    "app,cleanup": {
+      "source": "/console/inspect request=child,syntax path=app,cleanup on disposable CHR 7.25.1 with container package",
+      "arguments": [
+        "numbers"
+      ]
+    }
+  }
+}

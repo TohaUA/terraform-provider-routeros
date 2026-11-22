@@ -56,6 +56,14 @@ provider schemas or silently absorb documentation changes.
 
 Repeated property rows can describe different driver capabilities. Preserve these
 in `api_variants` instead of retaining only the last row. For example, WiFi profile
-`distance` accepts both a numeric value and `indoors`/`dynamic`; its
-`numeric_alternative` flag keeps the generated validator from rejecting meters.
+`distance` accepts both decimal kilometers and `indoors`/`dynamic`; its
+`numeric_alternative` flag keeps the generated validator from rejecting decimal input. Its `decimal_places = 3` metadata records
+the live scaled numeric range (`0..4294967.295` kilometers).
 Do not treat enum membership as proof that every radio supports that value.
+
+`routeros-7.25-features.json` tracks release-note features outside the CLI name
+delta, their validation, and unresolved hardware contracts. It also pins live
+`/console/inspect` App arguments; `TestAppCapturedContract` checks both missing and
+invented writable fields against that independent inventory. A feature marked
+`unverified-contract` is not implemented or certified. Bluetooth output power
+currently has that status. Keep RouterOS 7.26 work outside this 7.25.1 inventory.

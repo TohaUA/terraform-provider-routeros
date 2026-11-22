@@ -1,6 +1,9 @@
 package routeros
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -104,9 +107,9 @@ func ResourceWifiConfiguration() *schema.Resource {
 		"distance": {
 			Type:             schema.TypeString,
 			Optional:         true,
-			Description:      "Link distance in meters, or `indoors` or `dynamic`. Availability and supported distances depend on the WiFi driver and device.",
+			Description:      "Link distance in kilometers (0..4294967.295), or driver-specific `indoors` or `dynamic`. RouterOS keeps three decimal places. Availability depends on the WiFi driver and device.",
 			ValidateFunc:     wifiDistanceValidation,
-			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+			DiffSuppressFunc: wifiDistanceEqual,
 		},
 		"dtim_period": {
 			Type:         schema.TypeInt,
@@ -204,7 +207,14 @@ func ResourceWifiConfiguration() *schema.Resource {
 		Description:   `*<span style="color:red">This resource requires a minimum version of RouterOS 7.13.</span>*`,
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),
-		UpdateContext: DefaultUpdate(resSchema),
+		UpdateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+			if ds := ResourceUpdate(ctx, resSchema, d, m); ds.HasError() {
+				return ds
+			}
+			// API set replies do not contain canonical values such as decimal
+			// distance. Read them just as the REST update response does.
+			return ResourceRead(ctx, resSchema, d, m)
+		},
 		DeleteContext: DefaultDelete(resSchema),
 
 		Importer: &schema.ResourceImporter{

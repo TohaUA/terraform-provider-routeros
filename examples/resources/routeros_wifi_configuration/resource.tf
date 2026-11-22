@@ -35,7 +35,7 @@ resource "routeros_wifi_configuration" "configuration1" {
   name    = "configuration1"
   ssid    = "my-network"
   # Requires support from the WiFi driver and device.
-  distance           = "indoors" # Or a numeric distance in meters, e.g. "100".
+  distance           = "indoors" # Or decimal kilometers, e.g. "0.1".
   hw_protection_mode = "rts-cts"
 
   aaa = {

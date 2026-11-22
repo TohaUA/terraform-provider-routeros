@@ -57,6 +57,7 @@ func (c *RestClient) GetTransport() TransportType {
 
 func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem, result interface{}) error {
 	var data io.Reader
+	privateBody := method == crudExecute || url.Path == "/app" || strings.HasPrefix(url.Path, "/app/")
 
 	if item != nil {
 		b, err := json.Marshal(&item)
@@ -64,7 +65,7 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 			return err
 		}
 
-		if method != crudExecute {
+		if !privateBody {
 			ColorizedDebug(c.ctx, "request body:  "+redactJSON(b))
 		}
 		data = bytes.NewBuffer(b)
@@ -94,7 +95,7 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
 		var errRes errorResponse
-		if method == crudExecute {
+		if privateBody {
 			return fmt.Errorf("RouterOS command %s failed with HTTP %d", url.Path, res.StatusCode)
 		}
 
@@ -108,7 +109,7 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 		}
 	}
 
-	if method != crudExecute {
+	if !privateBody {
 		ColorizedDebug(c.ctx, "response body: "+redactJSON(body))
 	}
 

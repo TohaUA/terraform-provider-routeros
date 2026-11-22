@@ -22,6 +22,7 @@ type field struct {
 	Sensitive          bool     `json:"sensitive"`
 	Enum               []string `json:"enum"`
 	NumericAlternative bool     `json:"numeric_alternative"`
+	DecimalPlaces      int      `json:"decimal_places"`
 }
 
 func main() {
@@ -72,6 +73,9 @@ func main() {
 			fmt.Fprint(&out, "}")
 			if f.NumericAlternative {
 				fmt.Fprint(&out, ",NumericAlternative:true")
+				if f.DecimalPlaces != 0 {
+					fmt.Fprintf(&out, ",DecimalPlaces:%d", f.DecimalPlaces)
+				}
 			}
 			fmt.Fprintln(&out, "},")
 		}

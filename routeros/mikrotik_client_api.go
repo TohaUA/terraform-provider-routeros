@@ -46,6 +46,7 @@ func (c *ApiClient) GetTransport() TransportType {
 }
 
 func (c *ApiClient) SendRequest(method crudMethod, url *URL, item MikrotikItem, result interface{}) error {
+	privateBody := method == crudExecute || url.Path == "/app" || strings.HasPrefix(url.Path, "/app/")
 
 	// https://help.mikrotik.com/docs/display/ROS/API
 	// /interface/vlan/print + '?.id=*39' + '?type=vlan'
@@ -57,7 +58,7 @@ func (c *ApiClient) SendRequest(method crudMethod, url *URL, item MikrotikItem, 
 	for fieldName, fieldValue := range item {
 		cmd = append(cmd, fmt.Sprintf("=%s=%s", fieldName, fieldValue))
 	}
-	if method == crudExecute {
+	if privateBody {
 		ColorizedDebug(c.ctx, "execute command: "+url.Path)
 	} else {
 		ColorizedDebug(c.ctx, "request body:  "+strings.Join(redactAPIWords(cmd), " "))
@@ -71,13 +72,13 @@ func (c *ApiClient) SendRequest(method crudMethod, url *URL, item MikrotikItem, 
 	resp, err := session.run(cmd, c.pool.timeout)
 	c.pool.release(session, sessionUsable(err))
 	if err != nil {
-		if method == crudExecute {
+		if privateBody {
 			return fmt.Errorf("RouterOS command %s failed", url.Path)
 		}
 		return err
 	}
 
-	if method != crudExecute {
+	if !privateBody {
 		ColorizedDebug(c.ctx, "response body: "+redactReply(resp))
 	}
 

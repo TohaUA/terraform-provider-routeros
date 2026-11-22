@@ -20,7 +20,7 @@ func TestRouterOS725WifiProfileFeatures(t *testing.T) {
 		rejected    []string
 	}{
 		{"mode", "mode", []string{"ap", "station", "station-bridge", "station-pseudobridge"}, []string{"invalid"}},
-		{"distance", "distance", []string{"0", "100", "30000", "indoors", "dynamic"}, []string{"-1", "1.5", "far", "4294967296"}},
+		{"distance", "distance", []string{"0", "+1", ".1", "0.1", "1.5", "100", "30000", "4294967.295", "indoors", "dynamic"}, []string{"-1", "1.", "far", "4294967.296", "4294967295", "NaN", "Inf"}},
 		{"hw_protection_mode", "hw-protection-mode", []string{"none", "rts-cts", "cts-to-self"}, []string{"invalid"}},
 	} {
 		t.Run(tc.field, func(t *testing.T) {
@@ -90,14 +90,33 @@ func TestRouterOS725WifiReferenceVariants(t *testing.T) {
 		t.Fatal("distance lost its numeric variant")
 	}
 	validate := api725Property(distance).ValidateFunc
-	for _, value := range []string{"100", "4294967295", "indoors", "dynamic"} {
+	for _, value := range []string{"0.1", "1.5", "100", "4294967.295", "indoors", "dynamic"} {
 		if _, errs := validate(value, "distance"); len(errs) != 0 {
 			t.Fatal(errs)
 		}
 	}
-	for _, value := range []string{"-1", "4294967296", "1.5", "far"} {
+	for _, value := range []string{"-1", "4294967.296", "4294967295", "far"} {
 		if _, errs := validate(value, "distance"); len(errs) == 0 {
 			t.Errorf("invalid distance %q accepted", value)
+		}
+	}
+}
+
+func TestRouterOS725WifiDistanceCanonicalization(t *testing.T) {
+	r := ResourceWifiConfiguration()
+	for _, tc := range []struct {
+		old, next string
+		equal     bool
+	}{
+		{"0.1", "0.100", true}, {"1.234", "1.2345", true},
+		{"1", "+1", true}, {"0.1", ".1", true}, {"1", "1.", false},
+		{"4294967.295", "4294967.2959", true}, {"0", "0.0009", true},
+		{"1", "1.001", false}, {"4294967.295", "4294967.296", false},
+		{"indoors", "dynamic", false}, {"0", "invalid", false},
+	} {
+		d := resourceDataWithRawConfig(r, "*1", map[string]cty.Value{"distance": cty.StringVal(tc.next)})
+		if got := r.Schema["distance"].DiffSuppressFunc("distance", tc.old, tc.next, d); got != tc.equal {
+			t.Errorf("%s -> %s: equal=%v, want %v", tc.old, tc.next, got, tc.equal)
 		}
 	}
 }
