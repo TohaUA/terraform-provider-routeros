@@ -10608,7 +10608,18 @@
             "dynamic"
           ],
           "api_type": "enum (indoors | dynamic) { indoors:0, dynamic:0xffffffff }",
-          "sensitive": false
+          "sensitive": false,
+          "numeric_alternative": true,
+          "api_variants": [
+            {
+              "type": "num",
+              "description": ""
+            },
+            {
+              "type": "enum (indoors | dynamic) { indoors:0, dynamic:0xffffffff }",
+              "description": ""
+            }
+          ]
         },
         {
           "wire": "installation",
@@ -10637,9 +10648,24 @@
           "type": "string",
           "readonly": false,
           "required": false,
-          "enum": [],
+          "enum": [
+            "ap",
+            "station",
+            "station-bridge",
+            "station-pseudobridge"
+          ],
           "api_type": "enum (ap)",
-          "sensitive": false
+          "sensitive": false,
+          "api_variants": [
+            {
+              "type": "enum (ap | station | station-bridge | station-pseudobridge)",
+              "description": ""
+            },
+            {
+              "type": "enum (ap)",
+              "description": ""
+            }
+          ]
         },
         {
           "wire": "hide-ssid",
@@ -10721,7 +10747,17 @@
             "cts-to-self"
           ],
           "api_type": "enum (none | rts-cts | cts-to-self) { none:0, rts-cts:1, cts-to-self:2 }",
-          "sensitive": false
+          "sensitive": false,
+          "api_variants": [
+            {
+              "type": "enum (none | rts-cts | cts-to-self)",
+              "description": ""
+            },
+            {
+              "type": "enum (none | rts-cts | cts-to-self) { none:0, rts-cts:1, cts-to-self:2 }",
+              "description": ""
+            }
+          ]
         },
         {
           "wire": "max-sta-count",

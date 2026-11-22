@@ -15,12 +15,13 @@ import (
 )
 
 type field struct {
-	Wire      string   `json:"wire"`
-	Kind      string   `json:"type"`
-	ReadOnly  bool     `json:"readonly"`
-	Required  bool     `json:"required"`
-	Sensitive bool     `json:"sensitive"`
-	Enum      []string `json:"enum"`
+	Wire               string   `json:"wire"`
+	Kind               string   `json:"type"`
+	ReadOnly           bool     `json:"readonly"`
+	Required           bool     `json:"required"`
+	Sensitive          bool     `json:"sensitive"`
+	Enum               []string `json:"enum"`
+	NumericAlternative bool     `json:"numeric_alternative"`
 }
 
 func main() {
@@ -68,7 +69,11 @@ func main() {
 			for _, value := range f.Enum {
 				fmt.Fprintf(&out, "%q,", value)
 			}
-			fmt.Fprintln(&out, "}},")
+			fmt.Fprint(&out, "}")
+			if f.NumericAlternative {
+				fmt.Fprint(&out, ",NumericAlternative:true")
+			}
+			fmt.Fprintln(&out, "},")
 		}
 		fmt.Fprintln(&out, "},")
 	}

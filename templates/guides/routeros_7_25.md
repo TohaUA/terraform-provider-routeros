@@ -11,6 +11,17 @@ coverage, not certification of every legacy API or every hardware variant.
 RouterOS protocol fixes, firmware internals, and GUI-only changes do not each
 require Terraform attributes.
 
+Named `routeros_wifi_configuration` profiles also expose `distance` (meters as a
+string, `indoors`, or `dynamic`), `hw_protection_mode` (`none`, `rts-cts`, or
+`cts-to-self`), and `mode = "station-pseudobridge"`. Support depends on the WiFi
+driver and radio. The reference snapshot preserves driver-specific alternatives;
+a numeric distance must not be rejected just because another driver lists enums.
+
+The CLI comparison alone does not cover every release-note feature. Native Apps
+lifecycle and Bluetooth output-power support are tracked separately until their
+7.25.1 API contracts and device requirements have been verified. RouterOS 7.26
+additions are a separate milestone and are not included in the 7.25.1 claim.
+
 ## New configuration resources
 
 These resources require **RouterOS 7.25.1+** and the corresponding package/hardware.
