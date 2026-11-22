@@ -1,9 +1,9 @@
 # routeros_system_script_environment (Data Source)
-Read global script variables visible to the API user on RouterOS 7.25+. Values are sensitive and are stored in Terraform state.
+Read global script variables visible to the API user on RouterOS 7.25.1+. Values are sensitive and are stored in Terraform state.
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Reads global script variables visible to the API user.
+# RouterOS 7.25.1+. Reads global script variables visible to the API user.
 data "routeros_system_script_environment" "example" {}
 
 output "globals" {

@@ -1,9 +1,9 @@
 # routeros_routing_igmp_proxy (Resource)
-Manage `/routing/igmp-proxy`. Requires RouterOS 7.25 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/routing/igmp-proxy/). Deleting the Terraform resource leaves the settings on the router. Import using any non-empty ID.
+Manage `/routing/igmp-proxy`. Requires RouterOS 7.25.1 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/routing/igmp-proxy/). Deleting the Terraform resource leaves the settings on the router. Import using any non-empty ID.
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Check the menu's package and hardware requirements.
+# RouterOS 7.25.1+. Check the menu's package and hardware requirements.
 resource "routeros_routing_igmp_proxy" "example" {
   robustness                 = 2
   query_interval             = "2m5s"

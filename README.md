@@ -152,14 +152,14 @@ prefer building from a pinned commit.
 
 * Terraform plugin protocol **5.0** (`terraform-registry-manifest.json`); Terraform 1.x, and
   OpenTofu on the same protocol.
-* RouterOS 7.x. The fork includes the documented 7.24 → 7.25 API additions,
+* **RouterOS 7.25.1 is the support and acceptance-test target.** Earlier versions
+  are unsupported. The fork includes the documented 7.24 → 7.25 API additions,
   including bridge security, XFRM, PON, PIM/MLD, WiFi network profiles, SSH host
   verification, operational data sources, and explicit command actions.
   See the [7.25 coverage and migration guide](docs/guides/routeros_7_25.md).
-  New resources require **RouterOS 7.25+** and the appropriate hardware/packages.
-  Leave newly added fields unset on older routers. Existing `last_member_interval`
-  and `reauth_timeout` attributes retain their Terraform names and translate to
-  the renamed API properties. IPsec RSA keys use the new submenu on 7.20+.
+  New resources require **RouterOS 7.25.1+** and the appropriate hardware/packages.
+  Existing `last_member_interval` and `reauth_timeout` attributes retain their Terraform names and translate to
+  the renamed API properties. IPsec RSA keys use `/ip/ipsec/key/rsa`.
 
 ### Upgrading configurations that expose secret values
 
@@ -228,9 +228,9 @@ For more in-depth documentation about each of the resources and datasources, ple
 
 ### Versions tested
 
-- go 1.24.2 and ROS 7.12, 7.15, 7.16 (stable)
-- fork only: acceptance CI targets ROS 7.24.6 and 7.25.1; new 7.25 fields have version-gated
-  API/REST tests. See [Using this fork](#using-this-fork) for field requirements.
+- RouterOS **7.25.1**, using API and REST. CI runs this version only.
+- Go toolchain from `go.mod`; Terraform plugin protocol 5.0.
+- Earlier RouterOS versions are outside this fork's support scope.
 
 ## Changelog
 

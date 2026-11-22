@@ -1,9 +1,9 @@
 # routeros_interface_ethernet_switch_rule_reset_counters (Resource)
-Execute `/interface/ethernet/switch/rule/reset-counters` on RouterOS 7.25+. Runs on creation or configuration/trigger changes. Refresh does not execute it; deletion only removes state and cannot undo the command. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/ethernet/switch/rule/reset-counters/).
+Execute `/interface/ethernet/switch/rule/reset-counters` on RouterOS 7.25.1+. Runs on creation or configuration/trigger changes. Refresh does not execute it; deletion only removes state and cannot undo the command. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/ethernet/switch/rule/reset-counters/).
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Check the menu's package and hardware requirements.
+# RouterOS 7.25.1+. Check the menu's package and hardware requirements.
 # Executes on apply; a changed trigger runs it again. Destroy cannot undo it.
 resource "routeros_interface_ethernet_switch_rule_reset_counters" "example" {
   arguments = {

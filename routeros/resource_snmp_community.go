@@ -53,7 +53,7 @@ func ResourceSNMPCommunity() *schema.Resource {
 			Type:         schema.TypeString,
 			Optional:     true,
 			Default:      "MD5",
-			Description:  "The protocol used for authentication (SNMPv3). SHA256, SHA384 and SHA512 require RouterOS 7.25 or later.",
+			Description:  "The protocol used for authentication (SNMPv3). SHA256, SHA384 and SHA512 require RouterOS 7.25.1 or later.",
 			ValidateFunc: validation.StringInSlice([]string{"MD5", "SHA1", "SHA256", "SHA384", "SHA512"}, false),
 		},
 		KeyComment:  PropCommentRw,

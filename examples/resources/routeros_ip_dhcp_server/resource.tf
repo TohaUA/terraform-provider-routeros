@@ -3,6 +3,6 @@ resource "routeros_ip_dhcp_server" "server" {
   interface    = "bridge"
   name         = "bridge_dhcp"
 
-  # RouterOS 7.25+: offer IPv6-only operation to supporting clients.
+  # RouterOS 7.25.1+: offer IPv6-only operation to supporting clients.
   ipv6_only_preferred = true
 }

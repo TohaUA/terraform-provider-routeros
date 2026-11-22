@@ -1,9 +1,9 @@
 # routeros_interface_lte_show_capabilities (Data Source)
-Read `/interface/lte/show-capabilities` on RouterOS 7.25+. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/lte/show-capabilities/).
+Read `/interface/lte/show-capabilities` on RouterOS 7.25.1+. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/lte/show-capabilities/).
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Requires the corresponding hardware/package.
+# RouterOS 7.25.1+. Requires the corresponding hardware/package.
 data "routeros_interface_lte_show_capabilities" "example" {
   arguments = {
     numbers = "lte1"

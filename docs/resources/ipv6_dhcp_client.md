@@ -40,7 +40,7 @@ resource "routeros_ipv6_dhcp_client" "client" {
 - `custom_iapd_id` (String) Allow to specify custom IAPD ID.
 - `default_route_distance` (Number) Distance of default route. Applicable if add-default-route is set to yes.
 - `default_route_tables` (Set of String) List of routing tables to which default route must be added. Table name can be proceeded with ":x" where x would be the distance for the route to be installed with.
-- `dhcp_options` (Set of String) Options that are sent to the DHCP server.
+- `dhcp_options` (Set of String) Options sent to the DHCP server. When omitted, retain the router's default (fqdn on RouterOS 7.25.1). Set an empty set to send no options.
 - `disabled` (Boolean)
 - `pool_name` (String) Name of the IPv6 pool in which received IPv6 prefix will be added
 - `pool_prefix_length` (Number) Prefix length parameter that will be set for IPv6 pool in which received IPv6 prefix is added. Prefix length must be greater than the length of the received prefix, otherwise, prefix-length will be set to received prefix length + 8 bits.

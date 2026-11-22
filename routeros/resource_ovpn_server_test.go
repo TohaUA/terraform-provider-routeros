@@ -1,35 +1,16 @@
 package routeros
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testOpenVPNServerMinVersion = "7.8"
-
-// /interface/ovpn-server/server stopped being a singleton. On 7.16 it answers
-// with an object carrying `enabled`; on 7.24 it answers with an array, and the
-// `enabled` parameter is gone. routeros_ovpn_server models it as a singleton --
-// DefaultSystemCreate/Read/Update over PropId(Id) -- so supporting the newer
-// form is a schema version bump plus a state migration, not a test edit. Until
-// that lands the resource does not work on 7.24 at all, and this gate says so
-// rather than letting the test fail every run.
-const testOpenVPNServerMaxVersion = "7.16"
-
 const testOpenVPNServer = "routeros_ovpn_server.server"
 const testInterfaceOpenVPNServer = "routeros_interface_ovpn_server.user1"
 
 func TestAccOpenVPNServerTest_basic(t *testing.T) {
-	if !testCheckMinVersion(t, testOpenVPNServerMinVersion) {
-		t.Logf("Test skipped, the minimum required version is %v", testOpenVPNServerMinVersion)
-		return
-	}
-	if !testCheckMaxVersion(t, testOpenVPNServerMaxVersion) {
-		t.Skipf("Test skipped, routeros_ovpn_server does not yet support the list form "+
-			"introduced after RouterOS %v", testOpenVPNServerMaxVersion)
-	}
-
 	for _, name := range testNames {
 		t.Run(name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{
@@ -38,17 +19,24 @@ func TestAccOpenVPNServerTest_basic(t *testing.T) {
 					testSetTransportEnv(t, name)
 				},
 				ProviderFactories: testAccProviderFactories,
+				CheckDestroy: resource.ComposeTestCheckFunc(
+					testCheckResourceDestroy("/interface/ovpn-server/server", "routeros_ovpn_server"),
+					testCheckResourceDestroy("/interface/ovpn-server", "routeros_interface_ovpn_server"),
+				),
 				Steps: []resource.TestStep{
 					{
-						Config: testAccOpenVPNServerConfig(),
+						Config: testAccOpenVPNServerConfig(1194),
 						Check: resource.ComposeTestCheckFunc(
 							testResourcePrimaryInstanceId(testOpenVPNServer),
 							testResourcePrimaryInstanceId(testInterfaceOpenVPNServer),
-							resource.TestCheckResourceAttr(testOpenVPNServer, "id", "interface.ovpn-server.server"),
+							resource.TestCheckResourceAttr(testOpenVPNServer, "name", "tf-ovpn-server"),
+							resource.TestCheckResourceAttr(testOpenVPNServer, "disabled", "true"),
 							resource.TestCheckResourceAttr(testInterfaceOpenVPNServer, "name", "ovpn-in1"),
 							resource.TestCheckResourceAttr(testInterfaceOpenVPNServer, "user", "user1"),
 						),
 					},
+					{Config: testAccOpenVPNServerConfig(1195), Check: resource.TestCheckResourceAttr(testOpenVPNServer, "port", "1195")},
+					{ResourceName: testOpenVPNServer, ImportState: true, ImportStateVerify: true},
 				},
 			})
 
@@ -57,8 +45,8 @@ func TestAccOpenVPNServerTest_basic(t *testing.T) {
 }
 
 // Complex test for OpenVPN server resources.
-func testAccOpenVPNServerConfig() string {
-	return providerConfig + `
+func testAccOpenVPNServerConfig(port int) string {
+	return providerConfig + fmt.Sprintf(`
 	resource "routeros_system_certificate" "ovpn_ca" {
 		name        = "OpenVPN-Root-CA"
 		common_name = "OpenVPN Root CA"
@@ -80,18 +68,20 @@ func testAccOpenVPNServerConfig() string {
 	  }
 	  
 	  resource "routeros_ovpn_server" "server" {
-		enabled          = false
+		name             = "tf-ovpn-server"
+        disabled         = true
+        port             = %d
 		certificate      = routeros_system_certificate.ovpn_server_crt.name
 		auth             = ["sha256", "sha512"]
 		redirect_gateway = ["def1", "ipv6"]
 		tls_version      = "only-1.2"
 	  }
 	  
-	  # The resource should be created only after the OpenVPN server is enabled!
+	  # Create the server instance before its static interfaces.
       resource "routeros_interface_ovpn_server" "user1" {
         name       = "ovpn-in1"
         user       = "user1"
         depends_on = [routeros_ovpn_server.server]
       }
-`
+`, port)
 }

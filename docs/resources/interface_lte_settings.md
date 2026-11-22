@@ -1,9 +1,9 @@
 # routeros_interface_lte_settings (Resource)
-Manage `/interface/lte/settings`. Requires RouterOS 7.25 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/lte/settings/). Deleting the Terraform resource leaves the settings on the router. Import using any non-empty ID.
+Manage `/interface/lte/settings`. Requires RouterOS 7.25.1 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/lte/settings/). Deleting the Terraform resource leaves the settings on the router. Import using any non-empty ID.
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Check the menu's package and hardware requirements.
+# RouterOS 7.25.1+. Check the menu's package and hardware requirements.
 resource "routeros_interface_lte_settings" "example" {
   mode                = "auto"
   esim_channel        = "auto"

@@ -17735,7 +17735,7 @@
       "routeros_system_script_environment": "DatasourceSystemScriptEnvironment"
     }
   },
-  "scope": "All documented changes from RouterOS 7.24 to 7.25, plus complete schemas for newly exposed menus. Runtime hardware validation is separate.",
+  "scope": "RouterOS 7.25.1 support. The official 7.24-to-7.25 comparison supplies the release-addition inventory; earlier RouterOS versions are unsupported. Hardware runtime validation is separate.",
   "runtime_overrides": {
     "routing/pimsm/instance": "7.25.1 API and REST reject comment despite the generic list-menu documentation",
     "ip/ssh/known-hosts": "7.25.1 supports add/remove/print but rejects set: configured fields require replacement",
@@ -17744,5 +17744,6 @@
     "routing/pimsm/interface-template": "7.25.1 console/inspect add/set arguments do not include comment",
     "routing/pimsm/igmp-interface-template": "7.25.1 console/inspect add/set arguments do not include comment",
     "interface/eoipv6": "7.25.1 add/set accepts comment; dscp is a numeric-or-inherit string (default inherit), despite the reference num type; mtu likewise accepts numeric-or-auto strings (default auto)"
-  }
+  },
+  "target_version": "7.25.1"
 }

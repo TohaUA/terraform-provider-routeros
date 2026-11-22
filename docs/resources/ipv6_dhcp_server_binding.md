@@ -1,9 +1,9 @@
 # routeros_ipv6_dhcp_server_binding (Resource)
-Manage `/ipv6/dhcp-server/binding`. Requires RouterOS 7.25 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/ipv6/dhcp-server/binding/).
+Manage `/ipv6/dhcp-server/binding`. Requires RouterOS 7.25.1 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/ipv6/dhcp-server/binding/).
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Check the menu's package and hardware requirements.
+# RouterOS 7.25.1+. Check the menu's package and hardware requirements.
 resource "routeros_ipv6_dhcp_server_binding" "example" {
   address  = "2001:db8::10/128"
   duid     = "0x00030001aabbccddee01"

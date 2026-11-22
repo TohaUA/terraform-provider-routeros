@@ -17,8 +17,8 @@ func TestAccRouterOS725Resources(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("requires a disposable RouterOS instance")
 	}
-	if !testCheckMinVersion(t, "7.25") {
-		t.Skip("requires RouterOS 7.25+")
+	if !testCheckMinVersion(t, "7.25.1") {
+		t.Skip("requires RouterOS 7.25.1+")
 	}
 	private := ed25519.NewKeyFromSeed(make([]byte, ed25519.SeedSize))
 	public, err := ssh.NewPublicKey(private.Public())
@@ -127,8 +127,8 @@ func TestAccRouterOS725PimTemplates(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("requires a disposable RouterOS instance")
 	}
-	if !testCheckMinVersion(t, "7.25") {
-		t.Skip("requires RouterOS 7.25+")
+	if !testCheckMinVersion(t, "7.25.1") {
+		t.Skip("requires RouterOS 7.25.1+")
 	}
 	for _, transport := range testNames {
 		t.Run(transport, func(t *testing.T) {
@@ -176,8 +176,8 @@ func TestAccRouterOS725FetchAction(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("requires a disposable RouterOS instance")
 	}
-	if !testCheckMinVersion(t, "7.25") {
-		t.Skip("requires RouterOS 7.25+")
+	if !testCheckMinVersion(t, "7.25.1") {
+		t.Skip("requires RouterOS 7.25.1+")
 	}
 	for _, transport := range testNames {
 		t.Run(transport, func(t *testing.T) {
@@ -205,8 +205,8 @@ func TestAccRouterOS725BridgeSecurity(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("requires a disposable RouterOS instance")
 	}
-	if !testCheckMinVersion(t, "7.25") {
-		t.Skip("requires RouterOS 7.25+")
+	if !testCheckMinVersion(t, "7.25.1") {
+		t.Skip("requires RouterOS 7.25.1+")
 	}
 	for _, transport := range testNames {
 		t.Run(transport, func(t *testing.T) {
@@ -242,8 +242,8 @@ func TestAccRouterOS725Settings(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("requires a disposable RouterOS instance")
 	}
-	if !testCheckMinVersion(t, "7.25") {
-		t.Skip("requires RouterOS 7.25+")
+	if !testCheckMinVersion(t, "7.25.1") {
+		t.Skip("requires RouterOS 7.25.1+")
 	}
 	for _, transport := range testNames {
 		t.Run(transport, func(t *testing.T) {

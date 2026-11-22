@@ -9,14 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// These tests require a disposable RouterOS 7.25+ instance. New DHCP servers and
+// These tests require a disposable RouterOS 7.25.1+ instance. New DHCP servers and
 // authentication entries stay disabled; no clients or remote peers are needed.
 func TestAccRouterOS725Fields(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("requires TF_ACC and a disposable RouterOS instance")
 	}
-	if !testCheckMinVersion(t, "7.25") {
-		t.Skip("requires RouterOS 7.25 or later")
+	if !testCheckMinVersion(t, "7.25.1") {
+		t.Skip("requires RouterOS 7.25.1 or later")
 	}
 	for _, tc := range []struct {
 		name, resourceType, path, base, field string

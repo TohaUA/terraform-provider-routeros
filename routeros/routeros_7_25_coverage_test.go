@@ -119,22 +119,19 @@ func TestRouterOS725ProviderSchema(t *testing.T) {
 	}
 }
 
-func TestIPsecKeyMenuMigration(t *testing.T) {
-	old := RouterOSVersion
-	t.Cleanup(func() { RouterOSVersion = old })
-	s := ResourceIpIpsecKey().Schema
-	for _, tc := range []struct{ version, path string }{
-		{"7.19.6", "/ip/ipsec/key"},
-		{"7.20", "/ip/ipsec/key/rsa"},
-		{"7.25.1", "/ip/ipsec/key/rsa"},
-	} {
-		RouterOSVersion = tc.version
-		if got := ipsecKeySchema(s)[MetaResourcePath].Default; got != tc.path {
-			t.Errorf("%s: got %s, want %s", tc.version, got, tc.path)
+func TestIPsecKey7251(t *testing.T) {
+	r := ResourceIpIpsecKey()
+	if r.Schema[MetaResourcePath].Default != "/ip/ipsec/key/rsa" {
+		t.Fatal("RSA operations must use the RouterOS 7.25.1 menu")
+	}
+	validate := r.Schema["key_size"].ValidateFunc
+	for _, size := range []int{2048, 4096, 8192} {
+		if _, errs := validate(size, "key_size"); len(errs) != 0 {
+			t.Fatal(errs)
 		}
 	}
-	if s[MetaResourcePath].Default != "/ip/ipsec/key" {
-		t.Fatal("version selection mutated the shared provider schema")
+	if _, errs := validate(1024, "key_size"); len(errs) == 0 {
+		t.Fatal("unsupported 1024-bit RSA key accepted")
 	}
 }
 

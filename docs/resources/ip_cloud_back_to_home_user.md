@@ -1,9 +1,9 @@
 # routeros_ip_cloud_back_to_home_user (Resource)
-Manage `/ip/cloud/back-to-home-user`. Requires RouterOS 7.25 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/ip/cloud/back-to-home-user/).
+Manage `/ip/cloud/back-to-home-user`. Requires RouterOS 7.25.1 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/ip/cloud/back-to-home-user/).
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Check the menu's package and hardware requirements.
+# RouterOS 7.25.1+. Check the menu's package and hardware requirements.
 resource "routeros_ip_cloud_back_to_home_user" "example" {
   name                   = "mobile-user"
   client_dns             = "192.0.2.53"

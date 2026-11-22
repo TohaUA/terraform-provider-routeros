@@ -1,9 +1,9 @@
 # routeros_routing_pimsm_interface (Data Source)
-Read `/routing/pimsm/interface` on RouterOS 7.25+. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/routing/pimsm/interface/).
+Read `/routing/pimsm/interface` on RouterOS 7.25.1+. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/routing/pimsm/interface/).
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Requires the corresponding hardware/package.
+# RouterOS 7.25.1+. Requires the corresponding hardware/package.
 data "routeros_routing_pimsm_interface" "example" {}
 ```
 

@@ -1,9 +1,9 @@
 # routeros_interface_wifi_network (Resource)
-Manage `/interface/wifi/network`. Requires RouterOS 7.25 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/network/).
+Manage `/interface/wifi/network`. Requires RouterOS 7.25.1 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/network/).
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Check the menu's package and hardware requirements.
+# RouterOS 7.25.1+. Check the menu's package and hardware requirements.
 variable "wifi_passphrase" {
   type      = string
   sensitive = true

@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// Exercise the actual serializer in both directions, including the last release
-// before the renames. Terraform configuration and existing state keep their names.
+// Exercise the 7.25.1 serializer in both directions. Existing Terraform
+// configuration and state retain their attribute names.
 func TestRouterOS725PropertyRenames(t *testing.T) {
 	previous := RouterOSVersion
 	t.Cleanup(func() { RouterOSVersion = previous })
@@ -20,13 +20,10 @@ func TestRouterOS725PropertyRenames(t *testing.T) {
 		{"bridge", "last_member_interval", "last-member-interval", "last-member-query-interval", ResourceInterfaceBridge},
 		{"dot1x", "reauth_timeout", "reauth-timeout", "reauth-period", ResourceInterfaceDot1xServer},
 	} {
-		for _, version := range []string{"7.24.6", "7.25", "7.25.1", "7.26"} {
+		for _, version := range []string{"7.25.1"} {
 			t.Run(tc.name+"/"+version, func(t *testing.T) {
 				RouterOSVersion = version
 				key, other := tc.current, tc.legacy
-				if version == "7.24.6" {
-					key, other = tc.legacy, tc.current
-				}
 				res := tc.resource()
 				d := resourceDataWithRawConfig(res, "*1", map[string]cty.Value{tc.field: cty.StringVal("5s")})
 				item, _ := TerraformResourceDataToMikrotik(res.Schema, d)
@@ -74,13 +71,13 @@ func TestRouterOS725OptionalFields(t *testing.T) {
 			if !field.Optional || field.Default != nil {
 				t.Fatalf("%s must be optional without an injected default", tc.field)
 			}
-			// Older devices must not receive an unknown parameter on ordinary writes.
-			RouterOSVersion = "7.24.6"
+			// Omitted options must not overwrite device defaults on ordinary writes.
+			RouterOSVersion = "7.25.1"
 			unset := resourceDataWithRawConfig(res, "*1", nil)
 			item, _ := TerraformResourceDataToMikrotik(res.Schema, unset)
 			key := SnakeToKebab(tc.field)
 			if _, present := item[key]; present {
-				t.Fatalf("unset %s sent to older router: %v", key, item)
+				t.Fatalf("unset %s sent without configuration: %v", key, item)
 			}
 			RouterOSVersion = "7.25.1"
 			d := resourceDataWithRawConfig(res, "*1", map[string]cty.Value{tc.field: tc.value})

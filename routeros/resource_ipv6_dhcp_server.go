@@ -35,13 +35,13 @@ func ResourceIpv6DhcpServer() *schema.Resource {
 			Type:     schema.TypeBool,
 			Optional: true,
 			Description: "Create dynamic AAAA DNS entries for address bindings using the client FQDN (option 39). " +
-				"Prefix bindings do not create entries. Requires RouterOS 7.25 or later.",
+				"Prefix bindings do not create entries. Requires RouterOS 7.25.1 or later.",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"add_dns_entries_suffix": {
 			Type:             schema.TypeString,
 			Optional:         true,
-			Description:      "Suffix appended to names created by `add_dns_entries`. Requires RouterOS 7.25 or later.",
+			Description:      "Suffix appended to names created by `add_dns_entries`. Requires RouterOS 7.25.1 or later.",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"address_pool": {

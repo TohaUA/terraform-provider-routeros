@@ -1,9 +1,9 @@
 # routeros_routing_pimsm_neighbor (Data Source)
-Read `/routing/pimsm/neighbor` on RouterOS 7.25+. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/routing/pimsm/neighbor/).
+Read `/routing/pimsm/neighbor` on RouterOS 7.25.1+. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/routing/pimsm/neighbor/).
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Requires the corresponding hardware/package.
+# RouterOS 7.25.1+. Requires the corresponding hardware/package.
 data "routeros_routing_pimsm_neighbor" "example" {}
 ```
 

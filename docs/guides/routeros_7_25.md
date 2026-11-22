@@ -1,4 +1,7 @@
-# RouterOS 7.25 coverage and migration
+# RouterOS 7.25.1 support and coverage
+
+**RouterOS 7.25.1 is the support and acceptance-test target. Earlier versions are
+unsupported and are not tested in CI.**
 
 The provider implements all additions in MikroTik's official **7.24 → 7.25 CLI
 comparison**: 46 changed menus, 128 added properties, three flags, and eight added
@@ -10,7 +13,7 @@ require Terraform attributes.
 
 ## New configuration resources
 
-These resources require **RouterOS 7.25+** and the corresponding package/hardware.
+These resources require **RouterOS 7.25.1+** and the corresponding package/hardware.
 
 - [`routeros_interface_eoipv6`](../resources/interface_eoipv6.md)
 - [`routeros_interface_ethernet_poe`](../resources/interface_ethernet_poe.md)
@@ -72,18 +75,24 @@ Use typed inputs when available. `arguments` supplies exact API selectors such a
 `numbers` or `.id`. Arguments and `result_json` are sensitive; command transport
 body logging is disabled. Results remain in Terraform state, so protect state
 access. Fetch `output` and `keep_result` conflict, even with `keep_result = false`.
-Changing a trigger explicitly reruns the command; do not use a changing timestamp
+Removing a typed argument plans a new execution and omits that argument from
+the request. Explicit `false` remains an explicit input. Changing a trigger
+explicitly reruns the command; do not use a changing timestamp
 unless running on every apply is intended.
 
 ## Existing configurations and API corrections
 
 - Keep bridge `last_member_interval` and dot1x `reauth_timeout`. The provider
-  translates their wire names on 7.25+ without changing Terraform attributes.
-- Leave new fields unset on older routers. Explicit use of a 7.25-only option on
-  an older device can still produce a device error.
+  translates their wire names for 7.25.1 without changing Terraform attributes.
+- `routeros_ovpn_server` manages named server instances on 7.25.1. Set `name`
+  and `disabled`; replace the earlier singleton `enabled` setting with the
+  inverse `disabled` value. Import an existing server by its actual `.id` or
+  name; the old singleton ID is not an instance ID.
+- IPv6 DHCP client options retain the 7.25.1 `fqdn` default when omitted.
+  An explicit empty set clears the options; an explicit set manages them.
 - SSH known hosts support add/remove/print, but no set operation. Editing a
   configured field replaces the entry.
-- IPsec RSA keys use `/ip/ipsec/key/rsa` on 7.20+ while retaining the existing
+- IPsec RSA keys use `/ip/ipsec/key/rsa` while retaining the existing
   `routeros_ip_ipsec_key` resource address. `/ip/ipsec/key` is a namespace.
 - PIM instances and interface templates reject `comment`. IPv6 PIM/MLD uses the
   instance AFI and separate GMP interface templates.
@@ -99,22 +108,23 @@ unless running on every apply is intended.
 Unit tests check every release addition, exact wire keys, dotted properties,
 read-only status, versioned renames, command framing, HTTP methods, progress
 replies, sensitive logging, action lifecycle, and provider schema validity.
-CI uses matching CHR images and `ROS_VERSION` values for 7.24.6 and 7.25.1.
+CI pins both the CHR image and `ROS_VERSION` to 7.25.1.
 
 Disposable CHR 7.25.1 tests exercise API and REST create, update, refresh, import,
 and cleanup for portable menus: XFRM, EoIPv6, WiFi network profiles, DHCPv6 bindings,
 SSH known hosts, RSA keys, PIM/MLD templates, bridge security, serial ports,
 IGMP/LTE/TFTP settings, fetch, and the initial seven 7.25 field additions and
 SNMP SHA-2 protocols. Operational data sources are read during these tests.
-The serial-port case requires a free `serial0`; disable its console only on a
-disposable VM before running the case.
+The disposable-CHR setup script releases `serial0` from the console before tests,
+so serial-port testing requires no manual preparation. Named OpenVPN server
+create/update/import/delete and explicit DHCPv6 option clearing are also tested.
+VETH runs when the menu is installed; it is not excluded by RouterOS version.
 
 CHR cannot validate physical PTP clocks, switch ACL counters, PoE/PON behavior,
 power-line adapters, modem firmware/logging, WiFi radio behavior, or Back to Home
 cloud operations. Those have schema/wire coverage and still need the relevant
 hardware/service acceptance. Vendor reference tables are not a substitute for
-hardware testing. A separate CHR 7.24.6 smoke run passes bridge, BGP instance,
-and migrated RSA key lifecycle tests over API and REST.
+hardware testing.
 
 ```sh
 go test ./routeros/ ./tools/...
@@ -132,3 +142,4 @@ See the [snapshot regeneration workflow](../../tools/schema_changes/README.md#pi
 - [Official CLI comparison](https://manual.mikrotik.com/cli-compare.json)
 - [Versioned 7.25 CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/)
 - [7.25 release announcement](https://forum.mikrotik.com/t/7-25-stable-is-released/273987/1)
+- [7.25.1 release fixes](https://forum.mikrotik.com/t/7-25-1-stable-is-released/274226)

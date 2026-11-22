@@ -18,7 +18,7 @@ func TestAccIpIpsecKeyTest_basic(t *testing.T) {
 					testSetTransportEnv(t, name)
 				},
 				ProviderFactories: testAccProviderFactories,
-				CheckDestroy:      testCheckResourceDestroy(ipsecKeySchema(ResourceIpIpsecKey().Schema)[MetaResourcePath].Default.(string), "routeros_ip_ipsec_key"),
+				CheckDestroy:      testCheckResourceDestroy("/ip/ipsec/key/rsa", "routeros_ip_ipsec_key"),
 				Steps: []resource.TestStep{
 					{
 						Config: testAccIpIpsecKeyConfig(),

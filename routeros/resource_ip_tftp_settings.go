@@ -17,7 +17,7 @@ func ResourceIpTFTPSettings() *schema.Resource {
 		"vrf": {
 			Type:             schema.TypeString,
 			Optional:         true,
-			Description:      "VRF used by the TFTP server. Requires RouterOS 7.25 or later.",
+			Description:      "VRF used by the TFTP server. Requires RouterOS 7.25.1 or later.",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"max_block_size": {

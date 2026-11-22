@@ -1,9 +1,9 @@
 # routeros_interface_lte_run_modem_update (Resource)
-Execute `/interface/lte/run-modem-update` on RouterOS 7.25+. Runs on creation or configuration/trigger changes. Refresh does not execute it; deletion only removes state and cannot undo the command. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/lte/run-modem-update/).
+Execute `/interface/lte/run-modem-update` on RouterOS 7.25.1+. Runs on creation or configuration/trigger changes. Refresh does not execute it; deletion only removes state and cannot undo the command. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/lte/run-modem-update/).
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Check the menu's package and hardware requirements.
+# RouterOS 7.25.1+. Check the menu's package and hardware requirements.
 # Executes on apply; a changed trigger runs it again. Destroy cannot undo it.
 resource "routeros_interface_lte_run_modem_update" "example" {
   arguments = {

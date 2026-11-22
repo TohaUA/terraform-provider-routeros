@@ -11,7 +11,7 @@ resource "routeros_ipv6_dhcp_server" "test" {
   name         = "test-dhcpv6"
   preference   = 128
 
-  # RouterOS 7.25+: publish client address bindings in DNS.
+  # RouterOS 7.25.1+: publish client address bindings in DNS.
   add_dns_entries        = true
   add_dns_entries_suffix = "example.test"
 }

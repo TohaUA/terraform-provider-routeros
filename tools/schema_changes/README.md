@@ -25,6 +25,7 @@ go run . -r 7.18:7.19 -markdown
 
 `routeros-7.25-api.json` pins MikroTik's official `7.24->7.25` comparison and
 versioned reference property tables (source URLs and HTML SHA-256 values).
+Its `target_version` is **7.25.1**; earlier RouterOS versions are unsupported.
 It also records explicit runtime corrections found on CHR 7.25.1. Runtime-only
 entries identify their origin separately. This inventory covers release additions;
 it is not a promise that every legacy RouterOS menu is implemented.
@@ -35,7 +36,7 @@ Regenerate Go metadata without network access:
 go run ./tools/schema_changes/generate_7_25.go \
   -input tools/schema_changes/routeros-7.25-api.json \
   -output routeros/routeros_7_25_catalog.go
-go test ./routeros -run 'TestRouterOS725|TestAPI725|TestREST725|TestIPsecKeyMenuMigration|TestBGPAddressFamilies725'
+go test ./routeros -run 'TestRouterOS725|TestAPI725|TestREST725|TestIPsecKey7251|TestBGPAddressFamilies725'
 ```
 
 To audit later documentation edits, fetch fresh raw tables into an audit directory:

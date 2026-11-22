@@ -1,9 +1,9 @@
 # routeros_system_resource_hardware (Data Source)
-Read `/system/resource/hardware` on RouterOS 7.25+. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/system/resource/hardware/).
+Read `/system/resource/hardware` on RouterOS 7.25.1+. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/system/resource/hardware/).
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Requires the corresponding hardware/package.
+# RouterOS 7.25.1+. Requires the corresponding hardware/package.
 data "routeros_system_resource_hardware" "example" {}
 ```
 

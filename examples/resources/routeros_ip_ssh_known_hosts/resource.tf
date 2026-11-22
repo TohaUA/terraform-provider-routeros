@@ -1,4 +1,4 @@
-# RouterOS 7.25+. Check the menu's package and hardware requirements.
+# RouterOS 7.25.1+. Check the menu's package and hardware requirements.
 variable "ssh_host_public_key" {
   type = string
 }

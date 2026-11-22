@@ -1,6 +1,6 @@
 resource "routeros_snmp_community" "test" {
   authentication_password = "authpasswd"
-  authentication_protocol = "SHA256" # SHA-2 requires RouterOS 7.25+.
+  authentication_protocol = "SHA256" # SHA-2 requires RouterOS 7.25.1+.
   comment                 = "Comment"
   disabled                = true
   encryption_password     = "encpassword"

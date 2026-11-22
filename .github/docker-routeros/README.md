@@ -7,7 +7,7 @@ container and exposes the API and REST ports.
 ## Why this lives here
 
 The tests used to pull `vaerhme/routeros:v<version>` from Docker Hub. That image is published
-only up to **v7.22**. This fork's acceptance matrix targets **7.24.6** and **7.25.1**.
+only up to **v7.22**. This fork supports and acceptance-tests **7.25.1** only.
 
 Building here rather than publishing our own image avoids
 redistributing MikroTik's disk image under this account, and — the part that actually matters —
@@ -27,7 +27,7 @@ project's, kept verbatim, and the maintainer attribution in the `Dockerfile` is 
 
 Three things differ from upstream:
 
-1. `ROUTEROS_VERSION` is a build argument, defaulting to `7.24.6`.
+1. `ROUTEROS_VERSION` is a build argument, defaulting to `7.25.1`.
 2. The download is retried and written to disk before extraction instead of being piped into
    `bsdtar`. This image is built on every CI run rather than occasionally, so an intermittent
    transfer is intermittent CI — a truncated stream fails the extract and cannot be retried once
@@ -45,11 +45,10 @@ of divergent trees. Items 2 and 3 are worth offering upstream.
 
 ## Changing the RouterOS version
 
-Edit the version matrix in `module_testing.yml`. Each job passes the same version as the
+The CI matrix contains only 7.25.1. Each job passes the same version as the
 Docker build argument `ROUTEROS_VERSION` and the test environment variable `ROS_VERSION`,
-so the downloaded CHR image and the version-gated tests agree. Matrix jobs use separate
-runners and do not cancel one another on a test failure. The Dockerfile default selects
-`7.24.6` for local builds; override it with `--build-arg ROUTEROS_VERSION=7.25.1`.
+so the downloaded CHR image and the tests agree. The Dockerfile default also selects
+`7.25.1` for local builds. Earlier RouterOS versions are outside the support scope.
 
 Check the target version exists first; not every RouterOS release ships a CHR `.vdi`:
 
@@ -72,3 +71,8 @@ docker logs -f routeros    # wait for the MikroTik banner before connecting
 It boots to a blank-password `admin` account. `/dev/kvm` makes it much faster where it is
 available; without it qemu falls back to software emulation and the boot takes appreciably
 longer.
+
+The CI setup script (`.github/scripts/setup_routeros.go`) prepares a disposable VM,
+enables TLS API/REST, creates the shared test fixtures, and releases `serial0` from
+the console for port acceptance tests. Run it before the suite; no manual serial
+console changes are needed. Do not run this fixture setup against a production router.

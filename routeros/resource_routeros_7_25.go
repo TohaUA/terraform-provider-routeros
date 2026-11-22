@@ -111,7 +111,7 @@ func addAPI725Fields(s map[string]*schema.Schema) {
 				continue
 			}
 		}
-		f.Required = false // additions must not invalidate older configurations
+		f.Required = false // existing Terraform configurations can omit new options
 		s[name] = api725Property(f)
 		if SnakeToKebab(name) != f.Wire {
 			transforms = append(transforms, name+":"+f.Wire)
@@ -127,9 +127,9 @@ func requireAPI725() diag.Diagnostics {
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	minimum, _ := parseRouterOSVersion("7.25")
+	minimum, _ := parseRouterOSVersion(routerOS725MinimumVersion)
 	if version < minimum {
-		return diag.Errorf("This resource requires RouterOS 7.25 or later; configured version is %s", RouterOSVersion)
+		return diag.Errorf("This resource requires RouterOS 7.25.1 or later; configured version is %s", RouterOSVersion)
 	}
 	return nil
 }
@@ -154,7 +154,7 @@ func newAPI725Resource(path, mode string) *schema.Resource {
 		}
 	}
 	r := &schema.Resource{
-		Description: fmt.Sprintf("Manage `%s`. Requires RouterOS 7.25 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference%s/).", path, path),
+		Description: fmt.Sprintf("Manage `%s`. Requires RouterOS 7.25.1 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference%s/).", path, path),
 		Schema:      s,
 		Importer:    &schema.ResourceImporter{StateContext: ImportStateCustomContext(s)},
 	}
@@ -208,7 +208,7 @@ func newAPI725Datasource(path string, command bool) *schema.Resource {
 		s[KeyFilter] = PropFilterRw
 	}
 	return &schema.Resource{
-		Description: fmt.Sprintf("Read `%s` on RouterOS 7.25+. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference%s/).", path, path),
+		Description: fmt.Sprintf("Read `%s` on RouterOS 7.25.1+. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference%s/).", path, path),
 		Schema:      s,
 		ReadContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 			if diags := requireAPI725(); diags.HasError() {
@@ -246,6 +246,13 @@ func newAPI725Datasource(path string, command bool) *schema.Resource {
 // on refresh or deletion. Results and arguments can contain credentials.
 func newAPI725Action(path string) *schema.Resource {
 	s := api725Schema(path)
+	for _, f := range routerOS725Reference[path] {
+		if !f.ReadOnly {
+			// Commands have no device defaults to retain in configuration state.
+			// Removing an input is a change and must plan another execution.
+			s[api725Name(f.Wire)].DiffSuppressFunc = nil
+		}
+	}
 	if path == "/tool/fetch" {
 		// RouterOS 7.25 rejects both arguments even when keep-result is false.
 		s["output"].ConflictsWith = []string{"keep_result"}
@@ -261,6 +268,13 @@ func newAPI725Action(path string) *schema.Resource {
 			return diags
 		}
 		args, _ := TerraformResourceDataToMikrotik(s, d)
+		for _, f := range routerOS725Reference[path] {
+			if !f.ReadOnly && d.GetRawConfig().GetAttr(api725Name(f.Wire)).IsNull() {
+				// An omitted command argument uses the command's default. Do not
+				// send a previous state value or the Terraform type's zero value.
+				delete(args, f.Wire)
+			}
+		}
 		for k, v := range d.Get("arguments").(map[string]interface{}) {
 			if _, declared := args[k]; declared {
 				return diag.Errorf("Command argument %q is configured twice", k)
@@ -305,7 +319,7 @@ func newAPI725Action(path string) *schema.Resource {
 		return nil
 	}
 	return &schema.Resource{
-		Description: fmt.Sprintf("Execute `%s` on RouterOS 7.25+. Runs on creation or configuration/trigger changes. Refresh does not execute it; deletion only removes state and cannot undo the command. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference%s/).", path, path),
+		Description: fmt.Sprintf("Execute `%s` on RouterOS 7.25.1+. Runs on creation or configuration/trigger changes. Refresh does not execute it; deletion only removes state and cannot undo the command. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference%s/).", path, path),
 		Schema:      s, CreateContext: execute, UpdateContext: schema.UpdateContextFunc(execute),
 		ReadContext: func(context.Context, *schema.ResourceData, interface{}) diag.Diagnostics { return nil },
 		DeleteContext: func(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {

@@ -92,9 +92,10 @@ func ResourceIPv6DhcpClient() *schema.Resource {
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"dhcp_options": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "Options that are sent to the DHCP server.",
+			Type:             schema.TypeSet,
+			Optional:         true,
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+			Description:      "Options sent to the DHCP server. When omitted, retain the router's default (fqdn on RouterOS 7.25.1). Set an empty set to send no options.",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},

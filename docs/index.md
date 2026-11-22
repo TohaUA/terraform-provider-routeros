@@ -24,9 +24,9 @@ install it through `dev_overrides` or a `filesystem_mirror`, as described in
 covers release verification, the RouterOS 7.24 target, where to report problems, and what a
 migration to a published `TohaUA/routeros` namespace would look like.
 
-## RouterOS 7.25
+## RouterOS 7.25.1
 
-The fork implements the documented 7.24 → 7.25 API additions, with configuration
+The fork targets RouterOS **7.25.1** and implements the documented 7.24 → 7.25 API additions, with configuration
 resources, operational data sources, and explicit command actions. See the
 [coverage and migration guide](guides/routeros_7_25.md) for feature mappings,
 transport tests, hardware requirements, and upgrade behavior.

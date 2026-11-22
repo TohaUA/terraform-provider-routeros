@@ -76,7 +76,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        routeros: ['7.24.6', '7.25.1']
+        routeros: ['7.25.1']
 
     steps:
       - name: Check out code into the Go module directory

@@ -178,10 +178,10 @@ func TestAPI725ActionLifecycle(t *testing.T) {
 	if diags := r.CreateContext(context.Background(), d, c); !diags.HasError() || d.Id() != "" {
 		t.Fatal("failed command recorded as successful")
 	}
-	RouterOSVersion = "7.24.6"
+	RouterOSVersion = "7.25"
 	before := c.calls
 	if diags := r.CreateContext(context.Background(), d, c); !diags.HasError() || c.calls != before {
-		t.Fatal("old router was called")
+		t.Fatal("unsupported router was called")
 	}
 }
 

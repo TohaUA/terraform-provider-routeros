@@ -23,7 +23,7 @@ func ResourceRoutingBgpInstance() *schema.Resource {
 		"always_compare_med": {
 			Type:             schema.TypeBool,
 			Optional:         true,
-			Description:      "Compare MED values between routes from different neighboring autonomous systems. Requires RouterOS 7.25 or later.",
+			Description:      "Compare MED values between routes from different neighboring autonomous systems. Requires RouterOS 7.25.1 or later.",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"as": {

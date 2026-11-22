@@ -10,7 +10,7 @@ func ResourceInterfaceVlan() *schema.Resource {
 		MetaResourcePath: PropResourcePath("/interface/vlan"),
 		MetaId:           PropId(Id),
 
-		"forced_mac_address":       PropMacAddressRw("Override the VLAN interface MAC address. Requires RouterOS 7.25 or later.", false),
+		"forced_mac_address":       PropMacAddressRw("Override the VLAN interface MAC address. Requires RouterOS 7.25.1 or later.", false),
 		KeyArp:                     PropArpRw,
 		KeyArpTimeout:              PropArpTimeoutRw,
 		KeyComment:                 PropCommentRw,

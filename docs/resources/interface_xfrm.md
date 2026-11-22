@@ -1,9 +1,9 @@
 # routeros_interface_xfrm (Resource)
-Manage `/interface/xfrm`. Requires RouterOS 7.25 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/xfrm/).
+Manage `/interface/xfrm`. Requires RouterOS 7.25.1 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/xfrm/).
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Check the menu's package and hardware requirements.
+# RouterOS 7.25.1+. Check the menu's package and hardware requirements.
 resource "routeros_interface_xfrm" "example" {
   name = "xfrm-ipsec"
   mtu  = 1400

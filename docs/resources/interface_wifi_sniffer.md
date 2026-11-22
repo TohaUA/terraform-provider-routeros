@@ -1,9 +1,9 @@
 # routeros_interface_wifi_sniffer (Resource)
-Manage `/interface/wifi/sniffer`. Requires RouterOS 7.25 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/sniffer/). Deleting the Terraform resource leaves the settings on the router. Import using any non-empty ID.
+Manage `/interface/wifi/sniffer`. Requires RouterOS 7.25.1 or later and the corresponding hardware/package. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/sniffer/). Deleting the Terraform resource leaves the settings on the router. Import using any non-empty ID.
 
 ## Example Usage
 ```terraform
-# RouterOS 7.25+. Check the menu's package and hardware requirements.
+# RouterOS 7.25.1+. Check the menu's package and hardware requirements.
 resource "routeros_interface_wifi_sniffer" "example" {
   stream_address = "192.0.2.10"
   stream_port    = 37008

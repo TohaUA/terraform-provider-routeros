@@ -56,6 +56,21 @@ func main() {
 	}
 	defer client.Close()
 
+	// This script prepares disposable CHR test VMs. Release serial0 so the
+	// serial-port acceptance case can update it without manual preparation.
+	consoles, err := client.RunArgs([]string{"/system/console/print", "?port=serial0"})
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, console := range consoles.Re {
+		if console.Map["disabled"] == "true" {
+			continue
+		}
+		if _, err := client.RunArgs([]string{"/system/console/disable", "=.id=" + console.Map[".id"]}); err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	for _, command := range commands {
 		cmd := strings.Split(command, " ")
 

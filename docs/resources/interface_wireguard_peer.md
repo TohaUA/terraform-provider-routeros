@@ -17,7 +17,7 @@ resource "routeros_interface_wireguard_peer" "wg_peer" {
     "10.0.0.0/8",
   ]
 
-  # RouterOS 7.25+: MTU in the exported client configuration.
+  # RouterOS 7.25.1+: MTU in the exported client configuration.
   client_mtu = 1380
 }
 ```
@@ -39,7 +39,7 @@ resource "routeros_interface_wireguard_peer" "wg_peer" {
 - `client_endpoint` (String) The IP address and port number of the WireGuard Server.
 - `client_keepalive` (String) Same as persistent-keepalive but from peer side.
 - `client_listen_port` (Number) The local port upon which this WireGuard tunnel will listen for incoming traffic from peers, and the port from which it will source outgoing packets.
-- `client_mtu` (Number) MTU written into the generated client configuration. Requires RouterOS 7.25 or later.
+- `client_mtu` (Number) MTU written into the generated client configuration. Requires RouterOS 7.25.1 or later.
 - `comment` (String)
 - `disabled` (Boolean)
 - `endpoint_address` (String) An endpoint IP or hostname can be left blank to allow remote connection from any address.

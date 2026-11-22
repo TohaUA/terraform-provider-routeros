@@ -1,4 +1,4 @@
-# RouterOS 7.25+. Check the menu's package and hardware requirements.
+# RouterOS 7.25.1+. Check the menu's package and hardware requirements.
 resource "routeros_routing_igmp_proxy" "example" {
   robustness                 = 2
   query_interval             = "2m5s"
