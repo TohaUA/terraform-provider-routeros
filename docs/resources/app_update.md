@@ -28,3 +28,5 @@ resource "routeros_app_update" "worker" {
 
 - `id` (String) The ID of this resource.
 - `result_json` (String, Sensitive) JSON array containing the command replies. Stored in Terraform state.
+
+

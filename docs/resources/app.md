@@ -69,3 +69,5 @@ resource "routeros_app" "worker" {
 - `status` (String) RouterOS `status` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `ui_url` (String) RouterOS `ui-url` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `variables_to_use_in_environment` (String) RouterOS `variables-to-use-in-environment` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+
+
