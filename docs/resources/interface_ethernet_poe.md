@@ -33,3 +33,5 @@ resource "routeros_interface_ethernet_poe" "example" {
 
 - `id` (String) The ID of this resource.
 - `port_type` (String) RouterOS `port-type` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+
+

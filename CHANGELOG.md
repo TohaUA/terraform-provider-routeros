@@ -1,3 +1,21 @@
+## [2.0.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.16...v2.0.0) (2026-11-22)
+
+### ⚠ BREAKING CHANGES
+
+* **routeros:** Earlier RouterOS versions are unsupported. OpenVPN servers use named instances with name and disabled instead of the legacy singleton enabled setting.
+
+### Features
+
+* **routeros:** support RouterOS 7.25.1 ([#68](https://github.com/TohaUA/terraform-provider-routeros/issues/68)) ([9fcfc3e](https://github.com/TohaUA/terraform-provider-routeros/commit/9fcfc3e52989a13b9e703af74b4e6ada18112ada))
+
+### Bug Fixes
+
+* **container:** refresh running state from current and legacy responses ([#64](https://github.com/TohaUA/terraform-provider-routeros/issues/64)) ([88ff06b](https://github.com/TohaUA/terraform-provider-routeros/commit/88ff06b62207a82a6892d44696dbb83daf4840f9)), closes [#1015](https://github.com/TohaUA/terraform-provider-routeros/issues/1015)
+* **helpers:** keep parse errors from crashing diff suppression ([#63](https://github.com/TohaUA/terraform-provider-routeros/issues/63)) ([2b42e55](https://github.com/TohaUA/terraform-provider-routeros/commit/2b42e556d1e3f5cdc50da1e0f8600ada4ebee1ed)), closes [#1013](https://github.com/TohaUA/terraform-provider-routeros/issues/1013)
+* **ipsec:** accept domain names in split DNS configuration ([#66](https://github.com/TohaUA/terraform-provider-routeros/issues/66)) ([c193cf6](https://github.com/TohaUA/terraform-provider-routeros/commit/c193cf6488b948ec976da5a8781e5f95cbba4775)), closes [#1029](https://github.com/TohaUA/terraform-provider-routeros/issues/1029)
+* **ipv6-firewall:** omit place-before from rule updates ([#67](https://github.com/TohaUA/terraform-provider-routeros/issues/67)) ([9c1756b](https://github.com/TohaUA/terraform-provider-routeros/commit/9c1756b037af485a6e5740e4ee61559f97701b63)), closes [#1024](https://github.com/TohaUA/terraform-provider-routeros/issues/1024)
+* **netwatch:** accept DNS and HTTPS probe types ([#65](https://github.com/TohaUA/terraform-provider-routeros/issues/65)) ([c0fad73](https://github.com/TohaUA/terraform-provider-routeros/commit/c0fad73c79b040eb17137e54351b42690bb5956a)), closes [#1023](https://github.com/TohaUA/terraform-provider-routeros/issues/1023)
+
 ## [1.101.16](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.15...v1.101.16) (2026-11-12)
 
 ### Bug Fixes

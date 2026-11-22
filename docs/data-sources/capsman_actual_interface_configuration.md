@@ -86,3 +86,5 @@ Read-Only:
 - `security_tls_mode` (String)
 - `vlan_id` (Number)
 - `vlan_mode` (String)
+
+

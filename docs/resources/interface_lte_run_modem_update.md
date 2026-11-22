@@ -28,3 +28,5 @@ resource "routeros_interface_lte_run_modem_update" "example" {
 - `id` (String) The ID of this resource.
 - `result_json` (String, Sensitive) JSON array containing the command replies. Stored in Terraform state.
 - `status` (String) RouterOS `status` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+
+

@@ -35,3 +35,5 @@ resource "routeros_system_ptp" "example" {
 
 - `id` (String) The ID of this resource.
 - `inactive` (Boolean) RouterOS `inactive` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+
+

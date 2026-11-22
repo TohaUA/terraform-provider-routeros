@@ -45,3 +45,5 @@ Read-Only:
 - `usb_version` (String)
 - `vendor` (String)
 - `vendor_id` (String)
+
+

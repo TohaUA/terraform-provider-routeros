@@ -24,3 +24,5 @@ resource "routeros_ip_cloud_back_to_home_file_settings_remove_certificate" "exam
 
 - `id` (String) The ID of this resource.
 - `result_json` (String, Sensitive) JSON array containing the command replies. Stored in Terraform state.
+
+

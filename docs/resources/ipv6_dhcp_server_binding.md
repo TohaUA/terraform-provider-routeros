@@ -53,3 +53,5 @@ resource "routeros_ipv6_dhcp_server_binding" "example" {
 - `reconfigure_last_sent` (String) RouterOS `reconfigure-last-sent` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `reconfigure_status` (String) RouterOS `reconfigure-status` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `status` (String) RouterOS `status` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+
+

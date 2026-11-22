@@ -167,3 +167,5 @@ resource "routeros_interface_pwr_line" "example" {
 - `tx_total_collision` (Set of String) RouterOS `tx-total-collision` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `tx_underrun` (Set of String) RouterOS `tx-underrun` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `tx_unicast` (Set of String) RouterOS `tx-unicast` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+
+

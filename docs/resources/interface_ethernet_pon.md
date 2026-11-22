@@ -26,3 +26,5 @@ resource "routeros_interface_ethernet_pon" "example" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+

@@ -25,3 +25,5 @@ resource "routeros_routing_igmp_proxy" "example" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+

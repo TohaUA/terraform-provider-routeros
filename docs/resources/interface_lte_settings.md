@@ -32,3 +32,5 @@ resource "routeros_interface_lte_settings" "example" {
 
 - `external_antenna_selected` (String) RouterOS `external-antenna-selected` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `id` (String) The ID of this resource.
+
+

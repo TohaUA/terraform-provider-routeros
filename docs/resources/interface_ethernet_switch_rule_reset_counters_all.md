@@ -24,3 +24,5 @@ resource "routeros_interface_ethernet_switch_rule_reset_counters_all" "example" 
 
 - `id` (String) The ID of this resource.
 - `result_json` (String, Sensitive) JSON array containing the command replies. Stored in Terraform state.
+
+

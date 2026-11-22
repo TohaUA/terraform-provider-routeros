@@ -44,3 +44,5 @@ output "result" {
 - `id` (String) The ID of this resource.
 - `output` (String, Sensitive) RouterOS `output` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `result_json` (String, Sensitive) JSON array containing the command replies. Stored in Terraform state.
+
+

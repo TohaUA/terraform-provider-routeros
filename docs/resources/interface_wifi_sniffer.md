@@ -34,3 +34,5 @@ resource "routeros_interface_wifi_sniffer" "example" {
 - `wlan_addr1` (String) RouterOS `wlan.addr1` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `wlan_addr2` (String) RouterOS `wlan.addr2` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `wlan_addr3` (String) RouterOS `wlan.addr3` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+
+

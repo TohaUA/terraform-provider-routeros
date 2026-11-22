@@ -50,3 +50,5 @@ resource "routeros_interface_eoipv6" "example" {
 - `l2mtu` (Number) RouterOS `l2mtu` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `loop_protect_status` (String) RouterOS `loop-protect-status` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `running` (Boolean) RouterOS `running` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+
+

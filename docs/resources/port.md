@@ -38,3 +38,5 @@ resource "routeros_port" "example" {
 - `inactive` (Boolean) RouterOS `inactive` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `line_state` (Set of String) RouterOS `line-state` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `used_by` (String) RouterOS `used-by` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+
+

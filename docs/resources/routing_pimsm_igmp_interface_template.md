@@ -40,3 +40,5 @@ resource "routeros_routing_pimsm_instance" "example" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+

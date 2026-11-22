@@ -68,3 +68,5 @@ output "result" {
 - `status` (String) RouterOS `status` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `total` (Number) RouterOS `total` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `uploaded` (Number) RouterOS `uploaded` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+
+

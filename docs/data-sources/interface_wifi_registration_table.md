@@ -57,3 +57,5 @@ Read-Only:
 - `tx_rate_per_link` (Set of String)
 - `uptime` (String)
 - `vlan_id` (Number)
+
+
