@@ -21,6 +21,7 @@ type api725Field struct {
 	ReadOnly, Required, Sensitive bool
 	Enum                          []string
 	NumericAlternative            bool
+	DecimalPlaces                 int
 }
 
 func api725Name(wire string) string {
@@ -49,10 +50,15 @@ func api725Property(f api725Field) *schema.Schema {
 		p.Optional = true
 		p.DiffSuppressFunc = AlwaysPresentNotUserProvided
 	}
-	if p.Type == schema.TypeString && len(f.Enum) != 0 && !f.ReadOnly {
-		p.ValidateFunc = validation.StringInSlice(f.Enum, false)
+	if p.Type == schema.TypeString && !f.ReadOnly {
+		if len(f.Enum) != 0 {
+			p.ValidateFunc = validation.StringInSlice(f.Enum, false)
+		}
 		if f.NumericAlternative {
-			p.ValidateFunc = validation.Any(p.ValidateFunc, validateUnsigned32String)
+			p.ValidateFunc = validateUnsigned32Decimal(f.DecimalPlaces)
+			if len(f.Enum) != 0 {
+				p.ValidateFunc = validation.Any(validation.StringInSlice(f.Enum, false), p.ValidateFunc)
+			}
 		}
 	}
 	return p
@@ -64,18 +70,57 @@ func wifiDistanceValidation(value interface{}, key string) ([]string, []error) {
 		return nil, nil
 	}
 	if ok {
-		return validateUnsigned32String(value, key)
-	}
-	return nil, []error{fmt.Errorf("%s must be an unsigned 32-bit distance in meters, indoors, or dynamic", key)}
-}
-
-func validateUnsigned32String(value interface{}, key string) ([]string, []error) {
-	if s, ok := value.(string); ok {
-		if _, err := strconv.ParseUint(s, 10, 32); err == nil {
+		if _, valid := scaledUnsigned32(s, 3); valid {
 			return nil, nil
 		}
 	}
-	return nil, []error{fmt.Errorf("%s must be an unsigned 32-bit integer", key)}
+	return nil, []error{fmt.Errorf("%s must be a distance in kilometers (0..4294967.295), indoors, or dynamic", key)}
+}
+
+// RouterOS stores these decimal values as a scaled uint32, truncating excess
+// fractional digits. Avoid float rounding at the upper boundary.
+func scaledUnsigned32(s string, places int) (uint64, bool) {
+	whole, fraction, dot := strings.Cut(s, ".")
+	if whole == "" && dot && fraction != "" {
+		whole = "0"
+	}
+	if whole == "" || strings.Trim(whole, "0123456789") != "" || strings.Trim(fraction, "0123456789") != "" {
+		return 0, false
+	}
+	n, err := strconv.ParseUint(whole, 10, 32)
+	if err != nil {
+		return 0, false
+	}
+	for i := 0; i < places; i++ {
+		n *= 10
+		if i < len(fraction) {
+			n += uint64(fraction[i] - '0')
+		}
+		if n > uint64(1<<32-1) {
+			return 0, false
+		}
+	}
+	return n, n <= uint64(1<<32-1)
+}
+
+func validateUnsigned32Decimal(places int) schema.SchemaValidateFunc {
+	return func(value interface{}, key string) ([]string, []error) {
+		if s, ok := value.(string); ok {
+			if _, valid := scaledUnsigned32(s, places); valid {
+				return nil, nil
+			}
+		}
+		return nil, []error{fmt.Errorf("%s must be a non-negative decimal within the RouterOS uint32 range scaled by %d decimal places", key, places)}
+	}
+}
+
+func wifiDistanceEqual(key, old, next string, d *schema.ResourceData) bool {
+	if AlwaysPresentNotUserProvided(key, old, next, d) {
+		return true
+	}
+	a, okA := scaledUnsigned32(old, 3)
+	b, okB := scaledUnsigned32(next, 3)
+	return okA && okB && a == b
 }
 
 func api725Schema(path string) map[string]*schema.Schema {

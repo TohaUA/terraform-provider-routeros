@@ -40,7 +40,7 @@ resource "routeros_wifi_configuration" "configuration1" {
   name    = "configuration1"
   ssid    = "my-network"
   # Requires support from the WiFi driver and device.
-  distance           = "indoors" # Or a numeric distance in meters, e.g. "100".
+  distance           = "indoors" # Or decimal kilometers, e.g. "0.1".
   hw_protection_mode = "rts-cts"
 
   aaa = {
@@ -77,7 +77,7 @@ resource "routeros_wifi_configuration" "configuration1" {
 - `datapath` (Map of String) Datapath inline settings.
 - `deprioritize_unii_3_4` (Boolean) Whether to assign lower priority to channels with a control frequency of 5720 or 5825-5885 MHz. These channels are unsupported by some client devices, making their automatic selection undesirable. Defaults to `yes` in ETSI regulatory domains, elsewhere to `no`.
 - `disabled` (Boolean)
-- `distance` (String) Link distance in meters, or `indoors` or `dynamic`. Availability and supported distances depend on the WiFi driver and device.
+- `distance` (String) Link distance in kilometers (0..4294967.295), or driver-specific `indoors` or `dynamic`. RouterOS keeps three decimal places. Availability depends on the WiFi driver and device.
 - `dtim_period` (Number) A period at which to transmit multicast traffic, when there are client devices in power save mode connected to the AP.
 - `hide_ssid` (Boolean) This property has effect only in AP mode. Setting it to yes can remove this network from the list of wireless networks that are shown by some client software. Changing this setting does not improve the security of the wireless network, because SSID is included in other frames sent by the AP.
 - `hw_protection_mode` (String) Hardware protection mode: `none`, `rts-cts`, or `cts-to-self`. Availability depends on the WiFi driver and device.

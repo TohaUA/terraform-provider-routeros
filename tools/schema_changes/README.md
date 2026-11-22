@@ -56,8 +56,9 @@ provider schemas or silently absorb documentation changes.
 
 Repeated property rows can describe different driver capabilities. Preserve these
 in `api_variants` instead of retaining only the last row. For example, WiFi profile
-`distance` accepts both a numeric value and `indoors`/`dynamic`; its
-`numeric_alternative` flag keeps the generated validator from rejecting meters.
+`distance` accepts both decimal kilometers and `indoors`/`dynamic`; its
+`numeric_alternative` flag keeps the generated validator from rejecting decimal input. Its `decimal_places = 3` metadata records
+the live scaled numeric range (`0..4294967.295` kilometers).
 Do not treat enum membership as proof that every radio supports that value.
 
 `routeros-7.25-features.json` tracks release-note features outside the CLI name

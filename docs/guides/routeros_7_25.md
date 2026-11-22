@@ -11,11 +11,13 @@ coverage, not certification of every legacy API or every hardware variant.
 RouterOS protocol fixes, firmware internals, and GUI-only changes do not each
 require Terraform attributes.
 
-Named `routeros_wifi_configuration` profiles also expose `distance` (meters as a
+Named `routeros_wifi_configuration` profiles also expose `distance` (decimal kilometers as a
 string, `indoors`, or `dynamic`), `hw_protection_mode` (`none`, `rts-cts`, or
 `cts-to-self`), and `mode = "station-pseudobridge"`. Support depends on the WiFi
 driver and radio. The reference snapshot preserves driver-specific alternatives;
 a numeric distance must not be rejected just because another driver lists enums.
+The live 7.25.1 numeric range is `0..4294967.295` kilometers, with three decimal
+places; excess fractional digits are truncated by RouterOS.
 
 The CLI comparison alone does not cover every release-note feature. Native Apps
 lifecycle is covered separately below. Bluetooth output-power support remains
