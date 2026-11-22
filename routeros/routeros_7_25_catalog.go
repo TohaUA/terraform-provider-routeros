@@ -4,6 +4,15 @@ package routeros
 const routerOS725MinimumVersion = "7.25.1"
 
 var routerOS725Reference = map[string][]api725Field{
+	"/app/cleanup": {
+		{Wire: "numbers", Kind: "string", ReadOnly: false, Required: true, Sensitive: false, Enum: []string{}},
+	},
+	"/app/restart": {
+		{Wire: "numbers", Kind: "string", ReadOnly: false, Required: true, Sensitive: false, Enum: []string{}},
+	},
+	"/app/update": {
+		{Wire: "numbers", Kind: "string", ReadOnly: false, Required: true, Sensitive: false, Enum: []string{}},
+	},
 	"/caps-man/actual-interface-configuration": {
 		{Wire: "master", Kind: "bool", ReadOnly: true, Required: false, Sensitive: false, Enum: []string{}},
 		{Wire: "dynamic", Kind: "bool", ReadOnly: true, Required: false, Sensitive: false, Enum: []string{}},

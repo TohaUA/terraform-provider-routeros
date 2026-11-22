@@ -18,9 +18,44 @@ driver and radio. The reference snapshot preserves driver-specific alternatives;
 a numeric distance must not be rejected just because another driver lists enums.
 
 The CLI comparison alone does not cover every release-note feature. Native Apps
-lifecycle and Bluetooth output-power support are tracked separately until their
-7.25.1 API contracts and device requirements have been verified. RouterOS 7.26
+lifecycle is covered separately below. Bluetooth output-power support remains
+unverified: neither the frozen reference nor the live x86 IoT package exposes its
+control argument; supported Bluetooth hardware is required to establish that
+contract. RouterOS 7.26
 additions are a separate milestone and are not included in the 7.25.1 claim.
+
+## Apps
+
+`routeros_app` manages custom YAML definitions; `routeros_app_settings` manages
+global storage/network/registry settings. `routeros_apps` reads custom and catalog
+Apps without starting them. Custom resources accept the complete service YAML,
+including per-service `privileged` and `[networkRouterIP]` placeholders. They
+require the container package and enabled container device mode.
+
+Definitions default to `disabled = true`. Set it to false to start asynchronous
+deployment; `status` and `running` report progress on refresh. Configure a formatted,
+mounted storage disk beforehand. Terraform does not run the interactive setup
+wizard, format storage, or enable device mode. Use the actual 7.25.1 attribute
+`network_pvid`; `/app/add` and `/app/set` do not accept `check-certificate`.
+
+Use `routeros_app_restart`, `routeros_app_update`, and `routeros_app_cleanup` for
+explicit operations. Each requires `numbers` (an App ID/name or selector list),
+executes on creation or input/trigger changes, and does nothing on refresh or
+destroy. Cleanup **permanently removes App images and data**. Custom-resource
+destroy calls `/app/remove`, without implicitly calling cleanup. Catalog entries
+cannot be adopted by `routeros_app`; inspect them through the data source.
+
+YAML, environment, command lines, registry URLs, and secrets can contain
+credentials. Sensitive attributes remain in Terraform state; App transport bodies
+are omitted from debug logs. Semantically equivalent YAML formatting does not
+cause a redeployment. Import a custom App by `.id` or `name=example-worker`; import
+settings with any non-empty ID. Destroying settings leaves them on the router.
+
+For disposable-router testing, set `ROS_APP_TESTS=1` with `TF_ACC=1` to cover
+disabled definitions, settings, data sources, updates, no-op plans, and imports.
+`ROS_APP_RUN_TESTS=1` additionally downloads an Alpine image and exercises running
+deployment, restart, update, disable, and cleanup. These opt-in suites require
+container mode and prepared storage; the standard CHR CI image lacks that setup.
 
 ## New configuration resources
 

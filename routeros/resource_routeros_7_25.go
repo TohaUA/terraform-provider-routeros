@@ -283,6 +283,14 @@ func newAPI725Action(path string) *schema.Resource {
 		s["output"].ConflictsWith = []string{"keep_result"}
 		s["keep_result"].ConflictsWith = []string{"output"}
 	}
+	if strings.HasPrefix(path, "/app/") {
+		s["numbers"].ValidateFunc = func(v interface{}, key string) ([]string, []error) {
+			if strings.TrimSpace(v.(string)) == "" {
+				return nil, []error{fmt.Errorf("%s must explicitly select at least one App", key)}
+			}
+			return nil, nil
+		}
+	}
 	s["arguments"] = &schema.Schema{Type: schema.TypeMap, Optional: true, Sensitive: true,
 		Elem: &schema.Schema{Type: schema.TypeString}, Description: "Additional command selectors such as `.id` or `numbers`; use exact RouterOS API argument names."}
 	s["triggers"] = &schema.Schema{Type: schema.TypeMap, Optional: true, Elem: &schema.Schema{Type: schema.TypeString}, Description: "Changing this map explicitly runs the command again."}

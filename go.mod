@@ -11,6 +11,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.1
 	github.com/sirupsen/logrus v1.10.2
 	github.com/sourcegraph/go-diff-patch v0.0.0-20240223163233-798fd1e94a8e
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -35,7 +36,6 @@ require (
 	golang.org/x/tools v0.50.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 	rsc.io/qr v0.2.0 // indirect
 )
 

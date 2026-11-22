@@ -135,6 +135,11 @@ func Provider() *schema.Provider {
 			"routeros_system_ptp_port":                                        ResourceSystemPtpPort(),
 			"routeros_system_ssh_exec":                                        ResourceSystemSSHExec(),
 			"routeros_tool_fetch":                                             ResourceToolFetch(),
+			"routeros_app":                                                    ResourceApp(),
+			"routeros_app_settings":                                           ResourceAppSettings(),
+			"routeros_app_restart":                                            newAPI725Action("/app/restart"),
+			"routeros_app_update":                                             newAPI725Action("/app/update"),
+			"routeros_app_cleanup":                                            newAPI725Action("/app/cleanup"),
 
 			// IP objects
 			"routeros_ip_address":                      ResourceIPAddress(),
@@ -440,6 +445,7 @@ func Provider() *schema.Provider {
 			"routeros_interface_ethernet_switch_crs_ingress_vlan_translation": ResourceInterfaceEthernetSwitchCrsIngressVlanTranslation(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
+			"routeros_apps":                                   DatasourceApps(),
 			"routeros_system_script_environment":              DatasourceSystemScriptEnvironment(),
 			"routeros_capsman_actual_interface_configuration": DatasourceCapsManActualInterfaceConfiguration(),
 			"routeros_interface_ethernet_poe_monitor":         DatasourceInterfaceEthernetPoeMonitor(),
