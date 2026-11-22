@@ -35,7 +35,9 @@ require the container package and enabled container device mode.
 Definitions default to `disabled = true`. Set it to false to start asynchronous
 deployment; `status` and `running` report progress on refresh. Configure a formatted,
 mounted storage disk beforehand. Terraform does not run the interactive setup
-wizard, format storage, or enable device mode. Use the actual 7.25.1 attribute
+wizard, format storage, or enable device mode. Set `router_ip` in App settings;
+without it, deployment can remain at `waiting for router ip to be configured`.
+Use the actual 7.25.1 attribute
 `network_pvid`; `/app/add` and `/app/set` do not accept `check-certificate`.
 
 Use `routeros_app_restart`, `routeros_app_update`, and `routeros_app_cleanup` for
