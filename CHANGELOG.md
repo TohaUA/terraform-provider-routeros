@@ -1,3 +1,9 @@
+## [2.0.1](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.0.0...v2.0.1) (2026-11-22)
+
+### Bug Fixes
+
+* **wifi:** support RouterOS 7.25.1 profile controls ([#69](https://github.com/TohaUA/terraform-provider-routeros/issues/69)) ([b249445](https://github.com/TohaUA/terraform-provider-routeros/commit/b249445955f08469f70af24f9b48c62781edbd3e))
+
 ## [2.0.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v1.101.16...v2.0.0) (2026-11-22)
 
 ### ⚠ BREAKING CHANGES
