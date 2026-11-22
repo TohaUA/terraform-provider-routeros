@@ -20,7 +20,7 @@ func TestRouterOS725WifiProfileFeatures(t *testing.T) {
 		rejected    []string
 	}{
 		{"mode", "mode", []string{"ap", "station", "station-bridge", "station-pseudobridge"}, []string{"invalid"}},
-		{"distance", "distance", []string{"0", "0.1", "1.5", "100", "30000", "4294967.295", "indoors", "dynamic"}, []string{"-1", "far", "4294967.296", "4294967295", "NaN", "Inf"}},
+		{"distance", "distance", []string{"0", "+1", ".1", "0.1", "1.5", "100", "30000", "4294967.295", "indoors", "dynamic"}, []string{"-1", "1.", "far", "4294967.296", "4294967295", "NaN", "Inf"}},
 		{"hw_protection_mode", "hw-protection-mode", []string{"none", "rts-cts", "cts-to-self"}, []string{"invalid"}},
 	} {
 		t.Run(tc.field, func(t *testing.T) {
@@ -109,6 +109,7 @@ func TestRouterOS725WifiDistanceCanonicalization(t *testing.T) {
 		equal     bool
 	}{
 		{"0.1", "0.100", true}, {"1.234", "1.2345", true},
+		{"1", "+1", true}, {"0.1", ".1", true}, {"1", "1.", false},
 		{"4294967.295", "4294967.2959", true}, {"0", "0.0009", true},
 		{"1", "1.001", false}, {"4294967.295", "4294967.296", false},
 		{"indoors", "dynamic", false}, {"0", "invalid", false},

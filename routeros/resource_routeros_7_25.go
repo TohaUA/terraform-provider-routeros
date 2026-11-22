@@ -80,7 +80,11 @@ func wifiDistanceValidation(value interface{}, key string) ([]string, []error) {
 // RouterOS stores these decimal values as a scaled uint32, truncating excess
 // fractional digits. Avoid float rounding at the upper boundary.
 func scaledUnsigned32(s string, places int) (uint64, bool) {
+	s = strings.TrimPrefix(s, "+")
 	whole, fraction, dot := strings.Cut(s, ".")
+	if dot && fraction == "" {
+		return 0, false
+	}
 	if whole == "" && dot && fraction != "" {
 		whole = "0"
 	}
