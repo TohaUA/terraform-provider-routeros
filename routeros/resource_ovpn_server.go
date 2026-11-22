@@ -77,7 +77,9 @@ func ResourceOpenVPNServer() *schema.Resource {
 			Default:     false,
 			Description: "Specifies if IPv6 IP tunneling mode should be possible with this OVPN server.",
 		},
-		KeyEnabled: PropEnabled("Defines whether the OVPN server is enabled or not."),
+		KeyName:     PropName("Unique name of the OpenVPN server instance."),
+		KeyComment:  PropCommentRw,
+		KeyDisabled: PropDisabledRw,
 		"ipv6_prefix_len": {
 			Type:     schema.TypeInt,
 			Optional: true,
@@ -146,6 +148,22 @@ func ResourceOpenVPNServer() *schema.Resource {
 			Description:      "Push routes to the VPN client (available since RouterOS 7.14).",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
+		"push_routes_ipv6": {
+			Type: schema.TypeSet, Optional: true,
+			Elem:             &schema.Schema{Type: schema.TypeString},
+			Description:      "IPv6 routes pushed to OpenVPN clients.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
+		"user_auth_method": {
+			Type: schema.TypeString, Optional: true,
+			Description:      "PPP authentication method used for OpenVPN users.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
+		"vrf": {
+			Type: schema.TypeString, Optional: true,
+			Description:      "VRF in which the OpenVPN server listens.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		"redirect_gateway": {
 			Type:     schema.TypeSet,
 			Optional: true,
@@ -192,14 +210,14 @@ func ResourceOpenVPNServer() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Description:   `##### *<span style="color:red">This resource requires a minimum version of RouterOS 7.8!</span>*`,
-		CreateContext: DefaultSystemCreate(resSchema),
-		ReadContext:   DefaultSystemRead(resSchema),
-		UpdateContext: DefaultSystemUpdate(resSchema),
-		DeleteContext: DefaultSystemDelete(resSchema),
+		Description:   "Manage a named OpenVPN server instance on RouterOS 7.25.1. Configure `name` and `disabled`; the earlier singleton `enabled` API is not supported. Import an existing instance by its `.id` or name.",
+		CreateContext: DefaultCreate(resSchema),
+		ReadContext:   DefaultRead(resSchema),
+		UpdateContext: DefaultUpdate(resSchema),
+		DeleteContext: DefaultDelete(resSchema),
 
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: ImportStateCustomContext(resSchema),
 		},
 
 		Schema:        resSchema,

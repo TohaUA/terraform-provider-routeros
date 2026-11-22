@@ -1,6 +1,9 @@
 package routeros
 
 import (
+	"context"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -8,18 +11,24 @@ import (
 
 const testInterfaceVethAddress = "routeros_interface_veth.test"
 
-// /interface/veth belongs to RouterOS's container feature, and the CHR image
-// stopped carrying it: 7.16 answers HTTP 200 with an empty list, 7.24 answers
-// "no such command or directory (veth)". The exact version it left is not
-// established -- 7.16 is simply the newest one confirmed to have it -- so raise
-// this bound if a later image turns out to still ship the menu. The resource
-// itself is untouched and still works against a device that has the feature.
-const testInterfaceVethMaxVersion = "7.16"
-
 func TestAccInterfaceVethTest_basic(t *testing.T) {
-	if !testCheckMaxVersion(t, testInterfaceVethMaxVersion) {
-		t.Skipf("Test skipped, the CHR image stopped shipping /interface/veth after RouterOS %v",
-			testInterfaceVethMaxVersion)
+	testAccPreCheck(t)
+	host := reHost.FindStringSubmatch(os.Getenv("ROS_HOSTURL"))[1]
+	client, err := newApiClient(context.Background(), host+":8728", os.Getenv("ROS_USERNAME"), os.Getenv("ROS_PASSWORD"), false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if session, err := client.pool.acquire(); err == nil {
+			client.pool.release(session, false)
+		}
+	})
+	var interfaces []MikrotikItem
+	if err := client.SendRequest(crudRead, &URL{Path: "/interface/veth"}, nil, &interfaces); err != nil {
+		if strings.Contains(err.Error(), "no such command") {
+			t.Skip("VETH/container support is not installed on this RouterOS device")
+		}
+		t.Fatal(err)
 	}
 
 	for _, name := range testNames {

@@ -49,9 +49,11 @@ resource "routeros_interface_ethernet_switch_rule" "test" {
 
 ### Read-Only
 
+- `bytes` (Number) RouterOS `bytes` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `dynamic` (Boolean) Configuration item created by software, not by management interface. It is not exported, and cannot be directly modified.
 - `id` (String) The ID of this resource.
 - `invalid` (Boolean)
+- `packets` (Number) RouterOS `packets` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 
 ## Import
 Import is supported using the following syntax:

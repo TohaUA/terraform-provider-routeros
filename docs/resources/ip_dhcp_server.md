@@ -7,6 +7,9 @@ resource "routeros_ip_dhcp_server" "server" {
   address_pool = "my_address_pool"
   interface    = "bridge"
   name         = "bridge_dhcp"
+
+  # RouterOS 7.25.1+: offer IPv6-only operation to supporting clients.
+  ipv6_only_preferred = true
 }
 ```
 
@@ -40,6 +43,7 @@ resource "routeros_ip_dhcp_server" "server" {
 - `disabled` (Boolean)
 - `dynamic_lease_identifiers` (String) Dynamic lease identifier
 - `insert_queue_before` (String) Specify where to place dynamic simple queue entries for static DCHP leases with rate-limit parameter set.
+- `ipv6_only_preferred` (Boolean) Send the IPv6-Only Preferred DHCP option (108) to clients that request it, allowing them to use IPv6 without an IPv4 lease. Requires RouterOS 7.25.1 or later.
 - `lease_script` (String) A script that will be executed after a lease is assigned or de-assigned.
 - `lease_time` (String) The time that a client may use the assigned address. The client will try to renew this address after half of this time and will request a new address after the time limit expires.
 - `parent_queue` (String)

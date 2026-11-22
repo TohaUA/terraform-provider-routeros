@@ -14,6 +14,12 @@ func ResourceIpTFTPSettings() *schema.Resource {
 		MetaResourcePath: PropResourcePath("/ip/tftp/settings"),
 		MetaId:           PropId(Name),
 
+		"vrf": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "VRF used by the TFTP server. Requires RouterOS 7.25.1 or later.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		"max_block_size": {
 			Type:     schema.TypeInt,
 			Optional: true,
@@ -23,13 +29,14 @@ func ResourceIpTFTPSettings() *schema.Resource {
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 	}
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		CreateContext: DefaultSystemCreate(resSchema),
 		ReadContext:   DefaultSystemRead(resSchema),
 		UpdateContext: DefaultSystemUpdate(resSchema),
 		DeleteContext: DefaultSystemDelete(resSchema),
 		Importer: &schema.ResourceImporter{
-			StateContext: ImportStateCustomContext(resSchema),
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: resSchema,

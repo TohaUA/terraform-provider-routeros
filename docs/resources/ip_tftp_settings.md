@@ -5,6 +5,9 @@
 ```terraform
 resource "routeros_ip_tftp_settings" "tftp_settings" {
   max_block_size = 4096
+
+  # RouterOS 7.25.1+
+  vrf = "main"
 }
 ```
 
@@ -14,6 +17,7 @@ resource "routeros_ip_tftp_settings" "tftp_settings" {
 ### Optional
 
 - `max_block_size` (Number) Maximum accepted block size value. During transfer negotiation phase, RouterOS device will not negotiate larger value than this.
+- `vrf` (String) VRF used by the TFTP server. Requires RouterOS 7.25.1 or later.
 
 ### Read-Only
 

@@ -18,6 +18,7 @@ resource "routeros_ip_ipsec_policy_group" "test" {
 ### Optional
 
 - `comment` (String)
+- `interface` (String) RouterOS `interface` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 
 ### Read-Only
 

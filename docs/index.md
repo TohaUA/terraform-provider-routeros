@@ -24,6 +24,13 @@ install it through `dev_overrides` or a `filesystem_mirror`, as described in
 covers release verification, the RouterOS 7.24 target, where to report problems, and what a
 migration to a published `TohaUA/routeros` namespace would look like.
 
+## RouterOS 7.25.1
+
+The fork targets RouterOS **7.25.1** and implements the documented 7.24 → 7.25 API additions, with configuration
+resources, operational data sources, and explicit command actions. See the
+[coverage and migration guide](guides/routeros_7_25.md) for feature mappings,
+transport tests, hardware requirements, and upgrade behavior.
+
 ## Getting started
 
 To get started with the provider, you first need to enable the REST API on your router. [You can follow the Mikrotik documentation on this](https://help.mikrotik.com/docs/display/ROS/REST+API), but the gist is to create an SSL cert (in `/system/certificates`) and enable the `web-ssl` service (in `/ip/services`) which uses that certificate.

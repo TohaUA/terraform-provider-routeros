@@ -13,5 +13,7 @@ func init() {
     driftAttributeSlice.Add("7.20", "/container/envs", "name", "list")
     driftAttributeSlice.Add("7.20", "/interface/vxlan", "vrf", "vtep-vrf")
     driftAttributeSlice.Add("7.24", "/ip/service", "address", "available-from")
+    driftAttributeSlice.Add("7.25", "/interface/bridge", "last_member_interval", "last-member-query-interval")
+    driftAttributeSlice.Add("7.25", "/interface/dot1x/server", "reauth_timeout", "reauth-period")
     driftAttributeSlice.SortDesc()
 }

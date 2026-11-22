@@ -43,6 +43,7 @@ var (
 		crudStart:       "POST",
 		crudStop:        "POST",
 		crudGenerateKey: "POST",
+		crudExecute:     "POST",
 	}
 )
 
@@ -63,7 +64,9 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 			return err
 		}
 
-		ColorizedDebug(c.ctx, "request body:  "+redactJSON(b))
+		if method != crudExecute {
+			ColorizedDebug(c.ctx, "request body:  "+redactJSON(b))
+		}
 		data = bytes.NewBuffer(b)
 	}
 
@@ -91,6 +94,9 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
 		var errRes errorResponse
+		if method == crudExecute {
+			return fmt.Errorf("RouterOS command %s failed with HTTP %d", url.Path, res.StatusCode)
+		}
 
 		ColorizedDebug(c.ctx, fmt.Sprintf("error response body:\n%s", redactJSON(body)))
 
@@ -102,7 +108,9 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 		}
 	}
 
-	ColorizedDebug(c.ctx, "response body: "+redactJSON(body))
+	if method != crudExecute {
+		ColorizedDebug(c.ctx, "response body: "+redactJSON(body))
+	}
 
 	// Cast single return values to an array.
 	if !isJsonArray(body) {

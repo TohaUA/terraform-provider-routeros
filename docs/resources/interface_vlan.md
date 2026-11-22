@@ -7,6 +7,9 @@ resource "routeros_interface_vlan" "interface_vlan" {
   interface = "bridge"
   name      = "VLAN_TEST"
   vlan_id   = 50
+
+  # RouterOS 7.25.1+
+  forced_mac_address = "02:00:00:00:07:25"
 }
 ```
 
@@ -28,10 +31,12 @@ resource "routeros_interface_vlan" "interface_vlan" {
   * local-proxy-arp - the router performs proxy ARP on the interface and sends replies to the same interface
   * proxy-arp - the router performs proxy ARP on the interface and sends replies to other interfaces
   * reply-only - the interface will only reply to requests originated from matching IP address/MAC address combinations which are entered as static entries in the ARP table. No dynamic entries will be automatically stored in the ARP table. Therefore for communications to be successful, a valid static entry must already exist.
+- `arp_accept` (Boolean) RouterOS `arp-accept` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `arp_timeout` (String) ARP timeout is time how long ARP record is kept in ARP table after no packets are received from IP. Value auto equals to the value of arp-timeout in IP/Settings, default is 30s. Can use postfix `ms`, `s`, `m`, `h`, `d` for milliseconds, seconds, minutes, hours or days. If no postfix is set then seconds (s) is used.
 - `comment` (String)
 - `disabled` (Boolean)
-- `hw_offloaded` (Boolean)
+- `forced_mac_address` (String) Override the VLAN interface MAC address. Requires RouterOS 7.25.1 or later.
+- `l3_hw_offloading` (Boolean) Enable Layer 3 hardware offloading on supported switch hardware.
 - `loop_protect` (String)
 - `loop_protect_disable_time` (String)
 - `loop_protect_send_interval` (String)
@@ -42,6 +47,7 @@ resource "routeros_interface_vlan" "interface_vlan" {
 
 ### Read-Only
 
+- `hw_offloaded` (Boolean) Whether the VLAN interface is currently hardware offloaded. Read-only status.
 - `id` (String) The ID of this resource.
 - `l2mtu` (Number) Layer2 Maximum transmission unit. [See](https://wiki.mikrotik.com/wiki/Maximum_Transmission_Unit_on_RouterBoards).
 - `loop_protect_status` (String)

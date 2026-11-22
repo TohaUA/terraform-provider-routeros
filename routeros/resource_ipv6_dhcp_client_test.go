@@ -20,22 +20,35 @@ func TestAccIPv6DhcpClient_basic(t *testing.T) {
 				CheckDestroy:      testCheckResourceDestroy("/ipv6/dhcp-client", "routeros_ipv6_dhcp_client"),
 				Steps: []resource.TestStep{
 					{
-						Config: testAccIPv6DhcpClientConfig(),
+						Config: testAccIPv6DhcpClientConfig(""),
 						Check: resource.ComposeTestCheckFunc(
 							testResourcePrimaryInstanceId(testIPv6DhcpClient),
 							resource.TestCheckResourceAttr(testIPv6DhcpClient, "interface", "ether1"),
 							resource.TestCheckResourceAttr(testIPv6DhcpClient, "pool_name", "inet-provider-pool"),
 							resource.TestCheckResourceAttr(testIPv6DhcpClient, "request.0", "prefix"),
 							resource.TestCheckResourceAttr(testIPv6DhcpClient, "prefix_hint", "::/60"),
+							resource.TestCheckTypeSetElemAttr(testIPv6DhcpClient, "dhcp_options.*", "fqdn"),
 						),
 					},
+					{
+						Config: testAccIPv6DhcpClientConfig("[]"),
+						Check:  resource.TestCheckResourceAttr(testIPv6DhcpClient, "dhcp_options.#", "0"),
+					},
+					{
+						Config: testAccIPv6DhcpClientConfig(`["fqdn"]`),
+						Check:  resource.TestCheckTypeSetElemAttr(testIPv6DhcpClient, "dhcp_options.*", "fqdn"),
+					},
+					{ResourceName: testIPv6DhcpClient, ImportState: true, ImportStateVerify: true},
 				},
 			})
 		})
 	}
 }
 
-func testAccIPv6DhcpClientConfig() string {
+func testAccIPv6DhcpClientConfig(options string) string {
+	if options != "" {
+		options = "dhcp_options = " + options
+	}
 	return providerConfig + `
 
 resource "routeros_ipv6_dhcp_client" "client" {	
@@ -44,7 +57,5 @@ resource "routeros_ipv6_dhcp_client" "client" {
   pool_prefix_length = 64
   interface          = "ether1"
   prefix_hint        = "::/60"
-}
-
-`
+` + options + "\n}\n"
 }

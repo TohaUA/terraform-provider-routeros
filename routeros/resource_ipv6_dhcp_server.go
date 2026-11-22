@@ -31,12 +31,25 @@ func ResourceIpv6DhcpServer() *schema.Resource {
 		MetaResourcePath: PropResourcePath("/ipv6/dhcp-server"),
 		MetaId:           PropId(Id),
 
-		"address_pool": {
+		"add_dns_entries": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Description: "Create dynamic AAAA DNS entries for address bindings using the client FQDN (option 39). " +
+				"Prefix bindings do not create entries. Requires RouterOS 7.25.1 or later.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
+		"add_dns_entries_suffix": {
 			Type:             schema.TypeString,
 			Optional:         true,
-			Description:      "IPv6 pool, from which to take IPv6 address for the clients. The prefix length of the pool " +
+			Description:      "Suffix appended to names created by `add_dns_entries`. Requires RouterOS 7.25.1 or later.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
+		"address_pool": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "IPv6 pool, from which to take IPv6 address for the clients. The prefix length of the pool " +
 				"must be 128.",
-			AtLeastOneOf:     []string{"address_pool", "prefix_pool"},
+			AtLeastOneOf: []string{"address_pool", "prefix_pool"},
 		},
 		"address_lists": {
 			Type:        schema.TypeSet,
@@ -118,10 +131,10 @@ func ResourceIpv6DhcpServer() *schema.Resource {
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"prefix_pool": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Description:      "IPv6 pool, from which to take IPv6 prefix for the clients.",
-			AtLeastOneOf:     []string{"address_pool", "prefix_pool"},
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "IPv6 pool, from which to take IPv6 prefix for the clients.",
+			AtLeastOneOf: []string{"address_pool", "prefix_pool"},
 		},
 		"rapid_commit": {
 			Type:             schema.TypeBool,
@@ -148,6 +161,7 @@ func ResourceIpv6DhcpServer() *schema.Resource {
 		},
 	}
 
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),

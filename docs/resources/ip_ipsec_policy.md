@@ -49,6 +49,7 @@ resource "routeros_ip_ipsec_policy" "policy" {
 ### Read-Only
 
 - `active` (Boolean)
+- `active_interface` (String) RouterOS `active-interface` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `dynamic` (Boolean) Configuration item created by software, not by management interface. It is not exported, and cannot be directly modified.
 - `id` (String) The ID of this resource.
 - `invalid` (Boolean)

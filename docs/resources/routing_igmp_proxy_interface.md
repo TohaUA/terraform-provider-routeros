@@ -23,6 +23,10 @@ resource "routeros_routing_igmp_proxy_interface" "test" {
 - `alternative_subnets` (Set of String) By default, only packets from directly attached subnets are accepted. This parameter can be used to specify a list of alternative valid packet source subnets, both for data or IGMP packets. Has an effect only on the upstream interface. Should be used when the source of multicast data often is in a different IP network.
 - `comment` (String)
 - `disabled` (Boolean)
+- `last_member_query_interval` (String) RouterOS `last-member-query-interval` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+- `query_interval` (String) RouterOS `query-interval` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+- `query_response_interval` (String) RouterOS `query-response-interval` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+- `robustness` (Number) RouterOS `robustness` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `threshold` (Number) Minimal TTL. Packets received with a lower TTL value are ignored.
 - `upstream` (Boolean) The interface is called `upstream` if it's in the direction of the root of the multicast tree. An IGMP forwarding router must have exactly one upstream interface configured. The upstream interface is used to send out IGMP membership requests.
 
@@ -30,6 +34,14 @@ resource "routeros_routing_igmp_proxy_interface" "test" {
 
 - `id` (String) The ID of this resource.
 - `inactive` (Boolean)
+- `state_querier` (Boolean) RouterOS `state.querier` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+- `state_query_interval` (String) RouterOS `state.query-interval` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+- `state_robustness` (Number) RouterOS `state.robustness` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+- `state_rx_bytes` (Number) RouterOS `state.rx-bytes` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+- `state_rx_packets` (Number) RouterOS `state.rx-packets` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+- `state_source_ip_address` (String) RouterOS `state.source-ip-address` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+- `state_tx_bytes` (Number) RouterOS `state.tx-bytes` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+- `state_tx_packets` (Number) RouterOS `state.tx-packets` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 
 ## Import
 Import is supported using the following syntax:

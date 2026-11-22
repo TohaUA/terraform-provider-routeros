@@ -44,6 +44,7 @@ func ResourceInterfaceMacVlan() *schema.Resource {
 		KeyName:  PropNameForceNewRw,
 	}
 
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),

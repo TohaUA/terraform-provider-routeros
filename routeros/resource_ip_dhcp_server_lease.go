@@ -184,6 +184,7 @@ func ResourceDhcpServerLease() *schema.Resource {
 				"assign address.",
 		},
 	}
+	addAPI725Fields(resSchema)
 	return &schema.Resource{
 		Description: "Creates a DHCP lease on the mikrotik device.",
 

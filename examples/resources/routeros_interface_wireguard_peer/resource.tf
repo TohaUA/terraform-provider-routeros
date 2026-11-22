@@ -11,4 +11,7 @@ resource "routeros_interface_wireguard_peer" "wg_peer" {
     "172.16.0.0/12",
     "10.0.0.0/8",
   ]
+
+  # RouterOS 7.25.1+: MTU in the exported client configuration.
+  client_mtu = 1380
 }

@@ -127,6 +127,7 @@ resource "routeros_capsman_configuration" "test_configuration_2" {
 - `guard_interval` (String) Whether to allow use of short guard interval (refer to 802.11n MCS specification to see how this may affect throughput). "any" will use either short or long, depending on data rate, "long" will use long.
 - `hide_ssid` (Boolean) This property has effect only in AP mode. Setting it to yes can remove this network from the list of wireless networks that are shown by some client software. Changing this setting does not improve the security of the wireless network, because SSID is included in other frames sent by the AP.
 - `hw_protection_mode` (String) Frame protection support property. [See docs](https://wiki.mikrotik.com/wiki/Manual:Interface/Wireless#Frame_protection_support_(RTS/CTS)).
+- `hw_protection_threshold` (Number) RouterOS `hw-protection-threshold` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `hw_retries` (Number) Number of times sending frame is retried without considering it a transmission failure. [See docs](https://wiki.mikrotik.com/wiki/Manual:Interface/Wireless)
 - `installation` (String) Adjusts scan-list to use indoor, outdoor or all frequencies for the country that is set.
 - `keepalive_frames` (String) If a client has not communicated for around 20 seconds, AP sends a "keepalive-frame".

@@ -46,6 +46,7 @@ const (
 	crudStart
 	crudStop
 	crudGenerateKey
+	crudExecute // execute the exact console path; do not append a CRUD command
 )
 
 type ExtraParams struct {

@@ -37,14 +37,15 @@ resource "routeros_ppp_secret" "test" {
 }
 
 resource "routeros_ovpn_server" "server" {
-  enabled         = true
+  name            = "site-ovpn"
+  disabled        = false
   certificate     = routeros_system_certificate.ovpn_server_crt.name
   auth            = ["sha256", "sha512"]
   tls_version     = "only-1.2"
   default_profile = routeros_ppp_profile.test.name
 }
 
-# The resource should be created only after the OpenVPN server is enabled!
+# Create the server instance before its static interfaces.
 resource "routeros_interface_ovpn_server" "user1" {
   name       = "ovpn-in1"
   user       = "user1"
