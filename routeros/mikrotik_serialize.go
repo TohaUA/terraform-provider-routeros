@@ -417,6 +417,7 @@ func unsetRemovedBlock(item MikrotikItem, mikrotikKebabName, terraformSnakeName 
 
 // MikrotikResourceDataToTerraform Unmarshal Mikrotik resource (incoming data: JSON, etc.) to TF resource schema.
 func MikrotikResourceDataToTerraform(item MikrotikItem, s map[string]*schema.Schema, d *schema.ResourceData) diag.Diagnostics {
+	item = normalizeRouteBlackholeRead(item, s)
 	var diags diag.Diagnostics
 	var err error
 	var transformSet map[string]string
