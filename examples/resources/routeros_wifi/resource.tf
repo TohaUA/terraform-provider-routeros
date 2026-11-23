@@ -9,3 +9,8 @@ resource "routeros_wifi" "wifi1" {
   }
   name = "wifi1"
 }
+
+# Logical MLD and affiliation examples: see the WiFi 7 guide.
+# Existing physical interfaces must be imported before management.
+# New logical MLD interfaces can specify mld_name and a unique mac_address.
+# Affiliated interfaces can set mld_interface to the MLD interface name.

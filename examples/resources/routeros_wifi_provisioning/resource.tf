@@ -12,3 +12,8 @@ resource "routeros_wifi_provisioning" "provisioning1" {
   name_format          = "cap1:"
   radio_mac            = "00:11:22:33:44:55"
 }
+
+# For MLO-capable radios, rules can additionally use:
+# supported_hw_caps = ["mlo"]
+# multi_link_mode = "all"
+# action also accepts "use-network-config".

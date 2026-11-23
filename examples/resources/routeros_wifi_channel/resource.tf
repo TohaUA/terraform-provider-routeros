@@ -6,3 +6,7 @@ resource "routeros_wifi_channel" "channel1" {
   skip_dfs_channels   = "disabled"
   width               = "20mhz"
 }
+
+# Optional WiFi 7 controls, depending on radio capabilities:
+# preamble_puncturing = "yes"
+# afc = false

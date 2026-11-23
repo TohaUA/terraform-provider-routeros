@@ -1,0 +1,2892 @@
+{
+  "target_version": "7.25.1",
+  "reference": {
+    "interface/wifi": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/",
+      "sha256": "f2d2d9ae11f65a3941b234d95ed4b6b46f54c62abb9dadc9ab95b32ee23a3c3b",
+      "tables": [
+        [
+          [
+            "Flag",
+            "Name",
+            "Description"
+          ],
+          [
+            "M",
+            "master",
+            "master"
+          ],
+          [
+            "D",
+            "dynamic",
+            "dynamic"
+          ],
+          [
+            "N",
+            "network",
+            "network"
+          ],
+          [
+            "B",
+            "bound",
+            "bound"
+          ],
+          [
+            "X",
+            "disabled",
+            "disabled"
+          ],
+          [
+            "I",
+            "inactive",
+            "inactive"
+          ],
+          [
+            "R",
+            "running",
+            "running"
+          ]
+        ],
+        [
+          [
+            "Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "test.sigmadut-params ( unset syscap=ww2-sigmadut)",
+            "string",
+            ""
+          ],
+          [
+            "test.sigmadut-extra-params ( unset syscap=ww2-sigmadut)",
+            "string",
+            ""
+          ],
+          [
+            "configuration ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "security ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "interworking ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "datapath ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "channel ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "aaa ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "steering ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "name",
+            "string",
+            ""
+          ],
+          [
+            "mtu ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "l2mtu ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "mac-address",
+            "macAddr",
+            ""
+          ],
+          [
+            "arp ( unset )",
+            "enum (disabled | enabled | proxy-arp | reply-only | local-proxy-arp)",
+            ""
+          ],
+          [
+            "arp-timeout",
+            "alt { arp-timeout: enum (auto) { auto:0 } , arp-timeout: time }",
+            ""
+          ],
+          [
+            "disable-running-check ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "radio-mac ( unset )",
+            "macAddr",
+            ""
+          ],
+          [
+            "master-interface ( unset )",
+            "iface_enum",
+            ""
+          ],
+          [
+            "mld-name ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "mld-interface ( unset )",
+            "iface_enum",
+            ""
+          ],
+          [
+            "test.dfs.ignore-radar ( unset syscap=dfstest)",
+            "bool",
+            ""
+          ],
+          [
+            "test.dfs.ignore-cac ( unset syscap=dfstest)",
+            "bool",
+            ""
+          ],
+          [
+            "test.dfs.duty-cycle ( unset syscap=dfstest)",
+            "bool",
+            ""
+          ],
+          [
+            "configuration.mode ( unset )",
+            "enum (ap)",
+            ""
+          ],
+          [
+            "configuration.ssid ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "configuration.hide-ssid ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "configuration.max-sta-count ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "configuration.multicast-helper ( unset )",
+            "enum (default | disabled | full | dhcp) { default:0, disabled:1, full:2, dhcp:3 }",
+            ""
+          ],
+          [
+            "configuration.tx-chains ( unset )",
+            "ubit (0, 1, 2, 3)",
+            ""
+          ],
+          [
+            "configuration.rx-chains ( unset )",
+            "ubit (0, 1, 2, 3)",
+            ""
+          ],
+          [
+            "configuration.guard-interval ( unset )",
+            "enum (any | long) { any:0, long:1 }",
+            ""
+          ],
+          [
+            "configuration.country ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "configuration.installation ( unset )",
+            "enum (any | indoor | outdoor)",
+            ""
+          ],
+          [
+            "configuration.load-balancing-group ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "configuration.distance ( unset )",
+            "enum (indoors | dynamic) { indoors:0, dynamic:0xffffffff }",
+            ""
+          ],
+          [
+            "configuration.hw-retries ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "configuration.hw-protection-mode ( unset )",
+            "enum (none | rts-cts | cts-to-self) { none:0, rts-cts:1, cts-to-self:2 }",
+            ""
+          ],
+          [
+            "configuration.hw-protection-threshold ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "configuration.frame-lifetime ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "configuration.disconnect-timeout ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "configuration.keepalive-frames ( unset )",
+            "enum (enabled | disabled)",
+            ""
+          ],
+          [
+            "configuration.ssid ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "configuration.mode ( unset )",
+            "enum (ap | station | station-bridge | station-pseudobridge)",
+            ""
+          ],
+          [
+            "configuration.hide-ssid ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "configuration.beacon-interval ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "configuration.dtim-period ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "configuration.multicast-enhance ( unset )",
+            "enum (disabled | enabled) { disabled:0, enabled:1 }",
+            ""
+          ],
+          [
+            "configuration.qos-classifier ( unset )",
+            "enum (priority | dscp-high-3-bits) { priority:0, dscp-high-3-bits:1 }",
+            ""
+          ],
+          [
+            "configuration.station-roaming ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "configuration.max-clients ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "configuration.hw-protection-mode ( unset )",
+            "enum (none | rts-cts | cts-to-self)",
+            ""
+          ],
+          [
+            "configuration.country ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "configuration.chains ( unset )",
+            "ubit (0, 1, 2, 3, 4, 5, 6, 7)",
+            ""
+          ],
+          [
+            "configuration.tx-chains ( unset )",
+            "ubit ()",
+            ""
+          ],
+          [
+            "configuration.tx-power ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "configuration.antenna-gain ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "configuration.distance ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "configuration.installation ( unset )",
+            "enum (outdoor | indoor)",
+            ""
+          ],
+          [
+            "security.encryption ( unset )",
+            "ubit (tkip, ccmp, gcmp, ccmp-256, gcmp-256)",
+            ""
+          ],
+          [
+            "security.group-encryption ( unset )",
+            "enum (tkip | ccmp | gcmp | ccmp-256 | gcmp-256)",
+            ""
+          ],
+          [
+            "security.group-key-update ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "security.passphrase ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "security.multi-passphrase-group ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "security.disable-pmkid ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "security.management-protection ( unset )",
+            "enum (disabled | allowed | required)",
+            ""
+          ],
+          [
+            "security.beacon-protection ( unset )",
+            "enum (disabled | enabled)",
+            ""
+          ],
+          [
+            "security.management-encryption ( unset )",
+            "enum (cmac | gmac | cmac-256 | gmac-256)",
+            ""
+          ],
+          [
+            "security.wps ( unset )",
+            "enum (disable | push-button)",
+            ""
+          ],
+          [
+            "security.dh-groups ( unset )",
+            "ubit (19, 20, 21)",
+            ""
+          ],
+          [
+            "security.sae-anti-clogging-threshold ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "security.sae-max-failure-rate ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "security.sae-pwe ( unset )",
+            "enum (hunting-and-pecking | hash-to-element | both)",
+            ""
+          ],
+          [
+            "security.owe-transition-interface ( unset )",
+            "iface_enum { auto }",
+            ""
+          ],
+          [
+            "security.eap-methods ( unset )",
+            "multi { array-id, method: enum (tls | ttls | peap) { tls:13, ttls:21, peap:25 } }",
+            ""
+          ],
+          [
+            "security.eap-certificate-mode ( unset )",
+            "enum (verify-certificate | dont-verify-certificate | no-certificates | verify-certificate-with-crl)",
+            ""
+          ],
+          [
+            "security.eap-tls-certificate ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "security.eap-username ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "security.eap-anonymous-identity ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "security.eap-password ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "security.eap-accounting ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "security.ft ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "security.ft-mobility-domain ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "security.ft-over-ds ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "security.ft-reassociation-deadline ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "security.ft-nas-identifier ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "security.ft-r0-key-lifetime ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "security.ft-preserve-vlanid ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "security.connect-group ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "security.connect-priority ( unset )",
+            "super { connect-accept-priority: num , [connect-hold-priority] /num }",
+            ""
+          ],
+          [
+            "security.authentication-types ( unset )",
+            "ubit (wpa-psk, wpa2-psk, wpa2-psk-sha2, wpa-eap, wpa2-eap, wpa3-psk, owe, wpa3-eap, wpa3-eap-192)",
+            ""
+          ],
+          [
+            "interworking.network-type ( unset )",
+            "enum (private | private-with-guest | public-chargeable | public-free | personal-device | emergency-only | test | wildcard) { private:0, private-with-guest:1, public-chargeable:2, public-free:3, personal-device:4, emergency-only:5, test:14, wildcard:15 }",
+            ""
+          ],
+          [
+            "interworking.internet ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.esr ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.uesa ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.venue ( unset )",
+            "enum (unspecified | disabled) { unspecified:0, disabled:0xffffffff }",
+            ""
+          ],
+          [
+            "interworking.hessid ( unset )",
+            "macAddr",
+            ""
+          ],
+          [
+            "interworking.hotspot20 ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.hotspot20-dgaf ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.roaming-ois ( unset )",
+            "multi { array-id, roaming-oi: string }",
+            ""
+          ],
+          [
+            "interworking.venue-names ( unset )",
+            "object { venue-name: composite { venue-name-name: string , venue-name-lang: string } }",
+            ""
+          ],
+          [
+            "interworking.authentication-types ( unset )",
+            "object { authentication-type: composite { authentication-type-indicator: enum (terms-and-conditions | online-enrollment | https-redirection | dns-redirection) { terms-and-conditions:0, online-enrollment:1, https-redirection:2, dns-redirection:3 } , authentication-type-url: string } }",
+            ""
+          ],
+          [
+            "interworking.ipv4-availability ( unset )",
+            "enum (not-available | public | port-restricted | single-nated | double-nated | port-restricted-single-nated | port-restricted-double-nated | unknown) { not-available:0, public:1, port-restricted:2, single-nated:3, double-nated:4, port-restricted-single-nated:5, port-restricted-double-nated:6, unknown:7 }",
+            ""
+          ],
+          [
+            "interworking.ipv6-availability ( unset )",
+            "enum (not-available | available | unknown) { not-available:0, available:1, unknown:2 }",
+            ""
+          ],
+          [
+            "interworking.realms ( unset )",
+            "object { realm: composite { realm-name: string , realm-auth: enum (not-specified | eap-sim | eap-tls | eap-aka) } }",
+            ""
+          ],
+          [
+            "interworking.realms-raw ( unset )",
+            "multi { array-id, realm-raw: string }",
+            ""
+          ],
+          [
+            "interworking.3gpp-info ( unset )",
+            "object { 3gpp: composite { 3gpp-mcc: string , 3gpp-mnc: string } }",
+            ""
+          ],
+          [
+            "interworking.3gpp-info-raw ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "interworking.domain-names ( unset )",
+            "multi { array-id, domain-name: string }",
+            ""
+          ],
+          [
+            "interworking.operator-names ( unset )",
+            "object { operator-name: composite { operator-name-name: string , operator-name-lang: string } }",
+            ""
+          ],
+          [
+            "interworking.wan-status ( unset )",
+            "enum (reserved | up | down | test) { reserved:0, up:1, down:2, test:3 }",
+            ""
+          ],
+          [
+            "interworking.wan-symmetric ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.wan-at-capacity ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.wan-downlink ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "interworking.wan-uplink ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "interworking.wan-downlink-load ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "interworking.wan-uplink-load ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "interworking.wan-measurement-duration ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "interworking.connection-capabilities ( unset )",
+            "object { connection-cap: composite { protocol: num , connection-cap2: composite { port: num , status: enum (closed | open | unknown) { closed:0, open:1, unknown:2 } } } }",
+            ""
+          ],
+          [
+            "interworking.operational-classes ( unset )",
+            "multi { array-id, operational-class: num }",
+            ""
+          ],
+          [
+            "datapath.bridge ( unset )",
+            "iface_enum { none }",
+            ""
+          ],
+          [
+            "datapath.bridge-cost ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "datapath.bridge-horizon ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "datapath.openflow-switch ( unset syscap=openflow)",
+            "enum",
+            ""
+          ],
+          [
+            "datapath.client-isolation ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "datapath.traffic-processing ( unset )",
+            "enum (on-cap | on-capsman | on-capsman-secure)",
+            ""
+          ],
+          [
+            "datapath.vlan-id ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "datapath.interface-list ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "channel.frequency ( unset )",
+            "object",
+            ""
+          ],
+          [
+            "channel.secondary-frequency ( unset )",
+            "multi { array-id, secondary-frequency: alt { secondary-frequency-disable: enum (disabled) , secondary-frequency-num: num } }",
+            ""
+          ],
+          [
+            "channel.band ( unset )",
+            "enum (60ghz-ad | 5ghz-a | 5ghz-n | 5ghz-ac | 5ghz-ax | 5ghz-be | 2ghz-g | 2ghz-n | 2ghz-ax | 2ghz-be | s1ghz-ah | 6ghz-ax | 6ghz-be)",
+            ""
+          ],
+          [
+            "channel.width ( unset )",
+            "enum (20mhz | 20/40mhz | 20/40mhz-Ce | 20/40mhz-eC | 20/40/80mhz | 20/40/80+80mhz | 20/40/80/160mhz | 20/40/80/160/320mhz | 1mhz | 1/2mhz | 1/2/4mhz | 1/2/4/8mhz | 2160mhz)",
+            ""
+          ],
+          [
+            "channel.skip-dfs-channels ( unset )",
+            "enum (disabled | all | 10min-cac)",
+            ""
+          ],
+          [
+            "channel.deprioritize-unii-3-4 ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "channel.reselect-interval ( unset )",
+            "super { reselect-interval-min: time [1 .. 60*60*24*300] , [reselect-interval-max] ..time [1 .. 60*60*24*300] }",
+            ""
+          ],
+          [
+            "channel.reselect-time ( unset )",
+            "super { reselect-time-min: date , [reselect-time-max] ..date }",
+            ""
+          ],
+          [
+            "channel.preamble-puncturing ( unset )",
+            "alt { preamble-puncturing: enum (yes | no) { yes:-1, no:0 } }",
+            ""
+          ],
+          [
+            "channel.afc ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "aaa.username-format ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "aaa.password-format ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "aaa.called-format ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "aaa.calling-format ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "aaa.mac-caching ( unset )",
+            "alt { mac-caching-disable: enum (disabled) { disabled:0 } , mac-caching-time: time }",
+            ""
+          ],
+          [
+            "aaa.interim-update ( unset )",
+            "alt { interim-update-disable: enum (disabled) { disabled:0 } , interim-update-time: time [1 .. ] }",
+            ""
+          ],
+          [
+            "aaa.nas-identifier ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "steering.neighbor-group ( unset )",
+            "multi { array-id, neighbor-group: string }",
+            ""
+          ],
+          [
+            "steering.rrm ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "steering.wnm ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "steering.2g-probe-delay ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "steering.transition-threshold ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "steering.transition-threshold-time ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "steering.transition-request-period ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "steering.transition-request-count ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "steering.transition-time ( unset )",
+            "alt { value: enum (unlimited | immediate) { unlimited:-1, immediate:0 } , time: time }",
+            ""
+          ]
+        ],
+        [
+          [
+            "Read-only Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "default-name",
+            "string",
+            ""
+          ],
+          [
+            "cap",
+            "string",
+            ""
+          ]
+        ]
+      ]
+    },
+    "interface/wifi/channel": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/channel/",
+      "sha256": "70b442a855be02dc82557c16980b058b78f9e98ef391a1fa3b994dee3cf3e6d2",
+      "tables": [
+        [
+          [
+            "Flag",
+            "Name",
+            "Description"
+          ],
+          [
+            "X",
+            "disabled",
+            "disabled"
+          ]
+        ],
+        [
+          [
+            "Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "name ( mandatory )",
+            "string",
+            ""
+          ],
+          [
+            "frequency ( unset )",
+            "object",
+            ""
+          ],
+          [
+            "secondary-frequency ( unset )",
+            "multi { array-id, secondary-frequency: alt { secondary-frequency-disable: enum (disabled) , secondary-frequency-num: num } }",
+            ""
+          ],
+          [
+            "band ( unset )",
+            "enum (60ghz-ad | 5ghz-a | 5ghz-n | 5ghz-ac | 5ghz-ax | 5ghz-be | 2ghz-g | 2ghz-n | 2ghz-ax | 2ghz-be | s1ghz-ah | 6ghz-ax | 6ghz-be)",
+            ""
+          ],
+          [
+            "width ( unset )",
+            "enum (20mhz | 20/40mhz | 20/40mhz-Ce | 20/40mhz-eC | 20/40/80mhz | 20/40/80+80mhz | 20/40/80/160mhz | 20/40/80/160/320mhz | 1mhz | 1/2mhz | 1/2/4mhz | 1/2/4/8mhz | 2160mhz)",
+            ""
+          ],
+          [
+            "skip-dfs-channels ( unset )",
+            "enum (disabled | all | 10min-cac)",
+            ""
+          ],
+          [
+            "deprioritize-unii-3-4 ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "reselect-interval ( unset )",
+            "super { reselect-interval-min: time [1 .. 60*60*24*300] , [reselect-interval-max] ..time [1 .. 60*60*24*300] }",
+            ""
+          ],
+          [
+            "reselect-time ( unset )",
+            "super { reselect-time-min: date , [reselect-time-max] ..date }",
+            ""
+          ],
+          [
+            "preamble-puncturing ( unset )",
+            "alt { preamble-puncturing: enum (yes | no) { yes:-1, no:0 } }",
+            ""
+          ],
+          [
+            "afc ( unset )",
+            "bool",
+            ""
+          ]
+        ]
+      ]
+    },
+    "interface/wifi/network": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/network/",
+      "sha256": "afbee2dd377bae6b6bbac195c77801cd8ed5a77c52c97848c7425dd8468c6dff",
+      "tables": [
+        [
+          [
+            "Flag",
+            "Name",
+            "Description"
+          ],
+          [
+            "Y",
+            "managed",
+            "managed"
+          ],
+          [
+            "X",
+            "disabled",
+            "disabled"
+          ]
+        ],
+        [
+          [
+            "Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "mlo ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "labels ( unset )",
+            "object",
+            ""
+          ],
+          [
+            "ssid ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "mode ( unset )",
+            "enum (ap | station | station-bridge | station-pseudobridge)",
+            ""
+          ],
+          [
+            "hide-ssid ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "beacon-interval ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "dtim-period ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "multicast-enhance ( unset )",
+            "enum (disabled | enabled) { disabled:0, enabled:1 }",
+            ""
+          ],
+          [
+            "qos-classifier ( unset )",
+            "enum (priority | dscp-high-3-bits) { priority:0, dscp-high-3-bits:1 }",
+            ""
+          ],
+          [
+            "station-roaming ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "max-clients ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "hw-protection-mode ( unset )",
+            "enum (none | rts-cts | cts-to-self)",
+            ""
+          ],
+          [
+            "security.encryption ( unset )",
+            "ubit (tkip, ccmp, gcmp, ccmp-256, gcmp-256)",
+            ""
+          ],
+          [
+            "security.group-encryption ( unset )",
+            "enum (tkip | ccmp | gcmp | ccmp-256 | gcmp-256)",
+            ""
+          ],
+          [
+            "security.group-key-update ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "security.passphrase ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "security.multi-passphrase-group ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "security.disable-pmkid ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "security.management-protection ( unset )",
+            "enum (disabled | allowed | required)",
+            ""
+          ],
+          [
+            "security.beacon-protection ( unset )",
+            "enum (disabled | enabled)",
+            ""
+          ],
+          [
+            "security.management-encryption ( unset )",
+            "enum (cmac | gmac | cmac-256 | gmac-256)",
+            ""
+          ],
+          [
+            "security.wps ( unset )",
+            "enum (disable | push-button)",
+            ""
+          ],
+          [
+            "security.dh-groups ( unset )",
+            "ubit (19, 20, 21)",
+            ""
+          ],
+          [
+            "security.sae-anti-clogging-threshold ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "security.sae-max-failure-rate ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "security.sae-pwe ( unset )",
+            "enum (hunting-and-pecking | hash-to-element | both)",
+            ""
+          ],
+          [
+            "security.owe-transition-interface ( unset )",
+            "iface_enum { auto }",
+            ""
+          ],
+          [
+            "security.eap-methods ( unset )",
+            "multi { array-id, method: enum (tls | ttls | peap) { tls:13, ttls:21, peap:25 } }",
+            ""
+          ],
+          [
+            "security.eap-certificate-mode ( unset )",
+            "enum (verify-certificate | dont-verify-certificate | no-certificates | verify-certificate-with-crl)",
+            ""
+          ],
+          [
+            "security.eap-tls-certificate ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "security.eap-username ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "security.eap-anonymous-identity ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "security.eap-password ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "security.eap-accounting ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "security.ft ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "security.ft-mobility-domain ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "security.ft-over-ds ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "security.ft-reassociation-deadline ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "security.ft-nas-identifier ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "security.ft-r0-key-lifetime ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "security.ft-preserve-vlanid ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "security.connect-group ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "security.connect-priority ( unset )",
+            "super { connect-accept-priority: num , [connect-hold-priority] /num }",
+            ""
+          ],
+          [
+            "security.authentication-types ( unset )",
+            "ubit (wpa-psk, wpa2-psk, wpa2-psk-sha2, wpa-eap, wpa2-eap, wpa3-psk, owe, wpa3-eap, wpa3-eap-192)",
+            ""
+          ],
+          [
+            "datapath.bridge ( unset )",
+            "iface_enum { none }",
+            ""
+          ],
+          [
+            "datapath.bridge-cost ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "datapath.bridge-horizon ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "datapath.openflow-switch ( unset syscap=openflow)",
+            "enum",
+            ""
+          ],
+          [
+            "datapath.client-isolation ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "datapath.traffic-processing ( unset )",
+            "enum (on-cap | on-capsman | on-capsman-secure)",
+            ""
+          ],
+          [
+            "datapath.vlan-id ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "datapath.interface-list ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "interworking.network-type ( unset )",
+            "enum (private | private-with-guest | public-chargeable | public-free | personal-device | emergency-only | test | wildcard) { private:0, private-with-guest:1, public-chargeable:2, public-free:3, personal-device:4, emergency-only:5, test:14, wildcard:15 }",
+            ""
+          ],
+          [
+            "interworking.internet ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.esr ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.uesa ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.venue ( unset )",
+            "enum (unspecified | disabled) { unspecified:0, disabled:0xffffffff }",
+            ""
+          ],
+          [
+            "interworking.hessid ( unset )",
+            "macAddr",
+            ""
+          ],
+          [
+            "interworking.hotspot20 ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.hotspot20-dgaf ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.roaming-ois ( unset )",
+            "multi { array-id, roaming-oi: string }",
+            ""
+          ],
+          [
+            "interworking.venue-names ( unset )",
+            "object { venue-name: composite { venue-name-name: string , venue-name-lang: string } }",
+            ""
+          ],
+          [
+            "interworking.authentication-types ( unset )",
+            "object { authentication-type: composite { authentication-type-indicator: enum (terms-and-conditions | online-enrollment | https-redirection | dns-redirection) { terms-and-conditions:0, online-enrollment:1, https-redirection:2, dns-redirection:3 } , authentication-type-url: string } }",
+            ""
+          ],
+          [
+            "interworking.ipv4-availability ( unset )",
+            "enum (not-available | public | port-restricted | single-nated | double-nated | port-restricted-single-nated | port-restricted-double-nated | unknown) { not-available:0, public:1, port-restricted:2, single-nated:3, double-nated:4, port-restricted-single-nated:5, port-restricted-double-nated:6, unknown:7 }",
+            ""
+          ],
+          [
+            "interworking.ipv6-availability ( unset )",
+            "enum (not-available | available | unknown) { not-available:0, available:1, unknown:2 }",
+            ""
+          ],
+          [
+            "interworking.realms ( unset )",
+            "object { realm: composite { realm-name: string , realm-auth: enum (not-specified | eap-sim | eap-tls | eap-aka) } }",
+            ""
+          ],
+          [
+            "interworking.realms-raw ( unset )",
+            "multi { array-id, realm-raw: string }",
+            ""
+          ],
+          [
+            "interworking.3gpp-info ( unset )",
+            "object { 3gpp: composite { 3gpp-mcc: string , 3gpp-mnc: string } }",
+            ""
+          ],
+          [
+            "interworking.3gpp-info-raw ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "interworking.domain-names ( unset )",
+            "multi { array-id, domain-name: string }",
+            ""
+          ],
+          [
+            "interworking.operator-names ( unset )",
+            "object { operator-name: composite { operator-name-name: string , operator-name-lang: string } }",
+            ""
+          ],
+          [
+            "interworking.wan-status ( unset )",
+            "enum (reserved | up | down | test) { reserved:0, up:1, down:2, test:3 }",
+            ""
+          ],
+          [
+            "interworking.wan-symmetric ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.wan-at-capacity ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "interworking.wan-downlink ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "interworking.wan-uplink ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "interworking.wan-downlink-load ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "interworking.wan-uplink-load ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "interworking.wan-measurement-duration ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "interworking.connection-capabilities ( unset )",
+            "object { connection-cap: composite { protocol: num , connection-cap2: composite { port: num , status: enum (closed | open | unknown) { closed:0, open:1, unknown:2 } } } }",
+            ""
+          ],
+          [
+            "interworking.operational-classes ( unset )",
+            "multi { array-id, operational-class: num }",
+            ""
+          ],
+          [
+            "steering.neighbor-group ( unset )",
+            "multi { array-id, neighbor-group: string }",
+            ""
+          ],
+          [
+            "steering.rrm ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "steering.wnm ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "steering.2g-probe-delay ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "steering.transition-threshold ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "steering.transition-threshold-time ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "steering.transition-request-period ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "steering.transition-request-count ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "steering.transition-time ( unset )",
+            "alt { value: enum (unlimited | immediate) { unlimited:-1, immediate:0 } , time: time }",
+            ""
+          ],
+          [
+            "aaa.username-format ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "aaa.password-format ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "aaa.called-format ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "aaa.calling-format ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "aaa.mac-caching ( unset )",
+            "alt { mac-caching-disable: enum (disabled) { disabled:0 } , mac-caching-time: time }",
+            ""
+          ],
+          [
+            "aaa.interim-update ( unset )",
+            "alt { interim-update-disable: enum (disabled) { disabled:0 } , interim-update-time: time [1 .. ] }",
+            ""
+          ],
+          [
+            "aaa.nas-identifier ( unset )",
+            "string",
+            ""
+          ]
+        ]
+      ]
+    },
+    "interface/wifi/network/radio": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/network/radio/",
+      "sha256": "a7ab2155b819a5fe017f1426f9e31f007bfddf35d13ee6311a70cfad406449e1",
+      "tables": [
+        [
+          [
+            "Flag",
+            "Name",
+            "Description"
+          ],
+          [
+            "Y",
+            "managed",
+            "managed"
+          ],
+          [
+            "X",
+            "disabled",
+            "disabled"
+          ]
+        ],
+        [
+          [
+            "Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "labels ( unset )",
+            "object",
+            ""
+          ],
+          [
+            "extra-labels ( unset )",
+            "multi { array-id, label: string }",
+            ""
+          ],
+          [
+            "configuration.country ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "configuration.chains ( unset )",
+            "ubit (0, 1, 2, 3, 4, 5, 6, 7)",
+            ""
+          ],
+          [
+            "configuration.tx-chains ( unset )",
+            "ubit ()",
+            ""
+          ],
+          [
+            "configuration.tx-power ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "configuration.antenna-gain ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "configuration.distance ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "configuration.installation ( unset )",
+            "enum (outdoor | indoor)",
+            ""
+          ],
+          [
+            "channel.frequency ( unset )",
+            "object",
+            ""
+          ],
+          [
+            "channel.secondary-frequency ( unset )",
+            "multi { array-id, secondary-frequency: alt { secondary-frequency-disable: enum (disabled) , secondary-frequency-num: num } }",
+            ""
+          ],
+          [
+            "channel.band ( unset )",
+            "enum (60ghz-ad | 5ghz-a | 5ghz-n | 5ghz-ac | 5ghz-ax | 5ghz-be | 2ghz-g | 2ghz-n | 2ghz-ax | 2ghz-be | s1ghz-ah | 6ghz-ax | 6ghz-be)",
+            ""
+          ],
+          [
+            "channel.width ( unset )",
+            "enum (20mhz | 20/40mhz | 20/40mhz-Ce | 20/40mhz-eC | 20/40/80mhz | 20/40/80+80mhz | 20/40/80/160mhz | 20/40/80/160/320mhz | 1mhz | 1/2mhz | 1/2/4mhz | 1/2/4/8mhz | 2160mhz)",
+            ""
+          ],
+          [
+            "channel.skip-dfs-channels ( unset )",
+            "enum (disabled | all | 10min-cac)",
+            ""
+          ],
+          [
+            "channel.deprioritize-unii-3-4 ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "channel.reselect-interval ( unset )",
+            "super { reselect-interval-min: time [1 .. 60*60*24*300] , [reselect-interval-max] ..time [1 .. 60*60*24*300] }",
+            ""
+          ],
+          [
+            "channel.reselect-time ( unset )",
+            "super { reselect-time-min: date , [reselect-time-max] ..date }",
+            ""
+          ],
+          [
+            "channel.preamble-puncturing ( unset )",
+            "alt { preamble-puncturing: enum (yes | no) { yes:-1, no:0 } }",
+            ""
+          ],
+          [
+            "channel.afc ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "security.authentication-types ( unset )",
+            "ubit (wpa-psk, wpa2-psk, wpa2-psk-sha2, wpa-eap, wpa2-eap, wpa3-psk, owe, wpa3-eap, wpa3-eap-192)",
+            ""
+          ]
+        ]
+      ]
+    },
+    "interface/wifi/radio": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/radio/",
+      "sha256": "67a75e2772cd097fc660316546045db5c973b2f50d2efafb8f3f4fd9744ddbec",
+      "tables": [
+        [
+          [
+            "Flag",
+            "Name",
+            "Description"
+          ],
+          [
+            "L",
+            "local",
+            "local"
+          ]
+        ],
+        [
+          [
+            "Read-only Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "cap",
+            "string",
+            ""
+          ],
+          [
+            "radio-mac",
+            "macAddr",
+            ""
+          ],
+          [
+            "tx-chains",
+            "ubit ()",
+            ""
+          ],
+          [
+            "rx-chains",
+            "ubit ()",
+            ""
+          ],
+          [
+            "bands",
+            "object { band: composite { band-band: enum () , band-widths: ubit (20mhz, 20/40mhz, 20/40/80mhz, 20/40/80/160mhz, 20/40/80+80mhz, 20/40/80/160/320mhz, 1mhz, 1/2mhz, 1/2/4mhz, 1/2/4/8mhz, 1/2/4/8/16mhz, 2160mhz) } }",
+            ""
+          ],
+          [
+            "ciphers",
+            "ubit (tkip, ccmp, gcmp, ccmp-256, gcmp-256, cmac, gmac, cmac-256, gmac-256)",
+            ""
+          ],
+          [
+            "min-antenna-gain ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "countries ( unset )",
+            "multi { array-id, country: string }",
+            ""
+          ],
+          [
+            "2g-channels ( unset )",
+            "multi { array-id, frequency: num }",
+            ""
+          ],
+          [
+            "5g-channels ( unset )",
+            "multi { array-id, frequency: num }",
+            ""
+          ],
+          [
+            "6g-channels ( unset )",
+            "multi { array-id, frequency: num }",
+            ""
+          ],
+          [
+            "60g-channels ( unset )",
+            "multi { array-id, frequency: num }",
+            ""
+          ],
+          [
+            "s1g-channels ( unset )",
+            "multi { array-id, frequency: num }",
+            ""
+          ],
+          [
+            "max-vlans ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "max-interfaces ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "max-station-interfaces ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "max-peers ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "hw-type ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "hw-caps ( unset )",
+            "multi { array-id, hw-cap: enum (sniffer | qos-classifier-dscp | spectral | channel-switch | mlo | hw-protection-mode | beacon-protection) }",
+            ""
+          ],
+          [
+            "ml-group ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "interface ( unset )",
+            "iface_enum",
+            ""
+          ],
+          [
+            "current-country ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "current-halow-regdom ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "current-channels ( unset )",
+            "multi { array-id, channel: string }",
+            ""
+          ],
+          [
+            "current-gopclasses ( unset )",
+            "multi { array-id, gopclass: num }",
+            ""
+          ],
+          [
+            "current-max-reg-power ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "afc-deployment ( unset )",
+            "string",
+            ""
+          ]
+        ]
+      ]
+    },
+    "interface/wifi/radio/settings": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/radio/settings/",
+      "sha256": "e57634eeb9da259ecd9103ad8cfc732464336ce99802d0644f438a5376891a8f",
+      "tables": [
+        [
+          [
+            "Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "external-antenna ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "wifi-band ( unset )",
+            "enum (2.4GHz | 5GHz)",
+            ""
+          ]
+        ]
+      ]
+    },
+    "interface/wifi/monitor": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/monitor/",
+      "sha256": "8068ca76ca61096e913a096d7e2a9e2191f722da63a7e65dde4abb6021bb0003",
+      "tables": [
+        [
+          [
+            "Read-only Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "state",
+            "string",
+            ""
+          ],
+          [
+            "channel",
+            "string",
+            ""
+          ],
+          [
+            "ap-address",
+            "macAddr",
+            ""
+          ],
+          [
+            "registered-peers",
+            "num",
+            ""
+          ],
+          [
+            "authorized-peers",
+            "num",
+            ""
+          ],
+          [
+            "tx-power",
+            "num",
+            ""
+          ],
+          [
+            "channel-priorities",
+            "multi { array-id, channel: string }",
+            ""
+          ],
+          [
+            "afc-status",
+            "string",
+            ""
+          ],
+          [
+            "afc-sp-rules",
+            "multi { array-id, channel: string }",
+            ""
+          ],
+          [
+            "hw-protection-mode",
+            "enum (none | rts-cts | cts-to-self)",
+            ""
+          ],
+          [
+            "mld-link-id",
+            "num",
+            ""
+          ]
+        ]
+      ]
+    },
+    "interface/wifi/registration-table": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/registration-table/",
+      "sha256": "9ba9d3714d38630e2098908e9955cdb76607b3c86943ed052e761ae9506dbfdd",
+      "tables": [
+        [
+          [
+            "Flag",
+            "Name",
+            "Description"
+          ],
+          [
+            "A",
+            "authorized",
+            "authorized"
+          ]
+        ],
+        [
+          [
+            "Read-only Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "interface",
+            "iface_enum",
+            ""
+          ],
+          [
+            "ssid",
+            "string",
+            ""
+          ],
+          [
+            "mac-address",
+            "macAddr",
+            ""
+          ],
+          [
+            "dhcp-address",
+            "address",
+            ""
+          ],
+          [
+            "dhcp-hostname",
+            "string",
+            ""
+          ],
+          [
+            "uptime",
+            "time",
+            ""
+          ],
+          [
+            "last-activity",
+            "time",
+            ""
+          ],
+          [
+            "signal",
+            "num",
+            ""
+          ],
+          [
+            "signal-per-link",
+            "multi { array-id, signal-l: num }",
+            ""
+          ],
+          [
+            "auth-type",
+            "enum (wpa2-eap | wpa2-psk | ft-eap | ft-wpa2-psk | wpa3-eap | wpa2-psk-sha2 | wpa3-psk | wpa3-psk-gd | ft-wpa3-psk | ft-wpa3-psk-gd | wpa3-eap-192 | ft-wpa3-eap-192 | owe | wpa-eap | wpa-psk | dpp)",
+            ""
+          ],
+          [
+            "mfp",
+            "bool",
+            ""
+          ],
+          [
+            "band",
+            "multi { array-id, band: enum () }",
+            ""
+          ],
+          [
+            "mld-interfaces",
+            "multi { array-id, iface: iface_enum }",
+            ""
+          ],
+          [
+            "mld-link-addresses",
+            "multi { array-id, addr: macAddr }",
+            ""
+          ],
+          [
+            "tx-rate",
+            "num",
+            ""
+          ],
+          [
+            "rx-rate",
+            "num",
+            ""
+          ],
+          [
+            "tx-rate-per-link",
+            "multi { array-id, tx-l-rate: num }",
+            ""
+          ],
+          [
+            "rx-rate-per-link",
+            "multi { array-id, rx-l-rate: num }",
+            ""
+          ],
+          [
+            "packets",
+            "composite { tx: num , rx: num }",
+            ""
+          ],
+          [
+            "tx-packets-per-link",
+            "multi { array-id, tx-l-packets: num }",
+            ""
+          ],
+          [
+            "rx-packets-per-link",
+            "multi { array-id, rx-l-packets: num }",
+            ""
+          ],
+          [
+            "bytes",
+            "composite { tx: num , rx: num }",
+            ""
+          ],
+          [
+            "tx-bytes-per-link",
+            "multi { array-id, tx-l-bytes: num }",
+            ""
+          ],
+          [
+            "rx-bytes-per-link",
+            "multi { array-id, rx-l-bytes: num }",
+            ""
+          ],
+          [
+            "tx-bits-per-second",
+            "num",
+            ""
+          ],
+          [
+            "rx-bits-per-second",
+            "num",
+            ""
+          ],
+          [
+            "tx-bits-per-second-per-link",
+            "multi { array-id, tx-l-bps: num }",
+            ""
+          ],
+          [
+            "rx-bits-per-second-per-link",
+            "multi { array-id, rx-l-bps: num }",
+            ""
+          ],
+          [
+            "vlan-id",
+            "num",
+            ""
+          ],
+          [
+            "eap-identity",
+            "string",
+            ""
+          ],
+          [
+            "eap-username",
+            "string",
+            ""
+          ]
+        ]
+      ]
+    },
+    "interface/wifi/provisioning": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/provisioning/",
+      "sha256": "73204b719e6a4d997cb7a2222f34580ef7dac673b7e34a44d8d471ce2cfe0726",
+      "tables": [
+        [
+          [
+            "Flag",
+            "Name",
+            "Description"
+          ],
+          [
+            "X",
+            "disabled",
+            "disabled"
+          ]
+        ],
+        [
+          [
+            "Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "radio-mac ( unset )",
+            "macAddr",
+            ""
+          ],
+          [
+            "identity-regexp ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "common-name-regexp ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "address-ranges ( unset )",
+            "object { address-range: super { address-range-start: address (flags=46) , [address-range-end] -address (flags=46) } }",
+            ""
+          ],
+          [
+            "supported-bands ( unset )",
+            "multi { array-id, supported-band: enum () }",
+            ""
+          ],
+          [
+            "supported-hw-caps ( unset )",
+            "multi { array-id, supported-hw-cap: enum () }",
+            ""
+          ],
+          [
+            "action ( mandatory )",
+            "enum (none | create-enabled | create-disabled | create-dynamic-enabled | use-network-config)",
+            ""
+          ],
+          [
+            "master-configuration ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "slave-configurations ( unset )",
+            "multi { array-id, slave-configuration: enum }",
+            ""
+          ],
+          [
+            "multi-link-mode ( unset )",
+            "enum (auto | disabled | master | all)",
+            ""
+          ],
+          [
+            "name-format",
+            "string",
+            ""
+          ],
+          [
+            "slave-name-format",
+            "string",
+            ""
+          ]
+        ]
+      ]
+    },
+    "interface/wifi/security": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/security/",
+      "sha256": "9d7ee09e163bc63f2555445891df1df5e6968bea69c8fb0be1dedec98b980410",
+      "tables": [
+        [
+          [
+            "Flag",
+            "Name",
+            "Description"
+          ],
+          [
+            "X",
+            "disabled",
+            "disabled"
+          ]
+        ],
+        [
+          [
+            "Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "name ( mandatory )",
+            "string",
+            ""
+          ],
+          [
+            "authentication-types ( unset )",
+            "ubit (wpa-psk, wpa2-psk, wpa2-psk-sha2, wpa-eap, wpa2-eap, wpa3-psk, owe, wpa3-eap, wpa3-eap-192)",
+            ""
+          ],
+          [
+            "encryption ( unset )",
+            "ubit (tkip, ccmp, gcmp, ccmp-256, gcmp-256)",
+            ""
+          ],
+          [
+            "group-encryption ( unset )",
+            "enum (tkip | ccmp | gcmp | ccmp-256 | gcmp-256)",
+            ""
+          ],
+          [
+            "group-key-update ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "passphrase ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "multi-passphrase-group ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "disable-pmkid ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "management-protection ( unset )",
+            "enum (disabled | allowed | required)",
+            ""
+          ],
+          [
+            "beacon-protection ( unset )",
+            "enum (disabled | enabled)",
+            ""
+          ],
+          [
+            "management-encryption ( unset )",
+            "enum (cmac | gmac | cmac-256 | gmac-256)",
+            ""
+          ],
+          [
+            "wps ( unset )",
+            "enum (disable | push-button)",
+            ""
+          ],
+          [
+            "dh-groups ( unset )",
+            "ubit (19, 20, 21)",
+            ""
+          ],
+          [
+            "sae-anti-clogging-threshold ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "sae-max-failure-rate ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "sae-pwe ( unset )",
+            "enum (hunting-and-pecking | hash-to-element | both)",
+            ""
+          ],
+          [
+            "owe-transition-interface ( unset )",
+            "iface_enum { auto }",
+            ""
+          ],
+          [
+            "eap-methods ( unset )",
+            "multi { array-id, method: enum (tls | ttls | peap) { tls:13, ttls:21, peap:25 } }",
+            ""
+          ],
+          [
+            "eap-certificate-mode ( unset )",
+            "enum (verify-certificate | dont-verify-certificate | no-certificates | verify-certificate-with-crl)",
+            ""
+          ],
+          [
+            "eap-tls-certificate ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "eap-username ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "eap-anonymous-identity ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "eap-password ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "eap-accounting ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "ft ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "ft-mobility-domain ( unset )",
+            "num",
+            ""
+          ],
+          [
+            "ft-over-ds ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "ft-reassociation-deadline ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "ft-nas-identifier ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "ft-r0-key-lifetime ( unset )",
+            "time",
+            ""
+          ],
+          [
+            "ft-preserve-vlanid ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "connect-group ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "connect-priority ( unset )",
+            "super { connect-accept-priority: num , [connect-hold-priority] /num }",
+            ""
+          ]
+        ]
+      ]
+    },
+    "interface/wifi/capsman": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/capsman/",
+      "sha256": "756c5c642fd64f789da8c7a04cc49baaa4b1df8b3ec2abde52541962c32c0920",
+      "tables": [
+        [
+          [
+            "Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "enabled",
+            "enum (yes | no)",
+            ""
+          ],
+          [
+            "interfaces ( unset )",
+            "multi { array-id, interface: iface_enum }",
+            ""
+          ],
+          [
+            "ca-certificate ( unset )",
+            "enum (auto | none) { auto:0 }",
+            ""
+          ],
+          [
+            "certificate ( unset )",
+            "enum (auto) { auto:0 }",
+            ""
+          ],
+          [
+            "require-peer-certificate ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "package-path ( unset )",
+            "string",
+            ""
+          ],
+          [
+            "upgrade-policy ( unset )",
+            "enum (none | suggest-same-version | require-same-version)",
+            ""
+          ]
+        ],
+        [
+          [
+            "Read-only Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "generated-ca-certificate",
+            "enum (none)",
+            ""
+          ],
+          [
+            "generated-certificate",
+            "enum (none)",
+            ""
+          ]
+        ]
+      ]
+    },
+    "interface/wifi/cap": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/cap/",
+      "sha256": "cae4b0916d291c7eedc59538c83410c26cf6587ec78e934bfe81fbfb4c8d340f",
+      "tables": [
+        [
+          [
+            "Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "enabled",
+            "enum (yes | no)",
+            ""
+          ],
+          [
+            "discovery-interfaces ( unset )",
+            "multi { array-id, interface: iface_enum }",
+            ""
+          ],
+          [
+            "certificate ( unset )",
+            "enum (request | none) { request:0 }",
+            ""
+          ],
+          [
+            "caps-man-addresses ( unset )",
+            "multi { array-id, address: address (flags=46iD) }",
+            ""
+          ],
+          [
+            "caps-man-names ( unset )",
+            "multi { array-id, name: string }",
+            ""
+          ],
+          [
+            "caps-man-certificate-common-names ( unset )",
+            "multi { array-id, common-name: string }",
+            ""
+          ],
+          [
+            "lock-to-caps-man ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "slaves-static ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "mld-static ( unset )",
+            "bool",
+            ""
+          ],
+          [
+            "slaves-datapath ( unset )",
+            "enum",
+            ""
+          ],
+          [
+            "mld-datapath ( unset )",
+            "enum",
+            ""
+          ]
+        ],
+        [
+          [
+            "Read-only Argument",
+            "Type",
+            "Description"
+          ],
+          [
+            "requested-certificate",
+            "enum (none)",
+            ""
+          ],
+          [
+            "locked-caps-man-common-name",
+            "string",
+            ""
+          ],
+          [
+            "current-caps-man-address",
+            "address (flags=46mi)",
+            ""
+          ],
+          [
+            "current-caps-man-identity",
+            "string",
+            ""
+          ]
+        ]
+      ]
+    }
+  },
+  "runtime_contracts": {
+    "interface-wifi-cap-set": {
+      "source": "/console/inspect request=child,syntax on CHR 7.25.1",
+      "arguments": [
+        "caps-man-addresses",
+        "caps-man-certificate-common-names",
+        "caps-man-names",
+        "certificate",
+        "discovery-interfaces",
+        "enabled",
+        "lock-to-caps-man",
+        "mld-datapath",
+        "mld-static",
+        "slaves-datapath",
+        "slaves-static"
+      ],
+      "commands": []
+    },
+    "interface-wifi-provisioning-add": {
+      "source": "/console/inspect request=child,syntax on CHR 7.25.1",
+      "arguments": [
+        "action",
+        "address-ranges",
+        "comment",
+        "common-name-regexp",
+        "copy-from",
+        "disabled",
+        "identity-regexp",
+        "master-configuration",
+        "multi-link-mode",
+        "name-format",
+        "place-before",
+        "radio-mac",
+        "slave-configurations",
+        "slave-name-format",
+        "supported-bands",
+        "supported-hw-caps"
+      ],
+      "commands": []
+    },
+    "interface-wifi-channel-add": {
+      "source": "/console/inspect request=child,syntax on CHR 7.25.1",
+      "arguments": [
+        "afc",
+        "band",
+        "comment",
+        "copy-from",
+        "deprioritize-unii-3-4",
+        "disabled",
+        "frequency",
+        "name",
+        "preamble-puncturing",
+        "reselect-interval",
+        "reselect-time",
+        "secondary-frequency",
+        "skip-dfs-channels",
+        "width"
+      ],
+      "commands": []
+    },
+    "interface-wifi-network-radio-add": {
+      "source": "/console/inspect request=child,syntax on CHR 7.25.1",
+      "arguments": [
+        "channel.afc",
+        "channel.band",
+        "channel.deprioritize-unii-3-4",
+        "channel.frequency",
+        "channel.preamble-puncturing",
+        "channel.reselect-interval",
+        "channel.reselect-time",
+        "channel.secondary-frequency",
+        "channel.skip-dfs-channels",
+        "channel.width",
+        "comment",
+        "configuration.antenna-gain",
+        "configuration.chains",
+        "configuration.country",
+        "configuration.distance",
+        "configuration.installation",
+        "configuration.tx-chains",
+        "configuration.tx-power",
+        "copy-from",
+        "disabled",
+        "extra-labels",
+        "labels",
+        "security.authentication-types"
+      ],
+      "commands": []
+    },
+    "interface-wifi-radio-settings-set": {
+      "source": "/console/inspect request=child,syntax on CHR 7.25.1",
+      "arguments": [
+        "external-antenna",
+        "wifi-band"
+      ],
+      "commands": []
+    },
+    "interface-wifi-monitor": {
+      "source": "/console/inspect request=child,syntax on CHR 7.25.1",
+      "arguments": [
+        "append",
+        "as-value",
+        "do",
+        "duration",
+        "file",
+        "freeze-frame-interval",
+        "interval",
+        "numbers",
+        "once",
+        "proplist",
+        "without-paging"
+      ],
+      "commands": []
+    },
+    "interface-wifi-add": {
+      "source": "/console/inspect request=child,syntax on CHR 7.25.1",
+      "arguments": [
+        "aaa",
+        "aaa.called-format",
+        "aaa.calling-format",
+        "aaa.interim-update",
+        "aaa.mac-caching",
+        "aaa.nas-identifier",
+        "aaa.password-format",
+        "aaa.username-format",
+        "arp",
+        "arp-timeout",
+        "channel",
+        "channel.afc",
+        "channel.band",
+        "channel.deprioritize-unii-3-4",
+        "channel.frequency",
+        "channel.preamble-puncturing",
+        "channel.reselect-interval",
+        "channel.reselect-time",
+        "channel.secondary-frequency",
+        "channel.skip-dfs-channels",
+        "channel.width",
+        "comment",
+        "configuration",
+        "configuration.antenna-gain",
+        "configuration.beacon-interval",
+        "configuration.chains",
+        "configuration.country",
+        "configuration.distance",
+        "configuration.dtim-period",
+        "configuration.hide-ssid",
+        "configuration.hw-protection-mode",
+        "configuration.installation",
+        "configuration.manager",
+        "configuration.max-clients",
+        "configuration.mode",
+        "configuration.multicast-enhance",
+        "configuration.qos-classifier",
+        "configuration.ssid",
+        "configuration.station-roaming",
+        "configuration.tx-chains",
+        "configuration.tx-power",
+        "copy-from",
+        "datapath",
+        "datapath.bridge",
+        "datapath.bridge-cost",
+        "datapath.bridge-horizon",
+        "datapath.client-isolation",
+        "datapath.interface-list",
+        "datapath.traffic-processing",
+        "datapath.vlan-id",
+        "disable-running-check",
+        "disabled",
+        "interworking",
+        "interworking.3gpp-info",
+        "interworking.3gpp-info-raw",
+        "interworking.authentication-types",
+        "interworking.connection-capabilities",
+        "interworking.domain-names",
+        "interworking.esr",
+        "interworking.hessid",
+        "interworking.hotspot20",
+        "interworking.hotspot20-dgaf",
+        "interworking.internet",
+        "interworking.ipv4-availability",
+        "interworking.ipv6-availability",
+        "interworking.network-type",
+        "interworking.operational-classes",
+        "interworking.operator-names",
+        "interworking.realms",
+        "interworking.realms-raw",
+        "interworking.roaming-ois",
+        "interworking.uesa",
+        "interworking.venue",
+        "interworking.venue-names",
+        "interworking.wan-at-capacity",
+        "interworking.wan-downlink",
+        "interworking.wan-downlink-load",
+        "interworking.wan-measurement-duration",
+        "interworking.wan-status",
+        "interworking.wan-symmetric",
+        "interworking.wan-uplink",
+        "interworking.wan-uplink-load",
+        "l2mtu",
+        "mac-address",
+        "master-interface",
+        "mld-interface",
+        "mld-name",
+        "mtu",
+        "name",
+        "radio-mac",
+        "security",
+        "security.authentication-types",
+        "security.beacon-protection",
+        "security.connect-group",
+        "security.connect-priority",
+        "security.dh-groups",
+        "security.disable-pmkid",
+        "security.eap-accounting",
+        "security.eap-anonymous-identity",
+        "security.eap-certificate-mode",
+        "security.eap-methods",
+        "security.eap-password",
+        "security.eap-tls-certificate",
+        "security.eap-username",
+        "security.encryption",
+        "security.ft",
+        "security.ft-mobility-domain",
+        "security.ft-nas-identifier",
+        "security.ft-over-ds",
+        "security.ft-preserve-vlanid",
+        "security.ft-r0-key-lifetime",
+        "security.ft-reassociation-deadline",
+        "security.group-encryption",
+        "security.group-key-update",
+        "security.management-encryption",
+        "security.management-protection",
+        "security.multi-passphrase-group",
+        "security.owe-transition-interface",
+        "security.passphrase",
+        "security.sae-anti-clogging-threshold",
+        "security.sae-max-failure-rate",
+        "security.sae-pwe",
+        "security.wps",
+        "steering",
+        "steering.2g-probe-delay",
+        "steering.neighbor-group",
+        "steering.rrm",
+        "steering.transition-request-count",
+        "steering.transition-request-period",
+        "steering.transition-threshold",
+        "steering.transition-threshold-time",
+        "steering.transition-time",
+        "steering.wnm"
+      ],
+      "commands": []
+    },
+    "interface-wifi-radio-settings": {
+      "source": "/console/inspect request=child,syntax on CHR 7.25.1",
+      "arguments": [],
+      "commands": [
+        "edit",
+        "export",
+        "get",
+        "print",
+        "reset",
+        "set"
+      ]
+    },
+    "interface-wifi-channel-set": {
+      "source": "/console/inspect request=child,syntax on CHR 7.25.1",
+      "arguments": [
+        "afc",
+        "band",
+        "comment",
+        "deprioritize-unii-3-4",
+        "disabled",
+        "frequency",
+        "name",
+        "numbers",
+        "preamble-puncturing",
+        "reselect-interval",
+        "reselect-time",
+        "secondary-frequency",
+        "skip-dfs-channels",
+        "width"
+      ],
+      "commands": []
+    },
+    "interface-wifi-radio-settings-add": {
+      "source": "/console/inspect request=child,syntax on CHR 7.25.1",
+      "arguments": [],
+      "commands": []
+    },
+    "interface-wifi-set": {
+      "source": "/console/inspect request=child,syntax on CHR 7.25.1",
+      "arguments": [
+        "aaa",
+        "aaa.called-format",
+        "aaa.calling-format",
+        "aaa.interim-update",
+        "aaa.mac-caching",
+        "aaa.nas-identifier",
+        "aaa.password-format",
+        "aaa.username-format",
+        "arp",
+        "arp-timeout",
+        "channel",
+        "channel.afc",
+        "channel.band",
+        "channel.deprioritize-unii-3-4",
+        "channel.frequency",
+        "channel.preamble-puncturing",
+        "channel.reselect-interval",
+        "channel.reselect-time",
+        "channel.secondary-frequency",
+        "channel.skip-dfs-channels",
+        "channel.width",
+        "comment",
+        "configuration",
+        "configuration.antenna-gain",
+        "configuration.beacon-interval",
+        "configuration.chains",
+        "configuration.country",
+        "configuration.distance",
+        "configuration.dtim-period",
+        "configuration.hide-ssid",
+        "configuration.hw-protection-mode",
+        "configuration.installation",
+        "configuration.manager",
+        "configuration.max-clients",
+        "configuration.mode",
+        "configuration.multicast-enhance",
+        "configuration.qos-classifier",
+        "configuration.ssid",
+        "configuration.station-roaming",
+        "configuration.tx-chains",
+        "configuration.tx-power",
+        "datapath",
+        "datapath.bridge",
+        "datapath.bridge-cost",
+        "datapath.bridge-horizon",
+        "datapath.client-isolation",
+        "datapath.interface-list",
+        "datapath.traffic-processing",
+        "datapath.vlan-id",
+        "disable-running-check",
+        "disabled",
+        "interworking",
+        "interworking.3gpp-info",
+        "interworking.3gpp-info-raw",
+        "interworking.authentication-types",
+        "interworking.connection-capabilities",
+        "interworking.domain-names",
+        "interworking.esr",
+        "interworking.hessid",
+        "interworking.hotspot20",
+        "interworking.hotspot20-dgaf",
+        "interworking.internet",
+        "interworking.ipv4-availability",
+        "interworking.ipv6-availability",
+        "interworking.network-type",
+        "interworking.operational-classes",
+        "interworking.operator-names",
+        "interworking.realms",
+        "interworking.realms-raw",
+        "interworking.roaming-ois",
+        "interworking.uesa",
+        "interworking.venue",
+        "interworking.venue-names",
+        "interworking.wan-at-capacity",
+        "interworking.wan-downlink",
+        "interworking.wan-downlink-load",
+        "interworking.wan-measurement-duration",
+        "interworking.wan-status",
+        "interworking.wan-symmetric",
+        "interworking.wan-uplink",
+        "interworking.wan-uplink-load",
+        "l2mtu",
+        "mac-address",
+        "master-interface",
+        "mld-interface",
+        "mld-name",
+        "mtu",
+        "name",
+        "numbers",
+        "radio-mac",
+        "security",
+        "security.authentication-types",
+        "security.beacon-protection",
+        "security.connect-group",
+        "security.connect-priority",
+        "security.dh-groups",
+        "security.disable-pmkid",
+        "security.eap-accounting",
+        "security.eap-anonymous-identity",
+        "security.eap-certificate-mode",
+        "security.eap-methods",
+        "security.eap-password",
+        "security.eap-tls-certificate",
+        "security.eap-username",
+        "security.encryption",
+        "security.ft",
+        "security.ft-mobility-domain",
+        "security.ft-nas-identifier",
+        "security.ft-over-ds",
+        "security.ft-preserve-vlanid",
+        "security.ft-r0-key-lifetime",
+        "security.ft-reassociation-deadline",
+        "security.group-encryption",
+        "security.group-key-update",
+        "security.management-encryption",
+        "security.management-protection",
+        "security.multi-passphrase-group",
+        "security.owe-transition-interface",
+        "security.passphrase",
+        "security.sae-anti-clogging-threshold",
+        "security.sae-max-failure-rate",
+        "security.sae-pwe",
+        "security.wps",
+        "steering",
+        "steering.2g-probe-delay",
+        "steering.neighbor-group",
+        "steering.rrm",
+        "steering.transition-request-count",
+        "steering.transition-request-period",
+        "steering.transition-threshold",
+        "steering.transition-threshold-time",
+        "steering.transition-time",
+        "steering.wnm"
+      ],
+      "commands": []
+    },
+    "interface-wifi-network-radio-set": {
+      "source": "/console/inspect request=child,syntax on CHR 7.25.1",
+      "arguments": [
+        "channel.afc",
+        "channel.band",
+        "channel.deprioritize-unii-3-4",
+        "channel.frequency",
+        "channel.preamble-puncturing",
+        "channel.reselect-interval",
+        "channel.reselect-time",
+        "channel.secondary-frequency",
+        "channel.skip-dfs-channels",
+        "channel.width",
+        "comment",
+        "configuration.antenna-gain",
+        "configuration.chains",
+        "configuration.country",
+        "configuration.distance",
+        "configuration.installation",
+        "configuration.tx-chains",
+        "configuration.tx-power",
+        "disabled",
+        "extra-labels",
+        "labels",
+        "numbers",
+        "security.authentication-types"
+      ],
+      "commands": []
+    }
+  }
+}

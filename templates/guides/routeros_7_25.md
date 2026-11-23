@@ -26,6 +26,12 @@ control argument; supported Bluetooth hardware is required to establish that
 contract. RouterOS 7.26
 additions are a separate milestone and are not included in the 7.25.1 claim.
 
+## WiFi 7
+
+See the [WiFi 7 guide](wifi7.md) for documented MLD, CAP/provisioning, named-profile,
+radio-template, capability, and monitoring controls, compatibility guarantees, and
+the distinction between API acceptance and physical radio validation.
+
 ## Apps
 
 `routeros_app` manages custom YAML definitions; `routeros_app_settings` manages

@@ -17779,6 +17779,1449 @@
           "api_type": "List of item numbers"
         }
       ]
+    },
+    "interface/wifi/channel": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/channel/",
+      "sha256": "70b442a855be02dc82557c16980b058b78f9e98ef391a1fa3b994dee3cf3e6d2",
+      "flags": {
+        "X": "disabled"
+      },
+      "fields": [
+        {
+          "wire": "disabled",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": []
+        },
+        {
+          "wire": "name",
+          "type": "string",
+          "readonly": false,
+          "required": true,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "frequency",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "object"
+        },
+        {
+          "wire": "secondary-frequency",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, secondary-frequency: alt { secondary-frequency-disable: enum (disabled) , secondary-frequency-num: num } }"
+        },
+        {
+          "wire": "band",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "60ghz-ad",
+            "5ghz-a",
+            "5ghz-n",
+            "5ghz-ac",
+            "5ghz-ax",
+            "5ghz-be",
+            "2ghz-g",
+            "2ghz-n",
+            "2ghz-ax",
+            "2ghz-be",
+            "s1ghz-ah",
+            "6ghz-ax",
+            "6ghz-be"
+          ],
+          "api_type": "enum (60ghz-ad | 5ghz-a | 5ghz-n | 5ghz-ac | 5ghz-ax | 5ghz-be | 2ghz-g | 2ghz-n | 2ghz-ax | 2ghz-be | s1ghz-ah | 6ghz-ax | 6ghz-be)"
+        },
+        {
+          "wire": "width",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "20mhz",
+            "20/40mhz",
+            "20/40mhz-Ce",
+            "20/40mhz-eC",
+            "20/40/80mhz",
+            "20/40/80+80mhz",
+            "20/40/80/160mhz",
+            "20/40/80/160/320mhz",
+            "1mhz",
+            "1/2mhz",
+            "1/2/4mhz",
+            "1/2/4/8mhz",
+            "2160mhz"
+          ],
+          "api_type": "enum (20mhz | 20/40mhz | 20/40mhz-Ce | 20/40mhz-eC | 20/40/80mhz | 20/40/80+80mhz | 20/40/80/160mhz | 20/40/80/160/320mhz | 1mhz | 1/2mhz | 1/2/4mhz | 1/2/4/8mhz | 2160mhz)"
+        },
+        {
+          "wire": "skip-dfs-channels",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "disabled",
+            "all",
+            "10min-cac"
+          ],
+          "api_type": "enum (disabled | all | 10min-cac)"
+        },
+        {
+          "wire": "deprioritize-unii-3-4",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "bool"
+        },
+        {
+          "wire": "reselect-interval",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "super { reselect-interval-min: time [1 .. 60*60*24*300] , [reselect-interval-max] ..time [1 .. 60*60*24*300] }"
+        },
+        {
+          "wire": "reselect-time",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "super { reselect-time-min: date , [reselect-time-max] ..date }"
+        },
+        {
+          "wire": "preamble-puncturing",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "yes",
+            "no"
+          ],
+          "api_type": "alt { preamble-puncturing: enum (yes | no) { yes:-1, no:0 } }"
+        },
+        {
+          "wire": "afc",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "bool"
+        },
+        {
+          "wire": "comment",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string (runtime verified 7.25.1)"
+        }
+      ]
+    },
+    "interface/wifi/network/radio": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/network/radio/",
+      "sha256": "a7ab2155b819a5fe017f1426f9e31f007bfddf35d13ee6311a70cfad406449e1",
+      "flags": {
+        "Y": "managed",
+        "X": "disabled"
+      },
+      "fields": [
+        {
+          "wire": "managed",
+          "type": "bool",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": []
+        },
+        {
+          "wire": "disabled",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": []
+        },
+        {
+          "wire": "labels",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "object"
+        },
+        {
+          "wire": "extra-labels",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, label: string }"
+        },
+        {
+          "wire": "configuration.country",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "enum"
+        },
+        {
+          "wire": "configuration.chains",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "ubit (0, 1, 2, 3, 4, 5, 6, 7)"
+        },
+        {
+          "wire": "configuration.tx-chains",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "ubit ()"
+        },
+        {
+          "wire": "configuration.tx-power",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "configuration.antenna-gain",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "configuration.distance",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num",
+          "numeric_alternative": true,
+          "decimal_places": 3
+        },
+        {
+          "wire": "configuration.installation",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "outdoor",
+            "indoor"
+          ],
+          "api_type": "enum (outdoor | indoor)"
+        },
+        {
+          "wire": "channel.frequency",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "object"
+        },
+        {
+          "wire": "channel.secondary-frequency",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, secondary-frequency: alt { secondary-frequency-disable: enum (disabled) , secondary-frequency-num: num } }"
+        },
+        {
+          "wire": "channel.band",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "60ghz-ad",
+            "5ghz-a",
+            "5ghz-n",
+            "5ghz-ac",
+            "5ghz-ax",
+            "5ghz-be",
+            "2ghz-g",
+            "2ghz-n",
+            "2ghz-ax",
+            "2ghz-be",
+            "s1ghz-ah",
+            "6ghz-ax",
+            "6ghz-be"
+          ],
+          "api_type": "enum (60ghz-ad | 5ghz-a | 5ghz-n | 5ghz-ac | 5ghz-ax | 5ghz-be | 2ghz-g | 2ghz-n | 2ghz-ax | 2ghz-be | s1ghz-ah | 6ghz-ax | 6ghz-be)"
+        },
+        {
+          "wire": "channel.width",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "20mhz",
+            "20/40mhz",
+            "20/40mhz-Ce",
+            "20/40mhz-eC",
+            "20/40/80mhz",
+            "20/40/80+80mhz",
+            "20/40/80/160mhz",
+            "20/40/80/160/320mhz",
+            "1mhz",
+            "1/2mhz",
+            "1/2/4mhz",
+            "1/2/4/8mhz",
+            "2160mhz"
+          ],
+          "api_type": "enum (20mhz | 20/40mhz | 20/40mhz-Ce | 20/40mhz-eC | 20/40/80mhz | 20/40/80+80mhz | 20/40/80/160mhz | 20/40/80/160/320mhz | 1mhz | 1/2mhz | 1/2/4mhz | 1/2/4/8mhz | 2160mhz)"
+        },
+        {
+          "wire": "channel.skip-dfs-channels",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "disabled",
+            "all",
+            "10min-cac"
+          ],
+          "api_type": "enum (disabled | all | 10min-cac)"
+        },
+        {
+          "wire": "channel.deprioritize-unii-3-4",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "bool"
+        },
+        {
+          "wire": "channel.reselect-interval",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "super { reselect-interval-min: time [1 .. 60*60*24*300] , [reselect-interval-max] ..time [1 .. 60*60*24*300] }"
+        },
+        {
+          "wire": "channel.reselect-time",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "super { reselect-time-min: date , [reselect-time-max] ..date }"
+        },
+        {
+          "wire": "channel.preamble-puncturing",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "yes",
+            "no"
+          ],
+          "api_type": "alt { preamble-puncturing: enum (yes | no) { yes:-1, no:0 } }"
+        },
+        {
+          "wire": "channel.afc",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "bool"
+        },
+        {
+          "wire": "security.authentication-types",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "ubit (wpa-psk, wpa2-psk, wpa2-psk-sha2, wpa-eap, wpa2-eap, wpa3-psk, owe, wpa3-eap, wpa3-eap-192)"
+        },
+        {
+          "wire": "comment",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string (runtime verified 7.25.1)"
+        }
+      ]
+    },
+    "interface/wifi/radio": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/radio/",
+      "sha256": "67a75e2772cd097fc660316546045db5c973b2f50d2efafb8f3f4fd9744ddbec",
+      "flags": {
+        "L": "local"
+      },
+      "fields": [
+        {
+          "wire": "local",
+          "type": "bool",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": []
+        },
+        {
+          "wire": "cap",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "radio-mac",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "macAddr"
+        },
+        {
+          "wire": "tx-chains",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "ubit ()"
+        },
+        {
+          "wire": "rx-chains",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "ubit ()"
+        },
+        {
+          "wire": "bands",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "object { band: composite { band-band: enum () , band-widths: ubit (20mhz, 20/40mhz, 20/40/80mhz, 20/40/80/160mhz, 20/40/80+80mhz, 20/40/80/160/320mhz, 1mhz, 1/2mhz, 1/2/4mhz, 1/2/4/8mhz, 1/2/4/8/16mhz, 2160mhz) } }"
+        },
+        {
+          "wire": "ciphers",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "ubit (tkip, ccmp, gcmp, ccmp-256, gcmp-256, cmac, gmac, cmac-256, gmac-256)"
+        },
+        {
+          "wire": "min-antenna-gain",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "countries",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, country: string }"
+        },
+        {
+          "wire": "2g-channels",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, frequency: num }"
+        },
+        {
+          "wire": "5g-channels",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, frequency: num }"
+        },
+        {
+          "wire": "6g-channels",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, frequency: num }"
+        },
+        {
+          "wire": "60g-channels",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, frequency: num }"
+        },
+        {
+          "wire": "s1g-channels",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, frequency: num }"
+        },
+        {
+          "wire": "max-vlans",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "max-interfaces",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "max-station-interfaces",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "max-peers",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "hw-type",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "hw-caps",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, hw-cap: enum (sniffer | qos-classifier-dscp | spectral | channel-switch | mlo | hw-protection-mode | beacon-protection) }"
+        },
+        {
+          "wire": "ml-group",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "interface",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "iface_enum"
+        },
+        {
+          "wire": "current-country",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "enum"
+        },
+        {
+          "wire": "current-halow-regdom",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "current-channels",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, channel: string }"
+        },
+        {
+          "wire": "current-gopclasses",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, gopclass: num }"
+        },
+        {
+          "wire": "current-max-reg-power",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "afc-deployment",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        }
+      ]
+    },
+    "interface/wifi/radio/settings": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/radio/settings/",
+      "sha256": "e57634eeb9da259ecd9103ad8cfc732464336ce99802d0644f438a5376891a8f",
+      "flags": {},
+      "fields": [
+        {
+          "wire": "external-antenna",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "bool"
+        },
+        {
+          "wire": "wifi-band",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "2.4GHz",
+            "5GHz"
+          ],
+          "api_type": "enum (2.4GHz | 5GHz)"
+        }
+      ]
+    },
+    "interface/wifi/monitor": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/monitor/",
+      "sha256": "8068ca76ca61096e913a096d7e2a9e2191f722da63a7e65dde4abb6021bb0003",
+      "flags": {},
+      "fields": [
+        {
+          "wire": "state",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "channel",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "ap-address",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "macAddr"
+        },
+        {
+          "wire": "registered-peers",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "authorized-peers",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "tx-power",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "channel-priorities",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, channel: string }"
+        },
+        {
+          "wire": "afc-status",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "afc-sp-rules",
+          "type": "set",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, channel: string }"
+        },
+        {
+          "wire": "hw-protection-mode",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "none",
+            "rts-cts",
+            "cts-to-self"
+          ],
+          "api_type": "enum (none | rts-cts | cts-to-self)"
+        },
+        {
+          "wire": "mld-link-id",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        }
+      ]
+    },
+    "interface/wifi/cap": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/cap/",
+      "sha256": "cae4b0916d291c7eedc59538c83410c26cf6587ec78e934bfe81fbfb4c8d340f",
+      "flags": {},
+      "fields": [
+        {
+          "wire": "enabled",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "yes",
+            "no"
+          ],
+          "api_type": "enum (yes | no)"
+        },
+        {
+          "wire": "discovery-interfaces",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, interface: iface_enum }"
+        },
+        {
+          "wire": "certificate",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "request",
+            "none"
+          ],
+          "api_type": "enum (request | none) { request:0 }"
+        },
+        {
+          "wire": "caps-man-addresses",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, address: address (flags=46iD) }"
+        },
+        {
+          "wire": "caps-man-names",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, name: string }"
+        },
+        {
+          "wire": "caps-man-certificate-common-names",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, common-name: string }"
+        },
+        {
+          "wire": "lock-to-caps-man",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "bool"
+        },
+        {
+          "wire": "slaves-static",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "bool"
+        },
+        {
+          "wire": "mld-static",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "bool"
+        },
+        {
+          "wire": "slaves-datapath",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "enum"
+        },
+        {
+          "wire": "mld-datapath",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "enum"
+        },
+        {
+          "wire": "requested-certificate",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "none"
+          ],
+          "api_type": "enum (none)"
+        },
+        {
+          "wire": "locked-caps-man-common-name",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "current-caps-man-address",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "address (flags=46mi)"
+        },
+        {
+          "wire": "current-caps-man-identity",
+          "type": "string",
+          "readonly": true,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        }
+      ]
+    },
+    "interface/wifi/provisioning": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/provisioning/",
+      "sha256": "73204b719e6a4d997cb7a2222f34580ef7dac673b7e34a44d8d471ce2cfe0726",
+      "flags": {
+        "X": "disabled"
+      },
+      "fields": [
+        {
+          "wire": "disabled",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": []
+        },
+        {
+          "wire": "radio-mac",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "macAddr"
+        },
+        {
+          "wire": "identity-regexp",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "common-name-regexp",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "address-ranges",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "object { address-range: super { address-range-start: address (flags=46) , [address-range-end] -address (flags=46) } }"
+        },
+        {
+          "wire": "supported-bands",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, supported-band: enum () }"
+        },
+        {
+          "wire": "supported-hw-caps",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, supported-hw-cap: enum () }"
+        },
+        {
+          "wire": "action",
+          "type": "string",
+          "readonly": false,
+          "required": true,
+          "sensitive": false,
+          "enum": [
+            "none",
+            "create-enabled",
+            "create-disabled",
+            "create-dynamic-enabled",
+            "use-network-config"
+          ],
+          "api_type": "enum (none | create-enabled | create-disabled | create-dynamic-enabled | use-network-config)"
+        },
+        {
+          "wire": "master-configuration",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "enum"
+        },
+        {
+          "wire": "slave-configurations",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, slave-configuration: enum }"
+        },
+        {
+          "wire": "multi-link-mode",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "auto",
+            "disabled",
+            "master",
+            "all"
+          ],
+          "api_type": "enum (auto | disabled | master | all)"
+        },
+        {
+          "wire": "name-format",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "slave-name-format",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        }
+      ]
+    },
+    "interface/wifi/security": {
+      "url": "https://manual.mikrotik.com/docs/7.25/cli-reference/interface/wifi/security/",
+      "sha256": "9d7ee09e163bc63f2555445891df1df5e6968bea69c8fb0be1dedec98b980410",
+      "flags": {
+        "X": "disabled"
+      },
+      "fields": [
+        {
+          "wire": "disabled",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": []
+        },
+        {
+          "wire": "name",
+          "type": "string",
+          "readonly": false,
+          "required": true,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "authentication-types",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "ubit (wpa-psk, wpa2-psk, wpa2-psk-sha2, wpa-eap, wpa2-eap, wpa3-psk, owe, wpa3-eap, wpa3-eap-192)"
+        },
+        {
+          "wire": "encryption",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "ubit (tkip, ccmp, gcmp, ccmp-256, gcmp-256)"
+        },
+        {
+          "wire": "group-encryption",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "tkip",
+            "ccmp",
+            "gcmp",
+            "ccmp-256",
+            "gcmp-256"
+          ],
+          "api_type": "enum (tkip | ccmp | gcmp | ccmp-256 | gcmp-256)"
+        },
+        {
+          "wire": "group-key-update",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "time"
+        },
+        {
+          "wire": "passphrase",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": true,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "multi-passphrase-group",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "enum"
+        },
+        {
+          "wire": "disable-pmkid",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "bool"
+        },
+        {
+          "wire": "management-protection",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "disabled",
+            "allowed",
+            "required"
+          ],
+          "api_type": "enum (disabled | allowed | required)"
+        },
+        {
+          "wire": "beacon-protection",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "disabled",
+            "enabled"
+          ],
+          "api_type": "enum (disabled | enabled)"
+        },
+        {
+          "wire": "management-encryption",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "cmac",
+            "gmac",
+            "cmac-256",
+            "gmac-256"
+          ],
+          "api_type": "enum (cmac | gmac | cmac-256 | gmac-256)"
+        },
+        {
+          "wire": "wps",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "disable",
+            "push-button"
+          ],
+          "api_type": "enum (disable | push-button)"
+        },
+        {
+          "wire": "dh-groups",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "ubit (19, 20, 21)"
+        },
+        {
+          "wire": "sae-anti-clogging-threshold",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "sae-max-failure-rate",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "sae-pwe",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "hunting-and-pecking",
+            "hash-to-element",
+            "both"
+          ],
+          "api_type": "enum (hunting-and-pecking | hash-to-element | both)"
+        },
+        {
+          "wire": "owe-transition-interface",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "iface_enum { auto }"
+        },
+        {
+          "wire": "eap-methods",
+          "type": "set",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "multi { array-id, method: enum (tls | ttls | peap) { tls:13, ttls:21, peap:25 } }"
+        },
+        {
+          "wire": "eap-certificate-mode",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [
+            "verify-certificate",
+            "dont-verify-certificate",
+            "no-certificates",
+            "verify-certificate-with-crl"
+          ],
+          "api_type": "enum (verify-certificate | dont-verify-certificate | no-certificates | verify-certificate-with-crl)"
+        },
+        {
+          "wire": "eap-tls-certificate",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "enum"
+        },
+        {
+          "wire": "eap-username",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "eap-anonymous-identity",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "eap-password",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": true,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "eap-accounting",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "bool"
+        },
+        {
+          "wire": "ft",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "bool"
+        },
+        {
+          "wire": "ft-mobility-domain",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "num"
+        },
+        {
+          "wire": "ft-over-ds",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "bool"
+        },
+        {
+          "wire": "ft-reassociation-deadline",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "time"
+        },
+        {
+          "wire": "ft-nas-identifier",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "ft-r0-key-lifetime",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "time"
+        },
+        {
+          "wire": "ft-preserve-vlanid",
+          "type": "bool",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "bool"
+        },
+        {
+          "wire": "connect-group",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "string"
+        },
+        {
+          "wire": "connect-priority",
+          "type": "string",
+          "readonly": false,
+          "required": false,
+          "sensitive": false,
+          "enum": [],
+          "api_type": "super { connect-accept-priority: num , [connect-hold-priority] /num }"
+        }
+      ]
     }
   },
   "registrations": {
