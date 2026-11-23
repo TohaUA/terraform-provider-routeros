@@ -67,3 +67,11 @@ delta, their validation, and unresolved hardware contracts. It also pins live
 invented writable fields against that independent inventory. A feature marked
 `unverified-contract` is not implemented or certified. Bluetooth output power
 currently has that status. Keep RouterOS 7.26 work outside this 7.25.1 inventory.
+
+`routeros-7.25-wifi7.json` retains complete relevant WiFi reference tables,
+including duplicate driver variants, and independently captured 7.25.1 command
+arguments. WiFi 7 checks cover the full configuration workflows rather than just
+new property names. `routeros/testdata/wifi_2_1_schema.json` pins previous schema
+contracts; old configurations must keep their types, defaults, imports, and IDs,
+and produce unchanged plans. Operational radio behavior remains a separate
+hardware-validation task; CHR configuration tests do not certify RF operation.

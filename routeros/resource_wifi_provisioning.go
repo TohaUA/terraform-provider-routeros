@@ -28,12 +28,11 @@ func ResourceWifiProvisioning() *schema.Resource {
 		MetaId:           PropId(Id),
 
 		"action": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Default:     "none",
-			Description: "Provisioning action.",
-			ValidateFunc: validation.StringInSlice([]string{"create-disabled", "create-enabled",
-				"create-dynamic-enabled", "none"}, false),
+			Type:         schema.TypeString,
+			Optional:     true,
+			Default:      "none",
+			Description:  "Provisioning action.",
+			ValidateFunc: wifi7ProvisioningActions(),
 		},
 		"address_ranges": {
 			Type:        schema.TypeList,
@@ -98,7 +97,8 @@ func ResourceWifiProvisioning() *schema.Resource {
 		},
 	}
 
-	return &schema.Resource{
+	addWifi7Fields(resSchema)
+	return protectAddedWifi7Inputs(&schema.Resource{
 		Description:   `*<span style="color:red">This resource requires a minimum version of RouterOS 7.13.</span>*`,
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),
@@ -110,5 +110,5 @@ func ResourceWifiProvisioning() *schema.Resource {
 		},
 
 		Schema: resSchema,
-	}
+	})
 }

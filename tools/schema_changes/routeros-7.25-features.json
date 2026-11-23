@@ -11,6 +11,10 @@
     },
     {
       "url": "https://manual.mikrotik.com/docs/7.25/wireless/wifi/#configuration-properties"
+    },
+    {
+      "url": "https://manual.mikrotik.com/docs/7.25/wireless/wifi/",
+      "inventory": "routeros-7.25-wifi7.json"
     }
   ],
   "features": [
@@ -86,6 +90,107 @@
       "status": "unverified-contract",
       "validation": "Inspected official 7.25 CLI reference and live x86 IoT package 7.25.1: root set, advertisers set, scanners set and peripheral-devices set have no power argument.",
       "limits": "Requires Bluetooth-capable hardware to establish argument name, range, capability conditions and readback. No guessed attribute is exposed."
+    },
+    {
+      "id": "wifi7-manual-mld",
+      "status": "implemented",
+      "resources": [
+        "routeros_wifi"
+      ],
+      "attributes": [
+        "mld_name",
+        "mld_interface"
+      ],
+      "validation": "TestWifi7ExistingSchemaCompatibility; TestWifi7UpgradeNoOpPlans; TestAccWifi7ProfilesAndMLD (API and REST on CHR 7.25.1)",
+      "limits": "API/REST logical creation, in-place rename, import, and monitoring verified on CHR. Physical affiliation/traffic needs compatible radios."
+    },
+    {
+      "id": "wifi7-channel-controls",
+      "status": "implemented",
+      "resources": [
+        "routeros_wifi_channel"
+      ],
+      "attributes": [
+        "preamble_puncturing",
+        "afc"
+      ],
+      "validation": "TestWifi7ExistingSchemaCompatibility; TestWifi7UpgradeNoOpPlans; TestWifi7ExplicitFalseAndStringsWritten; TestAccWifi7ProfilesAndMLD (API and REST on CHR 7.25.1)",
+      "limits": "API/REST profile configuration and explicit resets verified. Actual puncturing/AFC requires hardware, drivers, and regulatory support."
+    },
+    {
+      "id": "wifi7-cap-provisioning",
+      "status": "implemented",
+      "resources": [
+        "routeros_wifi_cap",
+        "routeros_wifi_provisioning"
+      ],
+      "attributes": [
+        "mld_static",
+        "mld_datapath",
+        "multi_link_mode",
+        "supported_hw_caps"
+      ],
+      "validation": "TestWifi7ExistingSchemaCompatibility; TestWifi7UpgradeNoOpPlans; TestAccWifi7ProfilesAndMLD; TestAccWifi7CAP (API and REST on CHR 7.25.1)",
+      "limits": "API/REST configuration, resets, and imports verified; over-the-air CAP MLO provisioning is hardware-dependent."
+    },
+    {
+      "id": "wifi7-security-profiles",
+      "status": "implemented",
+      "resources": [
+        "routeros_wifi_security"
+      ],
+      "attributes": [
+        "beacon_protection",
+        "ft_r0_key_lifetime"
+      ],
+      "validation": "TestWifi7ExistingSchemaCompatibility; TestWifi7UpgradeNoOpPlans; TestAccWifi7ProfilesAndMLD (API and REST on CHR 7.25.1)",
+      "limits": "API/REST profiles and WPA2-PSK-SHA2 accepted; physical authentication and beacon integrity require hardware tests."
+    },
+    {
+      "id": "wifi7-radio-templates",
+      "status": "implemented",
+      "resources": [
+        "routeros_interface_wifi_network_radio"
+      ],
+      "attributes": [],
+      "validation": "TestWifi7PinnedWriteContracts; TestAccWifi7ProfilesAndMLD (API and REST on CHR 7.25.1)",
+      "limits": "Complete documented writable template API exposed, with labels as selectors and .id import; hardware application is unverified."
+    },
+    {
+      "id": "wifi7-radio-discovery-monitoring",
+      "status": "implemented",
+      "resources": [
+        "routeros_interface_wifi_radios",
+        "routeros_interface_wifi_monitor"
+      ],
+      "attributes": [],
+      "validation": "TestWifi7OperationalState; TestAccWifi7ProfilesAndMLD (logical MLD monitoring and empty radio inventory on CHR 7.25.1)",
+      "limits": "Read-only capability inventory and forced-once monitoring; MLD link and AFC status are driver-dependent."
+    },
+    {
+      "id": "wifi7-device-radio-settings",
+      "status": "implemented",
+      "resources": [
+        "routeros_interface_wifi_radio_settings"
+      ],
+      "attributes": [
+        "external_antenna",
+        "wifi_band"
+      ],
+      "validation": "TestWifi7PinnedWriteContracts; TestWifi7RadioSettingsUnsupported; live CHR 7.25.1 rejects writes as Not supported",
+      "limits": "Documented and live-inspected schema; CHR rejects setting these properties as Not supported. Hardware validation required."
+    },
+    {
+      "id": "wifi-profile-additional-controls",
+      "status": "implemented",
+      "resource": "routeros_wifi_configuration",
+      "attributes": [
+        "installation",
+        "max_clients",
+        "station_roaming"
+      ],
+      "validation": "TestWifi7ExistingSchemaCompatibility; TestWifi7UpgradeNoOpPlans; TestAccWifi7ProfilesAndMLD (API and REST on CHR 7.25.1)",
+      "limits": "Driver-specific installation choices and client limits; physical station roaming requires hardware tests."
     }
   ],
   "runtime_contracts": {

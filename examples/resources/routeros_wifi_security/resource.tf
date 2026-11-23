@@ -5,3 +5,7 @@ resource "routeros_wifi_security" "security1" {
   ft_preserve_vlanid   = true
   passphrase           = "password"
 }
+
+# Optional WiFi 7 / fast-roaming controls:
+# beacon_protection = "enabled"
+# ft_r0_key_lifetime = "1h"

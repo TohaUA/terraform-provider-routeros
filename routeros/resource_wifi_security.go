@@ -55,7 +55,7 @@ func ResourceWifiSecurity() *schema.Resource {
 			Optional: true,
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
-				ValidateFunc: validation.StringInSlice([]string{"wpa-psk", "wpa2-psk", "wpa-eap", "wpa2-eap", "wpa3-psk", "owe", "wpa3-eap", "wpa3-eap-192"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"wpa-psk", "wpa2-psk", "wpa2-psk-sha2", "wpa-eap", "wpa2-eap", "wpa3-psk", "owe", "wpa3-eap", "wpa3-eap-192"}, false),
 			},
 			Description: "Authentication types to enable on the interface.",
 		},
@@ -241,7 +241,8 @@ func ResourceWifiSecurity() *schema.Resource {
 		},
 	}
 
-	return &schema.Resource{
+	addWifi7Fields(resSchema)
+	return protectAddedWifi7Inputs(&schema.Resource{
 		Description:   `*<span style="color:red">This resource requires a minimum version of RouterOS 7.13.</span>*`,
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),
@@ -253,5 +254,5 @@ func ResourceWifiSecurity() *schema.Resource {
 		},
 
 		Schema: resSchema,
-	}
+	})
 }

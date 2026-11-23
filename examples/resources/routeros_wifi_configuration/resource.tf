@@ -51,3 +51,8 @@ resource "routeros_wifi_configuration" "configuration1" {
     config = routeros_wifi_security.security1.name
   }
 }
+
+# Additional optional radio controls:
+# installation = "indoor"
+# max_clients = 100
+# station_roaming = false
