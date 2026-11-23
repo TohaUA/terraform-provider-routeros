@@ -1,4 +1,4 @@
-# WiFi 7 configuration on RouterOS 7.25.1
+# WiFi 7 configuration on RouterOS 7.25.2
 
 The provider exposes the documented RouterOS 7.25 WiFi 7 configuration controls.
 Actual MLO, 320 MHz operation, puncturing, and AFC depend on the installed driver,
@@ -87,7 +87,7 @@ Tests pin the full relevant reference and live command argument lists, rather th
 only the release delta. They check v2.1.0 schema/state compatibility, omitted-input
 payloads, explicit false/reset operations, and one-shot monitoring. API and REST
 acceptance cover logical MLDs, profiles, provisioning, CAP controls, radio templates,
-imports, and unchanged plans on 7.25.1. Physical link negotiation, failover, radio
+imports, and unchanged plans on 7.25.1 and 7.25.2. Physical link negotiation, failover, radio
 performance, and driver/regulatory behavior remain hardware-validation tasks.
 
 References: [WiFi](https://manual.mikrotik.com/docs/7.25/wireless/wifi/),

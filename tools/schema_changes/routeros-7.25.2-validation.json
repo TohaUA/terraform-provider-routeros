@@ -1,0 +1,154 @@
+{
+  "target_version": "7.25.2",
+  "release_notes": "https://forum.mikrotik.com/t/7-25-2-stable-is-released/274638",
+  "scope": "Maintenance-release validation. Preserve the original 7.25.1 reference and runtime evidence; no API fields are inferred from firmware bug fixes.",
+  "baseline": {
+    "file": "routeros-7.25-wifi7.json",
+    "sha256": "159e43d5d4478d02cdd4965ff56e54d456119c3e6e27545a4940fc0a6008b96a",
+    "generated_resource_minimum": "7.25.1"
+  },
+  "ci": {
+    "version": "7.25.2",
+    "transports": [
+      "API",
+      "REST"
+    ],
+    "scope": "Full standard acceptance suite. Optional package and hardware tests retain their explicit opt-in requirements."
+  },
+  "wireguard_public_key": {
+    "backend": "Direct REST create on CHR 7.25.2, independently of provider normalization",
+    "ascii_padding": "accepted and returned without padding",
+    "ascii_whitespace_codepoints": [
+      "U+0009",
+      "U+000A",
+      "U+000B",
+      "U+000C",
+      "U+000D",
+      "U+0020"
+    ],
+    "unicode_padding_tested": [
+      "U+00A0",
+      "U+2003"
+    ],
+    "unicode_padding_result": "rejected: invalid public key",
+    "provider_behavior": "Canonicalize surrounding ASCII padding only. Preserve internal whitespace, Unicode characters, and case differences for validation by RouterOS.",
+    "regression_tests": [
+      "TestWireguardPeerPublicKeyWhitespacePlanning",
+      "TestAccInterfaceWireguardPeer7252Whitespace"
+    ],
+    "acceptance_scenarios": [
+      "create with padding",
+      "update to a different key with padding",
+      "no-op plans for equivalent keys",
+      "import"
+    ],
+    "transports": [
+      "API",
+      "REST"
+    ]
+  },
+  "wifi_contract_comparison": {
+    "comparison": "Top-level writable argument names and directory command names, not hardware capabilities or complete type equivalence. Parent navigation (..) is ignored.",
+    "contracts": {
+      "interface-wifi-cap-set": {
+        "source": "/console/inspect request=child,syntax on disposable CHR 7.25.2",
+        "argument_count": 11,
+        "arguments_sha256": "f254dac11ff4334c537efc6f1dc312ef1f49ed54971d31008e96d197dc0ef659",
+        "arguments_match_7_25_1": true
+      },
+      "interface-wifi-provisioning-add": {
+        "source": "/console/inspect request=child,syntax on disposable CHR 7.25.2",
+        "argument_count": 16,
+        "arguments_sha256": "f3cd4a9fe62e0c46fa6825c22ed5549d445ad3aa10346b8c6a15e42522815305",
+        "arguments_match_7_25_1": true
+      },
+      "interface-wifi-channel-add": {
+        "source": "/console/inspect request=child,syntax on disposable CHR 7.25.2",
+        "argument_count": 14,
+        "arguments_sha256": "2b61efb0cafbd496c2c3800d8681df5bb730a7a824374285c6cf61289148a57c",
+        "arguments_match_7_25_1": true
+      },
+      "interface-wifi-network-radio-add": {
+        "source": "/console/inspect request=child,syntax on disposable CHR 7.25.2",
+        "argument_count": 23,
+        "arguments_sha256": "b2271847ef24e8f65901c0c31948876bdeab06e4769f9f91a28138a6c17af7ba",
+        "arguments_match_7_25_1": true
+      },
+      "interface-wifi-radio-settings-set": {
+        "source": "/console/inspect request=child,syntax on disposable CHR 7.25.2",
+        "argument_count": 2,
+        "arguments_sha256": "46710d641080d771b6e9ffd2e111821aedc217b7c7de2de5b8627b4138066016",
+        "arguments_match_7_25_1": true
+      },
+      "interface-wifi-monitor": {
+        "source": "/console/inspect request=child,syntax on disposable CHR 7.25.2",
+        "argument_count": 11,
+        "arguments_sha256": "eb15ad60a2a2cc656a1e55b16dc5bd7f8437cefd96041e40130d718cf1bb41b6",
+        "arguments_match_7_25_1": true
+      },
+      "interface-wifi-add": {
+        "source": "/console/inspect request=child,syntax on disposable CHR 7.25.2",
+        "argument_count": 133,
+        "arguments_sha256": "35d34973ce8ec284994b2ff3de66f99d86cbc84d7fe5e7db8b96d9d102b6c727",
+        "arguments_match_7_25_1": true
+      },
+      "interface-wifi-radio-settings": {
+        "source": "/console/inspect request=child,syntax on disposable CHR 7.25.2",
+        "argument_count": 0,
+        "arguments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "arguments_match_7_25_1": true,
+        "commands": [
+          "edit",
+          "export",
+          "get",
+          "print",
+          "reset",
+          "set"
+        ],
+        "commands_match_7_25_1": true
+      },
+      "interface-wifi-channel-set": {
+        "source": "/console/inspect request=child,syntax on disposable CHR 7.25.2",
+        "argument_count": 14,
+        "arguments_sha256": "67e599fe35eda4f2a0e4859756eaf27f5a7fe2792cfe7dfe18bd7a0cadadbda9",
+        "arguments_match_7_25_1": true
+      },
+      "interface-wifi-radio-settings-add": {
+        "source": "/console/inspect request=child,syntax on disposable CHR 7.25.2",
+        "argument_count": 0,
+        "arguments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "arguments_match_7_25_1": true,
+        "operation_supported": false,
+        "observation": "No add command; this singleton uses set."
+      },
+      "interface-wifi-set": {
+        "source": "/console/inspect request=child,syntax on disposable CHR 7.25.2",
+        "argument_count": 133,
+        "arguments_sha256": "b06fc4ae9174bf507dce562b53ee5b99243fceeab537b13757d8c9fbe8d22248",
+        "arguments_match_7_25_1": true
+      },
+      "interface-wifi-network-radio-set": {
+        "source": "/console/inspect request=child,syntax on disposable CHR 7.25.2",
+        "argument_count": 23,
+        "arguments_sha256": "62a813a7f2e32a5b790fb62eda653635bc5871d4c56e9646fc9e519e8c718c78",
+        "arguments_match_7_25_1": true
+      }
+    }
+  },
+  "portable_acceptance": {
+    "passed": [
+      "TestAccWifi7ProfilesAndMLD",
+      "TestAccWifi7CAP",
+      "TestAccWifi7251Distance",
+      "TestAccRouterOS725Resources/xfrm"
+    ],
+    "transports": [
+      "API",
+      "REST"
+    ]
+  },
+  "limits": [
+    "CHR configuration tests do not certify physical WiFi 7 operation or hardware-specific firmware fixes.",
+    "Bluetooth output-power contract remains unverified without compatible hardware."
+  ]
+}

@@ -1,6 +1,8 @@
 package routeros
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -139,7 +141,11 @@ func ResourceInterfaceWireguardPeer() *schema.Resource {
 		"public_key": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "The remote peer's calculated public key.",
+			Description: "The remote peer's calculated public key. Surrounding ASCII whitespace is normalized, matching RouterOS 7.25.2.",
+			StateFunc: func(value interface{}) string {
+				// RouterOS accepts ASCII padding, but rejects Unicode whitespace.
+				return strings.Trim(value.(string), " \t\r\n\v\f")
+			},
 		},
 		"rx": {
 			Type:        schema.TypeString,

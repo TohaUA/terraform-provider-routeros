@@ -7,7 +7,7 @@ container and exposes the API and REST ports.
 ## Why this lives here
 
 The tests used to pull `vaerhme/routeros:v<version>` from Docker Hub. That image is published
-only up to **v7.22**. This fork supports and acceptance-tests **7.25.1** only.
+only up to **v7.22**. This fork supports and acceptance-tests **7.25.2** only.
 
 Building here rather than publishing our own image avoids
 redistributing MikroTik's disk image under this account, and — the part that actually matters —
@@ -27,7 +27,7 @@ project's, kept verbatim, and the maintainer attribution in the `Dockerfile` is 
 
 Three things differ from upstream:
 
-1. `ROUTEROS_VERSION` is a build argument, defaulting to `7.25.1`.
+1. `ROUTEROS_VERSION` is a build argument, defaulting to `7.25.2`.
 2. The download is retried and written to disk before extraction instead of being piped into
    `bsdtar`. This image is built on every CI run rather than occasionally, so an intermittent
    transfer is intermittent CI — a truncated stream fails the extract and cannot be retried once
@@ -45,15 +45,15 @@ of divergent trees. Items 2 and 3 are worth offering upstream.
 
 ## Changing the RouterOS version
 
-The CI matrix contains only 7.25.1. Each job passes the same version as the
+The CI matrix contains only 7.25.2. Each job passes the same version as the
 Docker build argument `ROUTEROS_VERSION` and the test environment variable `ROS_VERSION`,
 so the downloaded CHR image and the tests agree. The Dockerfile default also selects
-`7.25.1` for local builds. Earlier RouterOS versions are outside the support scope.
+`7.25.2` for local builds. Earlier RouterOS versions are outside the support scope.
 
 Check the target version exists first; not every RouterOS release ships a CHR `.vdi`:
 
 ```
-curl -sI https://download.mikrotik.com/routeros/7.25.1/chr-7.25.1.vdi.zip | head -1
+curl -sI https://download.mikrotik.com/routeros/7.25.2/chr-7.25.2.vdi.zip | head -1
 ```
 
 ## Running it locally

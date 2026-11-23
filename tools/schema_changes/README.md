@@ -25,7 +25,10 @@ go run . -r 7.18:7.19 -markdown
 
 `routeros-7.25-api.json` pins MikroTik's official `7.24->7.25` comparison and
 versioned reference property tables (source URLs and HTML SHA-256 values).
-Its `target_version` is **7.25.1**; earlier RouterOS versions are unsupported.
+Its `target_version` is **7.25.1**, the runtime version used to establish this
+snapshot and the generated resource minimum. Current CI targets **7.25.2**;
+`routeros-7.25.2-validation.json` records separate runtime validation. Do not relabel
+older captures as 7.25.2 evidence. Earlier RouterOS versions are unsupported.
 It also records explicit runtime corrections found on CHR 7.25.1. Runtime-only
 entries identify their origin separately. This inventory covers release additions;
 it is not a promise that every legacy RouterOS menu is implemented.
