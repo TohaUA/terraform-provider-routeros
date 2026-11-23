@@ -152,7 +152,7 @@ prefer building from a pinned commit.
 
 * Terraform plugin protocol **5.0** (`terraform-registry-manifest.json`); Terraform 1.x, and
   OpenTofu on the same protocol.
-* **RouterOS 7.25.1 is the support and acceptance-test target.** Earlier versions
+* **RouterOS 7.25.2 is the support and acceptance-test target.** Earlier versions
   are unsupported. The fork includes the documented 7.24 → 7.25 API additions,
   including bridge security, XFRM, PON, PIM/MLD, WiFi network profiles, SSH host
   verification, operational data sources, and explicit command actions.
@@ -228,7 +228,7 @@ For more in-depth documentation about each of the resources and datasources, ple
 
 ### Versions tested
 
-- RouterOS **7.25.1**, using API and REST. CI runs this version only.
+- RouterOS **7.25.2**, using API and REST. CI runs this version only.
 - Go toolchain from `go.mod`; Terraform plugin protocol 5.0.
 - Earlier RouterOS versions are outside this fork's support scope.
 

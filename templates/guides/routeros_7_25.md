@@ -1,6 +1,6 @@
-# RouterOS 7.25.1 support and coverage
+# RouterOS 7.25.2 support and coverage
 
-**RouterOS 7.25.1 is the support and acceptance-test target. Earlier versions are
+**RouterOS 7.25.2 is the support and acceptance-test target. Earlier versions are
 unsupported and are not tested in CI.**
 
 The provider implements all additions in MikroTik's official **7.24 → 7.25 CLI
@@ -24,7 +24,19 @@ lifecycle is covered separately below. Bluetooth output-power support remains
 unverified: neither the frozen reference nor the live x86 IoT package exposes its
 control argument; supported Bluetooth hardware is required to establish that
 contract. RouterOS 7.26
-additions are a separate milestone and are not included in the 7.25.1 claim.
+additions are a separate milestone and are not included in the 7.25 support scope.
+
+## RouterOS 7.25.2 maintenance update
+
+The CI image and API/REST acceptance target are 7.25.2. The 7.25 CLI reference
+and 7.25.1 runtime captures remain pinned with their original versions; they are
+historical API evidence, not claims of new validation. New resources retain their
+7.25.1 minimum version. See `tools/schema_changes/routeros-7.25.2-validation.json`
+for the separate 7.25.2 runtime checks and scope.
+
+RouterOS 7.25.2 canonicalizes surrounding whitespace in WireGuard peer public
+keys. The provider treats that padding as equivalent while preserving actual key
+changes and case sensitivity.
 
 ## WiFi 7
 
