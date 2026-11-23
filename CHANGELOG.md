@@ -1,3 +1,9 @@
+## [2.2.2](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.1...v2.2.2) (2026-11-23)
+
+### Bug Fixes
+
+* **route:** read blackhole presence flags correctly ([#73](https://github.com/TohaUA/terraform-provider-routeros/issues/73)) ([90c8696](https://github.com/TohaUA/terraform-provider-routeros/commit/90c8696b74ac8e3d4a4d5fa8a277b4cdae546f4f))
+
 ## [2.2.1](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.0...v2.2.1) (2026-11-23)
 
 ### Bug Fixes
