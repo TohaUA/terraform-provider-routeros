@@ -21,3 +21,5 @@ resource "routeros_interface_wifi_radio_settings" "settings" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+

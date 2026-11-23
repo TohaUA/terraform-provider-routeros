@@ -42,3 +42,5 @@ Read-Only:
 - `registered_peers` (String)
 - `state` (String)
 - `tx_power` (String)
+
+

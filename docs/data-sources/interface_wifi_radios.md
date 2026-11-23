@@ -55,3 +55,5 @@ Read-Only:
 - `radio_mac` (String)
 - `rx_chains` (Set of String)
 - `tx_chains` (Set of String)
+
+

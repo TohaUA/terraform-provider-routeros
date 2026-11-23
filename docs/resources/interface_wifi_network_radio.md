@@ -50,3 +50,5 @@ resource "routeros_interface_wifi_network_radio" "radio" {
 
 - `id` (String) The ID of this resource.
 - `managed` (Boolean) RouterOS `managed` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
+
+

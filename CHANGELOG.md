@@ -1,3 +1,9 @@
+## [2.2.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.1.0...v2.2.0) (2026-11-23)
+
+### Features
+
+* **wifi:** add WiFi 7 MLD and radio controls ([#71](https://github.com/TohaUA/terraform-provider-routeros/issues/71)) ([6c79b3e](https://github.com/TohaUA/terraform-provider-routeros/commit/6c79b3e712595a55a74f7ce9905919a549de6c78))
+
 ## [2.1.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.0.1...v2.1.0) (2026-11-22)
 
 ### Features
