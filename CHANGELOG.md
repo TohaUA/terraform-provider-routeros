@@ -1,3 +1,9 @@
+## [2.2.1](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.0...v2.2.1) (2026-11-23)
+
+### Bug Fixes
+
+* **wireguard:** normalize peer keys for RouterOS 7.25.2 ([#72](https://github.com/TohaUA/terraform-provider-routeros/issues/72)) ([760844e](https://github.com/TohaUA/terraform-provider-routeros/commit/760844e2f1273a333772cd0b4b75b39b4e411d2a))
+
 ## [2.2.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.1.0...v2.2.0) (2026-11-23)
 
 ### Features
