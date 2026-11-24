@@ -12,6 +12,9 @@ import (
 )
 
 func TestDiffSuppressorsRejectUnparseableValuesWithoutPanicking(t *testing.T) {
+	ipAddrListTimeout := ResourceIPFirewallAddrList().Schema["timeout"].DiffSuppressFunc
+	ipv6AddrListTimeout := ResourceIPv6FirewallAddrList().Schema["timeout"].DiffSuppressFunc
+
 	cases := []struct {
 		name     string
 		suppress schema.SchemaDiffSuppressFunc
@@ -29,8 +32,15 @@ func TestDiffSuppressorsRejectUnparseableValuesWithoutPanicking(t *testing.T) {
 		{"hex/new", HexEqual, "0x10", "invalid"},
 		{"keepalive_format/old", PropKeepaliveRw.DiffSuppressFunc, "10s", "10s,3"},
 		{"keepalive_format/new", PropKeepaliveRw.DiffSuppressFunc, "10s,3", "10s"},
+		{"keepalive_format/old_10", PropKeepaliveRw.DiffSuppressFunc, "10s", "10s,10"},
 		{"keepalive_interval/old", PropKeepaliveRw.DiffSuppressFunc, "invalid,3", "10s,3"},
 		{"keepalive_interval/new", PropKeepaliveRw.DiffSuppressFunc, "10s,3", "invalid,3"},
+		{"ip_firewall_addr_list_timeout/old", ipAddrListTimeout, "invalid", "5m"},
+		{"ip_firewall_addr_list_timeout/new", ipAddrListTimeout, "5m", "invalid"},
+		{"ip_firewall_addr_list_timeout/both", ipAddrListTimeout, "bad-old", "bad-new"},
+		{"ipv6_firewall_addr_list_timeout/old", ipv6AddrListTimeout, "invalid", "5m"},
+		{"ipv6_firewall_addr_list_timeout/new", ipv6AddrListTimeout, "5m", "invalid"},
+		{"ipv6_firewall_addr_list_timeout/both", ipv6AddrListTimeout, "bad-old", "bad-new"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -48,6 +58,9 @@ func TestDiffSuppressorsRejectUnparseableValuesWithoutPanicking(t *testing.T) {
 }
 
 func TestDiffSuppressorsPreserveValidComparisons(t *testing.T) {
+	ipAddrListTimeout := ResourceIPFirewallAddrList().Schema["timeout"].DiffSuppressFunc
+	ipv6AddrListTimeout := ResourceIPv6FirewallAddrList().Schema["timeout"].DiffSuppressFunc
+
 	cases := []struct {
 		name     string
 		suppress schema.SchemaDiffSuppressFunc
@@ -68,6 +81,20 @@ func TestDiffSuppressorsPreserveValidComparisons(t *testing.T) {
 		{"keepalive/equal", PropKeepaliveRw.DiffSuppressFunc, "60s,3", "1m,3", true},
 		{"keepalive/different_interval", PropKeepaliveRw.DiffSuppressFunc, "10s,3", "20s,3", false},
 		{"keepalive/different_retries", PropKeepaliveRw.DiffSuppressFunc, "10s,3", "10s,4", false},
+		{"ip_firewall_addr_list_timeout/countdown", ipAddrListTimeout, "4m59s", "5m", true},
+		{"ip_firewall_addr_list_timeout/equal_string", ipAddrListTimeout, "5m", "5m", true},
+		{"ip_firewall_addr_list_timeout/equal_duration_diff_string", ipAddrListTimeout, "300s", "5m", false},
+		{"ip_firewall_addr_list_timeout/shortened", ipAddrListTimeout, "5m", "4m", false},
+		{"ip_firewall_addr_list_timeout/empty_old", ipAddrListTimeout, "", "5m", false},
+		{"ip_firewall_addr_list_timeout/empty_new", ipAddrListTimeout, "5m", "", false},
+		{"ip_firewall_addr_list_timeout/both_empty", ipAddrListTimeout, "", "", true},
+		{"ipv6_firewall_addr_list_timeout/countdown", ipv6AddrListTimeout, "4m59s", "5m", true},
+		{"ipv6_firewall_addr_list_timeout/equal_string", ipv6AddrListTimeout, "5m", "5m", true},
+		{"ipv6_firewall_addr_list_timeout/equal_duration_diff_string", ipv6AddrListTimeout, "300s", "5m", false},
+		{"ipv6_firewall_addr_list_timeout/shortened", ipv6AddrListTimeout, "5m", "4m", false},
+		{"ipv6_firewall_addr_list_timeout/empty_old", ipv6AddrListTimeout, "", "5m", false},
+		{"ipv6_firewall_addr_list_timeout/empty_new", ipv6AddrListTimeout, "5m", "", false},
+		{"ipv6_firewall_addr_list_timeout/both_empty", ipv6AddrListTimeout, "", "", true},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -117,4 +144,37 @@ func diffSuppressorTestData(configured cty.Value) *schema.ResourceData {
 		"value": {Type: schema.TypeString, Optional: true},
 	}}
 	return resourceDataWithRawConfig(res, "*1", map[string]cty.Value{"value": configured})
+}
+
+func TestFirewallAddrListTimeoutDiffSuppressWarningsDoNotEchoValues(t *testing.T) {
+	var warnings bytes.Buffer
+	previousWriter := log.Writer()
+	log.SetOutput(&warnings)
+	t.Cleanup(func() { log.SetOutput(previousWriter) })
+
+	ipAddrListTimeout := ResourceIPFirewallAddrList().Schema["timeout"].DiffSuppressFunc
+	ipv6AddrListTimeout := ResourceIPv6FirewallAddrList().Schema["timeout"].DiffSuppressFunc
+
+	const marker = "private-input-marker"
+	for _, tc := range []struct {
+		name     string
+		suppress schema.SchemaDiffSuppressFunc
+		old, new string
+	}{
+		{"ipv4/old", ipAddrListTimeout, marker, "5m"},
+		{"ipv4/new", ipAddrListTimeout, "5m", marker},
+		{"ipv6/old", ipv6AddrListTimeout, marker, "5m"},
+		{"ipv6/new", ipv6AddrListTimeout, "5m", marker},
+	} {
+		if tc.suppress("timeout", tc.old, tc.new, nil) {
+			t.Fatalf("%s: unparseable value suppressed the diff", tc.name)
+		}
+	}
+
+	if strings.Contains(warnings.String(), marker) {
+		t.Fatalf("warnings echo the input value: %s", warnings.String())
+	}
+	if got := strings.Count(warnings.String(), "[WARN]"); got != 4 {
+		t.Errorf("got %d parse warnings, want 4: %s", got, warnings.String())
+	}
 }

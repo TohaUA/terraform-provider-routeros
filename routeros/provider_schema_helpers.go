@@ -836,6 +836,35 @@ var (
 		return true
 	}
 
+	// firewallAddrListTimeoutEqual suppresses diffs caused by RouterOS counting
+	// down an address-list entry's remaining timeout (e.g. "4m59s" -> "5m").
+	firewallAddrListTimeoutEqual = func(k, old, new string, _ *schema.ResourceData) bool {
+		if old == new {
+			return true
+		}
+
+		if old == "" || new == "" {
+			return false
+		}
+
+		// Compare intervals:
+		oDuration, err := ParseDuration(old, time.Second)
+		if err != nil {
+			log.Printf("[WARN] [FirewallAddrList Timeout] cannot parse previous value for %q; not suppressing the diff", k)
+			return false
+		}
+
+		nDuration, err := ParseDuration(new, time.Second)
+		if err != nil {
+			log.Printf("[WARN] [FirewallAddrList Timeout] cannot parse configured value for %q; not suppressing the diff", k)
+			return false
+		}
+
+		//                     old       new
+		// ~ timeout       = "4m59s" -> "5m"
+		return nDuration.Seconds() > oDuration.Seconds()
+	}
+
 	HexEqual = func(k, old, new string, d *schema.ResourceData) bool {
 		if old == "" {
 			return false

@@ -2,7 +2,6 @@ package routeros
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -63,30 +62,7 @@ the address will be stored into the address list permanently.
 	> Please plan your work logic based on the fact that after the timeout    
 	> the resource has been destroyed outside of a Terraform. 
 `,
-			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-				if old == new {
-					return true
-				}
-
-				if old == "" || new == "" {
-					return false
-				}
-
-				// Compare intervals:
-				oDuration, err := ParseDuration(old, time.Second)
-				if err != nil {
-					panic("[FirewallAddrList Timeout] parse 'old' duration error: " + err.Error())
-				}
-
-				nDuration, err := ParseDuration(new, time.Second)
-				if err != nil {
-					panic("[FirewallAddrList Timeout] parse 'new' duration error: " + err.Error())
-				}
-
-				//                     old       new
-				// ~ timeout       = "4m59s" -> "5m"
-				return nDuration.Seconds() > oDuration.Seconds()
-			},
+			DiffSuppressFunc: firewallAddrListTimeoutEqual,
 		},
 	}
 	return &schema.Resource{
