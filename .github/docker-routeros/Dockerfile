@@ -1,4 +1,4 @@
-FROM alpine:3.22.1
+FROM alpine:3.22.1@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1
 
 LABEL maintainer="Vaerh <vaerh@tutanota.com>"
 
@@ -22,6 +22,7 @@ RUN set -xe \
 
 # Environments which may be change
 ARG ROUTEROS_VERSION=7.25.2
+ARG ROUTEROS_SHA256=661040e25440d89917f910196cc85dfd8a919a0e6da941884c5bcf574cfddf63
 ENV ROUTEROS_VERSION=$ROUTEROS_VERSION
 ENV ROUTEROS_IMAGE="chr-$ROUTEROS_VERSION.vdi"
 ENV ROUTEROS_PATH="https://download.mikrotik.com/routeros/$ROUTEROS_VERSION/$ROUTEROS_IMAGE"
@@ -36,9 +37,10 @@ ENV ROUTEROS_PATH="https://download.mikrotik.com/routeros/$ROUTEROS_VERSION/$ROU
 # retry differs from upstream; the resulting image is the same.
 RUN for attempt in 1 2 3 4 5; do \
       wget -q -O /tmp/chr.zip "$ROUTEROS_PATH.zip" \
+        && echo "$ROUTEROS_SHA256  /tmp/chr.zip" | sha256sum -c - \
         && bsdtar -C /routeros/ -xf /tmp/chr.zip \
         && break; \
-      echo "download/extract attempt $attempt failed, retrying"; \
+      echo "download/verify/extract attempt $attempt failed, retrying"; \
       rm -f /tmp/chr.zip; \
       sleep 5; \
     done; \

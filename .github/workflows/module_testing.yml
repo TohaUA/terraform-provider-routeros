@@ -1,5 +1,8 @@
 name: Go Client Tests
 
+permissions:
+  contents: read
+
 # Every run boots a RouterOS VM under qemu for about fifteen minutes, so a
 # superseded run is expensive to leave going.
 #
