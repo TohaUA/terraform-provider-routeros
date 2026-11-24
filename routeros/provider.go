@@ -37,6 +37,8 @@ func Provider() *schema.Provider {
 		* router.local
 		* 127.0.0.1
 
+	Plaintext schemes (http:// and api://) send credentials and traffic unencrypted; prefer https:// or apis://.
+	Standard proxy environment variables (HTTP_PROXY, HTTPS_PROXY, NO_PROXY) apply to the REST (http:// and https://) transport only; api:// and apis:// connect directly.
 
 	export ROS_HOSTURL=router.local or export MIKROTIK_HOST=router.local
 `,
@@ -80,7 +82,7 @@ func Provider() *schema.Provider {
 					[]string{"ROS_INSECURE", "MIKROTIK_INSECURE"},
 					false,
 				),
-				Description: "Whether to verify the SSL certificate or not (env: ROS_INSECURE | MIKROTIK_INSECURE).",
+				Description: "Skip TLS certificate verification (not recommended) (env: ROS_INSECURE | MIKROTIK_INSECURE).",
 			},
 			"suppress_syso_del_warn": {
 				Type:     schema.TypeBool,

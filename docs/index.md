@@ -77,6 +77,8 @@ resource "routeros_interface_gre" "gre_hq" {
 		* router.local
 		* 127.0.0.1
 
+	Plaintext schemes (http:// and api://) send credentials and traffic unencrypted; prefer https:// or apis://.
+	Standard proxy environment variables (HTTP_PROXY, HTTPS_PROXY, NO_PROXY) apply to the REST (http:// and https://) transport only; api:// and apis:// connect directly.
 
 	export ROS_HOSTURL=router.local or export MIKROTIK_HOST=router.local
 - `username` (String) Username for the MikroTik WEB/Winbox.
@@ -87,7 +89,7 @@ resource "routeros_interface_gre" "gre_hq" {
 ### Optional
 
 - `ca_certificate` (String) Path to MikroTik's certificate authority file (env: ROS_CA_CERTIFICATE | MIKROTIK_CA_CERTIFICATE).
-- `insecure` (Boolean) Whether to verify the SSL certificate or not (env: ROS_INSECURE | MIKROTIK_INSECURE).
+- `insecure` (Boolean) Skip TLS certificate verification (not recommended) (env: ROS_INSECURE | MIKROTIK_INSECURE).
 - `password` (String, Sensitive) Password for the MikroTik user (env: ROS_PASSWORD | MIKROTIK_PASSWORD).
 - `rest_timeout` (Number) Timeout, in seconds, for a single request to the router. Applies to both the REST and the API transport.
 - `routeros_version` (String) RouterOS version for which resource schemes will be adapted. The version obtained from MikroTik will be used if not specified (env: ROS_VERSION).
