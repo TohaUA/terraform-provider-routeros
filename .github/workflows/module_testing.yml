@@ -71,6 +71,9 @@ jobs:
           go-version-file: go.mod
           check-latest: true
 
+      - name: Check go.mod tidiness
+        run: go mod tidy -diff
+
       - name: Build and unit test
         run: |
           go build ./...
