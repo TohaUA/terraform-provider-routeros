@@ -513,13 +513,35 @@ func (u *URL) GetApiCmd() []string {
 	return append(res, u.Query...)
 }
 
+func escapeRestQueryPart(s string) string {
+	// Encode spaces as %20 rather than '+' so both application/x-www-form-urlencoded
+	// decoders (such as Go's url.ParseQuery) and strict RFC 3986 percent-only servers
+	// decode spaces identically, matching the previous space replacement.
+	return strings.ReplaceAll(url.QueryEscape(s), "+", "%20")
+}
+
 // GetRestURL Returns the URL for the client
 func (u *URL) GetRestURL() string {
-	q := strings.Join(u.Query, "&")
-	if len(q) > 0 && q[0] != '?' {
-		q = "?" + q
+	if len(u.Query) == 0 {
+		return u.Path
 	}
-	return u.Path + q
+
+	escaped := make([]string, 0, len(u.Query))
+	for i, entry := range u.Query {
+		if i == 0 {
+			// ReadItems prefixes the first query entry with "?" (e.g. "?.id=*39").
+			entry = strings.TrimPrefix(entry, "?")
+		}
+		if k, v, ok := strings.Cut(entry, "="); ok {
+			escaped = append(escaped, escapeRestQueryPart(k)+"="+escapeRestQueryPart(v))
+		} else if entry != "" {
+			escaped = append(escaped, escapeRestQueryPart(entry))
+		}
+	}
+	if len(escaped) == 0 {
+		return u.Path
+	}
+	return u.Path + "?" + strings.Join(escaped, "&")
 }
 
 // EscapeChars peterGo https://groups.google.com/g/golang-nuts/c/NiQiAahnl5E/m/U60Sm1of-_YJ

@@ -71,9 +71,8 @@ func (c *RestClient) SendRequest(method crudMethod, url *URL, item MikrotikItem,
 		data = bytes.NewBuffer(b)
 	}
 
-	// https://mikrotik + /rest + /interface/vlan + ? + .id=*39
-	// Escaping spaces!
-	requestUrl := c.HostURL + "/rest" + strings.Replace(url.GetRestURL(), " ", "%20", -1)
+	// https://mikrotik + /rest + /interface/vlan + ?.id=%2A39
+	requestUrl := c.HostURL + "/rest" + url.GetRestURL()
 	ColorizedDebug(c.ctx, restMethodName[method]+" request URL:  "+redactURL(requestUrl))
 
 	req, err := http.NewRequest(restMethodName[method], requestUrl, data)

@@ -155,10 +155,9 @@ func redactAPIWords(words []string) []string {
 
 // redactURL returns a REST request URL for logs and error messages, with the
 // value of every sensitive query parameter replaced. A filtered read or an import
-// puts its filter in the query string ("?name=alice&password=..."). That query is
-// not escaped, so a segment without '=' that follows a sensitive parameter is
-// taken as the rest of its value rather than a parameter of its own. The URL that
-// is requested is left as it is.
+// puts its filter in the query string ("?name=alice&password=..."). Its keys and
+// values are URL-escaped, so '&' only separates parameters and every parameter
+// is a single "key=value" segment. The URL that is requested is left as it is.
 func redactURL(raw string) string {
 	base, query, ok := strings.Cut(raw, "?")
 	if !ok {
@@ -167,13 +166,10 @@ func redactURL(raw string) string {
 
 	segments := strings.Split(query, "&")
 	out := make([]string, 0, len(segments))
-	inSecret := false
 	for _, segment := range segments {
 		key, value, hasValue := strings.Cut(segment, "=")
 		if !hasValue {
-			if !inSecret {
-				out = append(out, segment)
-			}
+			out = append(out, segment)
 			continue
 		}
 
@@ -181,8 +177,7 @@ func redactURL(raw string) string {
 		if unescaped, err := neturl.QueryUnescape(key); err == nil {
 			name = unescaped
 		}
-		inSecret = value != "" && isSensitiveName(name)
-		if inSecret {
+		if value != "" && isSensitiveName(name) {
 			segment = key + "=" + redactedValue
 		}
 		out = append(out, segment)
