@@ -44,7 +44,7 @@ resource "routeros_queue_type" "test" {
 - `cake_mpu` (Number) Rounds each packet (including overhead) up to a minimum length BYTES.
 - `cake_nat` (Boolean) Instructs Cake to perform a NAT lookup before applying a flow-isolation rule.
 - `cake_overhead` (Number) Adds BYTES to the size of each packet. BYTES may be negative.
-- `cake_overhead_scheme` (String)
+- `cake_overhead_scheme` (String) Shortcut that sets the CAKE overhead and ATM/PTM compensation for a common link encapsulation (for example `ethernet`, `pppoe-ptm`, `docsis`).
 - `cake_rtt` (String) Manually specify an RTT. Default 100ms is suitable for most Internet traffic.
 - `cake_rtt_scheme` (String) * `datacentre` - For extremely high-performance 10GigE+ networks only. Equivalent to `RTT 100us`.
   * `lan` - For pure Ethernet (not Wi-Fi) networks, at home or in the office. Don't use this when shaping for an Internet access link. Equivalent to `RTT 1ms`.
