@@ -18,6 +18,10 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  # Weekly scan detects newly published Go or module advisories even when no
+  # pull requests are opened.
+  schedule:
+    - cron: '0 6 * * 1'
   # Manual runs can narrow the suite. A full pass is ~15 minutes, most of it
   # tests unrelated to whatever is being fixed, which makes a fix-and-check
   # cycle far more expensive than it needs to be.
@@ -69,9 +73,12 @@ jobs:
           go build ./...
           go test ./routeros/ ./tools/...
 
+      - name: Vulnerability scan
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.10.0 ./...
+
   build:
     name: RouterOS ${{ matrix.routeros }}
-    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    if: github.event_name != 'schedule' && (github.event_name != 'pull_request' || !github.event.pull_request.draft)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
