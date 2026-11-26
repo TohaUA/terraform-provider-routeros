@@ -1,3 +1,9 @@
+## [2.2.3](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.2...v2.2.3) (2026-11-26)
+
+### Bug Fixes
+
+* **deps:** bump Go to 1.27.4, x/net to v0.63.0, and add CI govulncheck ([#79](https://github.com/TohaUA/terraform-provider-routeros/issues/79)) ([5c5c8ae](https://github.com/TohaUA/terraform-provider-routeros/commit/5c5c8ae8020aa2b66e89c3cd2c3b0ed74b5a4c91)), closes [#43](https://github.com/TohaUA/terraform-provider-routeros/issues/43)
+
 ## [2.2.2](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.1...v2.2.2) (2026-11-23)
 
 ### Bug Fixes
