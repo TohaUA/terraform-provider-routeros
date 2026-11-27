@@ -1,3 +1,9 @@
+## [2.3.2](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.3.1...v2.3.2) (2026-11-27)
+
+### Bug Fixes
+
+* **routeros:** remove attributes and menus absent from RouterOS 7.25 ([#91](https://github.com/TohaUA/terraform-provider-routeros/issues/91)) ([3a588b5](https://github.com/TohaUA/terraform-provider-routeros/commit/3a588b5025710b0211fccdd0b6cfeff805ce37e5)), closes [terraform-routeros#957](https://github.com/TohaUA/terraform-routeros/issues/957) [terraform-routeros#992](https://github.com/TohaUA/terraform-routeros/issues/992) [#47](https://github.com/TohaUA/terraform-provider-routeros/issues/47)
+
 ## [2.3.1](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.3.0...v2.3.1) (2026-11-27)
 
 ### Bug Fixes
