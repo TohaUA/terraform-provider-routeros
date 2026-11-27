@@ -1,3 +1,9 @@
+## [2.5.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.4.0...v2.5.0) (2026-11-27)
+
+### Features
+
+* **client:** add tls_fingerprint pinning for TLS connections ([#102](https://github.com/TohaUA/terraform-provider-routeros/issues/102)) ([1a10da3](https://github.com/TohaUA/terraform-provider-routeros/commit/1a10da377988cf778660052b101c0fb9f21de4b9))
+
 ## [2.4.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.3.3...v2.4.0) (2026-11-27)
 
 ### Features
