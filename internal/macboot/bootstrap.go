@@ -269,7 +269,7 @@ func BuildBootstrapScript(cfg BootstrapConfig, nonce string) (string, error) {
 		`:put ("identity=" . [/system/identity/get name])`,
 		`:put ("version=" . [/system/resource/get version])`,
 		`:put ("===MACBOOT-" . "END-" . $mbN . "===")`,
-		`/system/script/environment/remove [find name~"^mb[ACIN]$"]`,
+		`:set mbA; :set mbC; :set mbI; :set mbN`,
 	)
 
 	return strings.Join(lines, "\n"), nil
