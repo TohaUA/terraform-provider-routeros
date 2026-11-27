@@ -1,3 +1,9 @@
+## [2.7.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.6.0...v2.7.0) (2026-11-27)
+
+### Features
+
+* **datasources:** add routeros_routing_bgp_session and routeros_interface_wireguard_peers ([#105](https://github.com/TohaUA/terraform-provider-routeros/issues/105)) ([84ac89e](https://github.com/TohaUA/terraform-provider-routeros/commit/84ac89e2ee05ccca50d586a44d81dd3549553e95))
+
 ## [2.6.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.5.0...v2.6.0) (2026-11-27)
 
 ### Features
