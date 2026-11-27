@@ -21,10 +21,13 @@ resource "routeros_interface_wireguard" "test_wg_interface" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `comment` (String)
 - `disabled` (Boolean)
 - `mtu` (String) Layer3 Maximum transmission unit ('auto', 0 .. 65535). Look for the exact minimum value in the MikroTik documentation
-- `private_key` (String, Sensitive) A base64 private key. If not specified, it will be automatically generated upon interface creation.
+- `private_key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A base64 private key. If not specified, it will be automatically generated upon interface creation. This is a write-only attribute (not stored in plan or state); increment `private_key_wo_version` to update it.
+- `private_key_wo_version` (Number) Increment this value to update the write-only `private_key` attribute on the router.
 
 ### Read-Only
 

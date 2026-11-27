@@ -1046,6 +1046,51 @@ func ImplicitSingleHostCIDR6(k, old, new string, d *schema.ResourceData) bool {
 	return new == old+"/128"
 }
 
+const writeOnlyVersionSuffix = "_wo_version"
+
+func PropWriteOnlyVersion(secretAttr string) *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeInt,
+		Optional:    true,
+		Description: fmt.Sprintf("Increment this value to update the write-only `%s` attribute on the router.", secretAttr),
+	}
+}
+
+func PropWriteOnlyVersionForceNew(secretAttr string) *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeInt,
+		Optional:    true,
+		ForceNew:    true,
+		Description: fmt.Sprintf("Increment this value to force replacement and re-apply the write-only `%s` configuration.", secretAttr),
+	}
+}
+
+func schemaHasWriteOnly(sc *schema.Schema) bool {
+	if sc == nil {
+		return false
+	}
+	if sc.WriteOnly {
+		return true
+	}
+	if res, ok := sc.Elem.(*schema.Resource); ok {
+		for _, sub := range res.Schema {
+			if schemaHasWriteOnly(sub) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func isWriteOnlyVersionAttr(s map[string]*schema.Schema, name string) bool {
+	if !strings.HasSuffix(name, writeOnlyVersionSuffix) {
+		return false
+	}
+	base := strings.TrimSuffix(name, writeOnlyVersionSuffix)
+	baseSchema, ok := s[base]
+	return ok && schemaHasWriteOnly(baseSchema)
+}
+
 func buildReadFilter(m map[string]any) []string {
 	var res []string
 

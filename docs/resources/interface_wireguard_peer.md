@@ -17,6 +17,10 @@ resource "routeros_interface_wireguard_peer" "wg_peer" {
     "10.0.0.0/8",
   ]
 
+  # Optional write-only preshared key (increment preshared_key_wo_version to rotate):
+  # preshared_key            = "BASE64_PRESHARED_KEY"
+  # preshared_key_wo_version = 1
+
   # RouterOS 7.25.1+: MTU in the exported client configuration.
   client_mtu = 1380
 }
@@ -33,6 +37,8 @@ resource "routeros_interface_wireguard_peer" "wg_peer" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `client_address` (String) When imported using a qr code for a client (for example, a phone), then this address for the wg interface is set on that device.
 - `client_allowed_address` (String) The `AllowedIPs` written into the generated client configuration (the QR code / exported peer config), not the router's own `allowed-address`. Accepts a comma separated list of IPv4/IPv6 prefixes; the exported configuration defaults to `0.0.0.0/0, ::/0`. Configurable since RouterOS 7.21.
 - `client_dns` (String) Specify when using WireGuard Server as a VPN gateway for peer traffic.
@@ -47,8 +53,10 @@ resource "routeros_interface_wireguard_peer" "wg_peer" {
 - `is_responder` (Boolean) Specifies if peer is intended to be connection initiator or only responder. Should be used on WireGuard devices that are used as `servers` for other devices as clients to connect to. Otherwise router will all repeatedly try to connect `endpoint-address` or `current-endpoint-address` causing unnecessary system logs to be written.
 - `name` (String) Name of the tunnel.
 - `persistent_keepalive` (String) A seconds interval, between 1 and 65535 inclusive, of how often to send an authenticated empty packet to the peer for the purpose of keeping a stateful firewall or NAT mapping valid persistently. For example, if the interface very rarely sends traffic, but it might at anytime receive traffic from a peer, and it is behind NAT, the interface might benefit from having a persistent keepalive interval of 25 seconds.
-- `preshared_key` (String, Sensitive) A **base64** preshared key. Optional, and may be omitted. This option adds an additional layer of symmetric-key cryptography to be mixed into the already existing public-key cryptography, for post-quantum resistance.
-- `private_key` (String, Sensitive) A base64 private key. If not specified, it will be automatically generated upon interface creation.
+- `preshared_key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A **base64** preshared key. Optional, and may be omitted. This option adds an additional layer of symmetric-key cryptography to be mixed into the already existing public-key cryptography, for post-quantum resistance. This is a write-only attribute (not stored in plan or state); increment `preshared_key_wo_version` to update it.
+- `preshared_key_wo_version` (Number) Increment this value to update the write-only `preshared_key` attribute on the router.
+- `private_key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A base64 private key. If not specified, it will be automatically generated upon peer creation. This is a write-only attribute (not stored in plan or state); increment `private_key_wo_version` to update it.
+- `private_key_wo_version` (Number) Increment this value to update the write-only `private_key` attribute on the router.
 
 ### Read-Only
 

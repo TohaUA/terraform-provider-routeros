@@ -95,9 +95,11 @@ func ResourceInterfaceLte() *schema.Resource {
 		"pin": {
 			Type:        schema.TypeString,
 			Sensitive:   true,
+			WriteOnly:   true,
 			Optional:    true,
-			Description: "SIM Card's PIN code.",
+			Description: "SIM Card's PIN code. This is a write-only attribute (not stored in plan or state); increment `pin_wo_version` to update it.",
 		},
+		"pin_wo_version": PropWriteOnlyVersion("pin"),
 		"sms_protocol": {
 			Type:     schema.TypeString,
 			Optional: true,

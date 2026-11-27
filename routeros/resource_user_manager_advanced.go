@@ -38,9 +38,11 @@ func ResourceUserManagerAdvanced() *schema.Resource {
 		"paypal_password": {
 			Type:        schema.TypeString,
 			Sensitive:   true,
+			WriteOnly:   true,
 			Optional:    true,
-			Description: "The password of the PayPal API account.",
+			Description: "The password of the PayPal API account. This is a write-only attribute (not stored in plan or state); increment `paypal_password_wo_version` to update it.",
 		},
+		"paypal_password_wo_version": PropWriteOnlyVersion("paypal_password"),
 		"paypal_signature": {
 			Type:        schema.TypeString,
 			Optional:    true,
@@ -60,9 +62,11 @@ func ResourceUserManagerAdvanced() *schema.Resource {
 		"web_private_password": {
 			Type:        schema.TypeString,
 			Sensitive:   true,
+			WriteOnly:   true,
 			Optional:    true,
-			Description: "The password for accessing `/um/PRIVATE/` section over HTTP.",
+			Description: "The password for accessing `/um/PRIVATE/` section over HTTP. This is a write-only attribute (not stored in plan or state); increment `web_private_password_wo_version` to update it.",
 		},
+		"web_private_password_wo_version": PropWriteOnlyVersion("web_private_password"),
 		"web_private_username": {
 			Type:        schema.TypeString,
 			Optional:    true,

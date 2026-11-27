@@ -95,12 +95,13 @@ func ResourceInterfaceLteApn() *schema.Resource {
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"password": {
-			Type:             schema.TypeString,
-			Sensitive:        true,
-			Optional:         true,
-			Description:      "Password used if any of the authentication protocols are active.",
-			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+			Type:        schema.TypeString,
+			Sensitive:   true,
+			WriteOnly:   true,
+			Optional:    true,
+			Description: "Password used if any of the authentication protocols are active. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"use_network_apn": {
 			Type:     schema.TypeBool,
 			Optional: true,

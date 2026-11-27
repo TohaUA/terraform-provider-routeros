@@ -27,6 +27,8 @@ resource "routeros_routing_bgp_connection" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `address_families` (String) List of address families about which this peer will exchange routing information. The remote peer must support (they usually do) BGP capabilities optional parameter to negotiate any other families than IP.
 - `cisco_vpls_nlri_len_fmt` (String) VPLS NLRI length format type. Used for compatibility with Cisco VPLS.
 - `comment` (String)
@@ -44,7 +46,8 @@ resource "routeros_routing_bgp_connection" "test" {
 - `remote` (Block List, Max: 1) A group of parameters associated with BGP input. (see [below for nested schema](#nestedblock--remote))
 - `routing_table` (String) Name of the routing table, to install routes in.
 - `save_to` (String) Filename to be used to save BGP protocol-specific packet content (Exported PDU) into pcap file. This method allows much simpler peer-specific packet capturing for debugging purposes. Pcap files in this format can also be loaded to create virtual BGP peers to recreate conditions that happened at the time when packet capture was running.
-- `tcp_md5_key` (String, Sensitive) The key used to authenticate the connection with TCP MD5 signature as described in RFC 2385. If not specified, authentication is not used.
+- `tcp_md5_key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The key used to authenticate the connection with TCP MD5 signature as described in RFC 2385. If not specified, authentication is not used. This is a write-only attribute (not stored in plan or state); increment `tcp_md5_key_wo_version` to update it.
+- `tcp_md5_key_wo_version` (Number) Increment this value to update the write-only `tcp_md5_key` attribute on the router.
 - `templates` (Set of String) List of the template names, to inherit parameters from. Useful for dynamic BGP peers.
 - `use_bfd` (Boolean) Whether to use the BFD protocol for faster connection state detection.
 - `vrf` (String) The VRF table this resource operates on.

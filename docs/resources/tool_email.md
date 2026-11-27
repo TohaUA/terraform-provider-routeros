@@ -8,8 +8,11 @@
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `from` (String) Name or email address that will be shown as a receiver.
-- `password` (String, Sensitive) Password used for authenticating to an SMTP server.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password used for authenticating to an SMTP server. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 - `port` (String) SMTP server's port.
 - `server` (String) SMTP server's IP address.
 - `tls` (String) Whether to use TLS encryption:

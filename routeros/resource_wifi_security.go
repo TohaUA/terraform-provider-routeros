@@ -113,9 +113,11 @@ func ResourceWifiSecurity() *schema.Resource {
 		"eap_password": {
 			Type:        schema.TypeString,
 			Sensitive:   true,
+			WriteOnly:   true,
 			Optional:    true,
-			Description: "Password to use when the chosen EAP method requires one.",
+			Description: "Password to use when the chosen EAP method requires one. This is a write-only attribute (not stored in plan or state); increment `eap_password_wo_version` to update it.",
 		},
+		"eap_password_wo_version": PropWriteOnlyVersion("eap_password"),
 		"eap_tls_certificate": {
 			Type:        schema.TypeString,
 			Optional:    true,
@@ -214,9 +216,11 @@ func ResourceWifiSecurity() *schema.Resource {
 		"passphrase": {
 			Type:        schema.TypeString,
 			Sensitive:   true,
+			WriteOnly:   true,
 			Optional:    true,
-			Description: "Passphrase to use for PSK authentication types.",
+			Description: "Passphrase to use for PSK authentication types. This is a write-only attribute (not stored in plan or state); increment `passphrase_wo_version` to update it.",
 		},
+		"passphrase_wo_version": PropWriteOnlyVersion("passphrase"),
 		"sae_anti_clogging_threshold": {
 			Type:        schema.TypeString,
 			Optional:    true,

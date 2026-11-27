@@ -36,12 +36,13 @@ func ResourceInterfaceWireguard() *schema.Resource {
 		KeyName: PropNameForceNewRw,
 		"private_key": {
 			Type:      schema.TypeString,
-			Computed:  true,
 			Optional:  true,
 			Sensitive: true,
+			WriteOnly: true,
 			Description: "A base64 private key. If not specified, it will be automatically " +
-				"generated upon interface creation.",
+				"generated upon interface creation. This is a write-only attribute (not stored in plan or state); increment `private_key_wo_version` to update it.",
 		},
+		"private_key_wo_version": PropWriteOnlyVersion("private_key"),
 		"public_key": {
 			Type:        schema.TypeString,
 			Computed:    true,

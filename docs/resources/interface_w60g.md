@@ -21,6 +21,8 @@ resource "routeros_interface_w60g" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `arp` (String) Address Resolution Protocol mode:
   * disabled - the interface will not use ARP
   * enabled - the interface will use ARP
@@ -37,7 +39,8 @@ resource "routeros_interface_w60g" "test" {
 - `mdmg_fix` (Boolean) Experimental feature working only on wAP60Gx3 devices, providing better point to multi point stability in some cases.
 - `mode` (String) Operation mode.
 - `mtu` (String) Layer3 Maximum transmission unit ('auto', 0 .. 65535). Look for the exact minimum value in the MikroTik documentation
-- `password` (String, Sensitive) Password used for AES encryption.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password used for AES encryption. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 - `put_stations_in_bridge` (String) Put newly created station device interfaces in this bridge.
 - `region` (String) Parameter to limit frequency use.
 - `scan_list` (Set of String) Scan list to limit connectivity over frequencies in station mode.

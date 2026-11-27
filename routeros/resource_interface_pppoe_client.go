@@ -119,10 +119,11 @@ func ResourceInterfacePPPoEClient() *schema.Resource {
 		"password": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Default:     "",
 			Sensitive:   true,
-			Description: "Password used to authenticate.",
+			WriteOnly:   true,
+			Description: "Password used to authenticate. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"profile": {
 			Type:        schema.TypeString,
 			Optional:    true,

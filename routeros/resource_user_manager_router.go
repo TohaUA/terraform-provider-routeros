@@ -40,8 +40,10 @@ func ResourceUserManagerRouter() *schema.Resource {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Sensitive:   true,
-			Description: "The shared secret to secure communication.",
+			WriteOnly:   true,
+			Description: "The shared secret to secure communication. This is a write-only attribute (not stored in plan or state); increment `shared_secret_wo_version` to update it.",
 		},
+		"shared_secret_wo_version": PropWriteOnlyVersion("shared_secret"),
 	}
 
 	return &schema.Resource{

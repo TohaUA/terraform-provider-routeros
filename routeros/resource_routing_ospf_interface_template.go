@@ -59,17 +59,21 @@ func ResourceRoutingOspfInterfaceTemplate() *schema.Resource {
 			Type:      schema.TypeString,
 			Optional:  true,
 			Sensitive: true,
+			WriteOnly: true,
 			Description: "The authentication key to be used, should match on all the neighbors of the network segment " +
-				"(for versions before RouterOS 7.x).",
+				"(for versions before RouterOS 7.x). This is a write-only attribute (not stored in plan or state); increment `authentication_key_wo_version` to update it.",
 		},
+		"authentication_key_wo_version": PropWriteOnlyVersion("authentication_key"),
 		"auth_key": {
 			Type:      schema.TypeString,
 			Optional:  true,
 			Sensitive: true,
+			WriteOnly: true,
 			Description: "The authentication key to be used, should match on all the neighbors of the network segment " +
-				"(available since RouterOS 7.x).",
+				"(available since RouterOS 7.x). This is a write-only attribute (not stored in plan or state); increment `auth_key_wo_version` to update it.",
 		},
-		KeyComment: PropCommentRw,
+		"auth_key_wo_version": PropWriteOnlyVersion("auth_key"),
+		KeyComment:            PropCommentRw,
 		"cost": {
 			Type:         schema.TypeInt,
 			Optional:     true,

@@ -14,6 +14,8 @@
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `add_default_route` (Boolean) Whether to add OVPN remote address as a default route.
 - `auth` (String) Authentication methods that the server will accept.
 - `certificate` (String) Name of the client certificate.
@@ -23,7 +25,8 @@
 - `mac_address` (String) Mac address of OVPN interface. Will be automatically generated if not specified.
 - `max_mtu` (Number) Maximum Transmission Unit. Max packet size that the OVPN interface will be able to send without packet fragmentation.
 - `mode` (String) Layer3 or layer2 tunnel mode (alternatively tun, tap)
-- `password` (String, Sensitive) Password used for authentication.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password used for authentication. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 - `port` (Number) Port to connect to.
 - `profile` (String) Specifies which PPP profile configuration will be used when establishing the tunnel.
 - `protocol` (String) Indicates the protocol to use when connecting with the remote endpoint.

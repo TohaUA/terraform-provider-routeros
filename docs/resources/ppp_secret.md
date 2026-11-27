@@ -4,9 +4,10 @@
 ## Example Usage
 ```terraform
 resource "routeros_ppp_secret" "test" {
-  name     = "user-test"
-  password = "123"
-  profile  = "default"
+  name                = "user-test"
+  password            = "123"
+  password_wo_version = 1
+  profile             = "default"
 }
 ```
 
@@ -19,6 +20,8 @@ resource "routeros_ppp_secret" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `caller_id` (String) For PPTP and L2TP it is the IP address a client must connect from. For PPPoE it is the MAC address (written in CAPITAL letters) a client must  connect from. For ISDN it is the caller's number (that may or may not be  provided by the operator) the client may dial-in from.
 - `comment` (String)
 - `disabled` (Boolean)
@@ -26,7 +29,8 @@ resource "routeros_ppp_secret" "test" {
 - `limit_bytes_in` (Number) Maximal amount of bytes for a session that client can upload.
 - `limit_bytes_out` (Number) Maximal amount of bytes for a session that client can download.
 - `local_address` (String) IP address that will be set locally on ppp interface.
-- `password` (String, Sensitive) Password used for authentication.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password used for authentication. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 - `profile` (String) Which user profile to use.
 - `remote_address` (String) IP address that will be assigned to remote ppp interface.
 - `remote_ipv6_prefix` (String) IPv6 prefix assigned to ppp client. Prefix is added to ND prefix list enabling stateless address auto-configuration on ppp interface.Available starting from v5.0.

@@ -1,6 +1,7 @@
 package routeros
 
 import (
+	"fmt"
 	"reflect"
 	"regexp"
 	"testing"
@@ -13,6 +14,7 @@ const testInterfaceWireguardPeerAddress = "routeros_interface_wireguard_peer.wg_
 func TestAccInterfaceWireguardPeerTest_basic(t *testing.T) {
 	for _, name := range testNames {
 		t.Run(name, func(t *testing.T) {
+			var peer MikrotikItem
 			resource.Test(t, resource.TestCase{
 				PreCheck: func() {
 					testAccPreCheck(t)
@@ -22,10 +24,24 @@ func TestAccInterfaceWireguardPeerTest_basic(t *testing.T) {
 				CheckDestroy:      testCheckResourceDestroy("/interface/wireguard/peers", "routeros_interface_wireguard_peer"),
 				Steps: []resource.TestStep{
 					{
-						Config: testAccInterfaceWireguardPeerConfig(),
+						Config: testAccInterfaceWireguardPeerConfig("AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=", 1),
 						Check: resource.ComposeTestCheckFunc(
 							testResourcePrimaryInstanceId(testInterfaceWireguardPeerAddress),
+							testCheckResourceExists(testInterfaceWireguardPeerAddress, "/interface/wireguard/peers", &peer),
+							testCheckMikrotikItemAttr(testInterfaceWireguardPeerAddress, &peer, "preshared-key", "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA="),
 							resource.TestCheckResourceAttr(testInterfaceWireguardPeerAddress, "interface", "wg1"),
+							resource.TestCheckResourceAttr(testInterfaceWireguardPeerAddress, "preshared_key_wo_version", "1"),
+							resource.TestCheckNoResourceAttr(testInterfaceWireguardPeerAddress, "preshared_key"),
+						),
+					},
+					{
+						Config: testAccInterfaceWireguardPeerConfig("ISEhISEhISEhISEhISEhISEhISEhISEhISEhISEhISE=", 2),
+						Check: resource.ComposeTestCheckFunc(
+							testResourcePrimaryInstanceId(testInterfaceWireguardPeerAddress),
+							testCheckResourceExists(testInterfaceWireguardPeerAddress, "/interface/wireguard/peers", &peer),
+							testCheckMikrotikItemAttr(testInterfaceWireguardPeerAddress, &peer, "preshared-key", "ISEhISEhISEhISEhISEhISEhISEhISEhISEhISEhISE="),
+							resource.TestCheckResourceAttr(testInterfaceWireguardPeerAddress, "preshared_key_wo_version", "2"),
+							resource.TestCheckNoResourceAttr(testInterfaceWireguardPeerAddress, "preshared_key"),
 						),
 					},
 				},
@@ -35,17 +51,19 @@ func TestAccInterfaceWireguardPeerTest_basic(t *testing.T) {
 	}
 }
 
-func testAccInterfaceWireguardPeerConfig() string {
-	return providerConfig + `
+func testAccInterfaceWireguardPeerConfig(presharedKey string, version int) string {
+	return providerConfig + fmt.Sprintf(`
 
 resource "routeros_interface_wireguard_peer" "wg_peer" {
-	allowed_address  = ["1.2.3.0/30"]
-	interface        = "wg1"
-	public_key       = "QxC+CTcrDdU5+ny0+2ChUH3NegTrwoVCv53TllI5T0I="
-	client_keepalive = "85s"
+	allowed_address          = ["1.2.3.0/30"]
+	interface                = "wg1"
+	public_key               = "QxC+CTcrDdU5+ny0+2ChUH3NegTrwoVCv53TllI5T0I="
+	preshared_key            = %q
+	preshared_key_wo_version = %d
+	client_keepalive         = "85s"
   }
 
-`
+`, presharedKey, version)
 }
 
 func Test_resourceInterfaceWireguardPeerAllowedIPRegexp(t *testing.T) {

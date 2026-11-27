@@ -31,6 +31,16 @@ resources, operational data sources, and explicit command actions. See the
 [coverage and migration guide](guides/routeros_7_25.md) for feature mappings,
 transport tests, hardware requirements, and upgrade behavior.
 
+## Write-only secrets (Terraform 1.11+)
+
+User-supplied secret inputs are **write-only**:
+
+- **Terraform 1.11 or later** is required (OpenTofu has not been evaluated).
+- Write-only values are **never stored in Terraform plan or state** (they remain `null` in state).
+- **Drift is not detected:** changes to a write-only secret on the router outside Terraform do not appear in a plan.
+- **Rotation:** update the secret and increment its companion `<attribute>_wo_version` attribute (or `import_wo_version` for imported certificates) to send the updated value on apply.
+- **Imports:** `terraform import` cannot populate write-only values.
+
 ## Getting started
 
 To get started with the provider, you first need to enable the REST API on your router. [You can follow the Mikrotik documentation on this](https://help.mikrotik.com/docs/display/ROS/REST+API), but the gist is to create an SSL cert (in `/certificate`) and enable the `www-ssl` service (in `/ip service`) which uses that certificate.

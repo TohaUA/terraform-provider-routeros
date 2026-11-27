@@ -25,6 +25,8 @@ resource "routeros_interface_lte" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `allow_roaming` (Boolean) Enable data roaming for connecting to other countries data-providers. Not all LTE modems support this feature. Some modems, that do not fully support this feature, will connect to the network but will not establish an IP data connection with allow-roaming set to no.
 - `apn_profiles` (String) Which APN profile to use for this interface.
 - `band` (Set of Number) LTE Frequency band used in communication [LTE Bands and bandwidths](https://en.wikipedia.org/wiki/LTE_frequency_bands#Frequency_bands_and_channel_bandwidths).
@@ -35,7 +37,8 @@ resource "routeros_interface_lte" "test" {
 - `network_mode` (Set of String) Select/force mode for LTE interface to operate with.
 - `nr_band` (Set of Number) 5G NR Frequency band used in communication [5G NR Bands and bandwidths](https://en.wikipedia.org/wiki/5G_NR_frequency_bands).
 - `operator` (Number) Used to lock the device to a specific operator full PLMN number is used for the lock consisting of MCC+MNC. [PLMN codes](https://en.wikipedia.org/wiki/Public_land_mobile_network).
-- `pin` (String, Sensitive) SIM Card's PIN code.
+- `pin` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SIM Card's PIN code. This is a write-only attribute (not stored in plan or state); increment `pin_wo_version` to update it.
+- `pin_wo_version` (Number) Increment this value to update the write-only `pin` attribute on the router.
 - `sms_protocol` (String) SMS functionality. `mbim`: uses MBIM driver. `at`: uses AT-Commands. `auto`: selects the appropriate option depending on the modem.
 - `sms_read` (Boolean)
 

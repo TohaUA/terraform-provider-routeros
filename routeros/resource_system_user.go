@@ -61,10 +61,12 @@ func ResourceUser() *schema.Resource {
 			Type:      schema.TypeString,
 			Optional:  true,
 			Sensitive: true,
+			WriteOnly: true,
 			Description: "User  password. If not specified, it is left blank (hit [Enter] when logging  in). It " +
 				"conforms to standard Unix characteristics of passwords and may  contain letters, digits, " +
-				"'*' and '_' symbols.",
+				"'*' and '_' symbols. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 	}
 
 	return &schema.Resource{

@@ -27,13 +27,17 @@ resource "routeros_snmp_community" "mything" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `addresses` (Set of String) Set of IP (v4 or v6) addresses or CIDR networks from which connections to SNMP server are allowed.
-- `authentication_password` (String, Sensitive) Password used to authenticate the connection to the server (SNMPv3).
+- `authentication_password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password used to authenticate the connection to the server (SNMPv3). This is a write-only attribute (not stored in plan or state); increment `authentication_password_wo_version` to update it.
+- `authentication_password_wo_version` (Number) Increment this value to update the write-only `authentication_password` attribute on the router.
 - `authentication_protocol` (String) The protocol used for authentication (SNMPv3). SHA256, SHA384 and SHA512 require RouterOS 7.25.1 or later.
 - `comment` (String)
 - `denied_oids` (Set of String) RouterOS `denied-oids` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `disabled` (Boolean)
-- `encryption_password` (String, Sensitive) The password used for encryption (SNMPv3).
+- `encryption_password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password used for encryption (SNMPv3). This is a write-only attribute (not stored in plan or state); increment `encryption_password_wo_version` to update it.
+- `encryption_password_wo_version` (Number) Increment this value to update the write-only `encryption_password` attribute on the router.
 - `encryption_protocol` (String) encryption protocol to be used to encrypt the communication (SNMPv3). AES (see rfc3826) available since v6.16.
 - `name` (String) Community Name. For SNMPv1/v2c the name is the shared secret. It is not marked sensitive, because it is also the identifier of the community and logs are redacted by attribute name, so it appears in plan output, state and debug logs.
 - `read_access` (Boolean) Whether read access is enabled for this community.

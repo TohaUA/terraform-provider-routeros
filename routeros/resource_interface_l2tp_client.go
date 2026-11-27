@@ -78,8 +78,10 @@ func ResourceInterfaceL2tpClient() *schema.Resource {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Sensitive:   true,
-			Description: "Preshared key used when use-ipsec is enabled.",
+			WriteOnly:   true,
+			Description: "Preshared key used when use-ipsec is enabled. This is a write-only attribute (not stored in plan or state); increment `ipsec_secret_wo_version` to update it.",
 		},
+		"ipsec_secret_wo_version": PropWriteOnlyVersion("ipsec_secret"),
 		"keepalive_timeout": {
 			Type:             schema.TypeInt,
 			Optional:         true,
@@ -139,8 +141,10 @@ func ResourceInterfaceL2tpClient() *schema.Resource {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Sensitive:   true,
-			Description: "Password used for authentication.",
+			WriteOnly:   true,
+			Description: "Password used for authentication. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"profile": {
 			Type:             schema.TypeString,
 			Optional:         true,

@@ -28,11 +28,12 @@ func ResourceSystemNtpServer() *schema.Resource {
 		"auth_key": {
 			Type:      schema.TypeString,
 			Sensitive: true,
+			WriteOnly: true,
 			Optional:  true,
 			Description: "NTP symmetric key, used for authentication between the NTP client and server. Key Identifier " +
-				"(Key ID) - an integer identifying the cryptographic key used to generate the message-authentication code.",
-			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+				"(Key ID) - an integer identifying the cryptographic key used to generate the message-authentication code. This is a write-only attribute (not stored in plan or state); increment `auth_key_wo_version` to update it.",
 		},
+		"auth_key_wo_version": PropWriteOnlyVersion("auth_key"),
 		"broadcast": {
 			Type:             schema.TypeBool,
 			Optional:         true,

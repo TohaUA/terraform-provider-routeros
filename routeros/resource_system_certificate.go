@@ -3,7 +3,9 @@ package routeros
 import (
 	"context"
 	"fmt"
+	"maps"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -43,7 +45,7 @@ func ResourceSystemCertificate() *schema.Resource {
 	resSchema := map[string]*schema.Schema{
 		MetaResourcePath: PropResourcePath("/certificate"),
 		MetaId:           PropId(Id),
-		MetaSkipFields:   PropSkipFields("import", "sign", "sign_via_scep", "cert_file_content", "key_file_content"),
+		MetaSkipFields:   PropSkipFields("import", "import_wo_version", "sign", "sign_via_scep", "cert_file_content", "key_file_content"),
 
 		"authority": {
 			Type:     schema.TypeString,
@@ -126,7 +128,7 @@ func ResourceSystemCertificate() *schema.Resource {
 			Computed: true,
 		},
 		"import": {
-			Type:          schema.TypeSet,
+			Type:          schema.TypeList,
 			Optional:      true,
 			ForceNew:      true,
 			ConflictsWith: []string{"sign", "sign_via_scep"},
@@ -148,9 +150,9 @@ func ResourceSystemCertificate() *schema.Resource {
 					"key_file_content": {
 						Type:        schema.TypeString,
 						Sensitive:   true,
+						WriteOnly:   true,
 						Optional:    true,
-						ForceNew:    true,
-						Description: "Key in PEM format.",
+						Description: "Key in PEM format. This is a write-only attribute (not stored in plan or state); increment `import_wo_version` to replace and re-import.",
 					},
 					"key_file_name": {
 						Type:        schema.TypeString,
@@ -162,11 +164,13 @@ func ResourceSystemCertificate() *schema.Resource {
 						Type:        schema.TypeString,
 						Optional:    true,
 						Sensitive:   true,
-						Description: "File passphrase if there is such.",
+						WriteOnly:   true,
+						Description: "File passphrase if there is such. This is a write-only attribute (not stored in plan or state); increment `import_wo_version` to replace and re-import.",
 					},
 				},
 			},
 		},
+		"import_wo_version": PropWriteOnlyVersionForceNew("import"),
 		"invalid_after": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -396,18 +400,36 @@ func ResourceSystemCertificate() *schema.Resource {
 		},
 	}
 
-	certImport := func(ctx context.Context, attrBlock any, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	certImport := func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 		var certName string
 
-		bl := attrBlock.(*schema.Set).List()[0].(map[string]interface{})
+		bl := map[string]interface{}{
+			"cert_file_content": "",
+			"cert_file_name":    "",
+			"key_file_content":  "",
+			"key_file_name":     "",
+			"passphrase":        "",
+		}
+		if list, ok := d.Get("import").([]interface{}); ok && len(list) > 0 && list[0] != nil {
+			maps.Copy(bl, list[0].(map[string]interface{}))
+		}
+		if rawImport := rawConfigAttr(d.GetRawConfig(), "import"); !rawImport.IsNull() && rawImport.IsKnown() && rawImport.LengthInt() > 0 {
+			rawBlock := rawImport.AsValueSlice()[0]
+			for _, field := range []string{"cert_file_content", "cert_file_name", "key_file_content", "key_file_name", "passphrase"} {
+				if v := rawConfigAttr(rawBlock, field); !v.IsNull() && v.IsKnown() && v.Type() == cty.String {
+					bl[field] = v.AsString()
+				}
+			}
+		}
+
 		var resUrl = &URL{Path: resSchema[MetaResourcePath].Default.(string)}
 		if m.(Client).GetTransport() == TransportREST {
 			resUrl.Path += "/import"
 		}
 
-		if data := bl["cert_file_content"].(string); data != "" {
+		if data, _ := bl["cert_file_content"].(string); data != "" {
 			// Validation
-			if bl["cert_file_name"].(string) != "" {
+			if name, _ := bl["cert_file_name"].(string); name != "" {
 				return diag.Errorf("%q: conflicts with %s", "cert_file_content", "cert_file_name")
 			}
 
@@ -433,9 +455,9 @@ func ResourceSystemCertificate() *schema.Resource {
 			}()
 		}
 
-		if data := bl["key_file_content"].(string); data != "" {
+		if data, _ := bl["key_file_content"].(string); data != "" {
 			// Validation
-			if bl["key_file_name"].(string) != "" {
+			if name, _ := bl["key_file_name"].(string); name != "" {
 				return diag.Errorf("%q: conflicts with %s", "key_file_content", "key_file_name")
 			}
 
@@ -463,8 +485,8 @@ func ResourceSystemCertificate() *schema.Resource {
 		}
 
 		params := MikrotikItem{KeyName: d.Get(KeyName).(string), "file-name": bl["cert_file_name"].(string)}
-		if passwd, ok := bl["passphrase"]; ok {
-			params["passphrase"] = passwd.(string)
+		if passwd, _ := bl["passphrase"].(string); passwd != "" {
+			params["passphrase"] = passwd
 		}
 
 		// Import certificate
@@ -473,10 +495,10 @@ func ResourceSystemCertificate() *schema.Resource {
 			return diag.FromErr(err)
 		}
 
-		if keyFile, ok := bl["key_file_name"]; ok && keyFile.(string) != "" {
-			params = MikrotikItem{KeyName: d.Get(KeyName).(string), "file-name": keyFile.(string)}
-			if passwd, ok := bl["passphrase"]; ok {
-				params["passphrase"] = passwd.(string)
+		if keyFile, _ := bl["key_file_name"].(string); keyFile != "" {
+			params = MikrotikItem{KeyName: d.Get(KeyName).(string), "file-name": keyFile}
+			if passwd, _ := bl["passphrase"].(string); passwd != "" {
+				params["passphrase"] = passwd
 			}
 
 			// Import key
@@ -525,7 +547,14 @@ func ResourceSystemCertificate() *schema.Resource {
 		var command string // MikroTik command to sign certificate
 		var ok bool
 
-		if _, ok = d.GetOk("import"); !ok {
+		_, hasImport := d.GetOk("import")
+		if !hasImport {
+			if rawImport := rawConfigAttr(d.GetRawConfig(), "import"); !rawImport.IsNull() && rawImport.IsKnown() && rawImport.LengthInt() > 0 {
+				hasImport = true
+			}
+		}
+
+		if !hasImport {
 			// Run DefaultCreate.
 			diags = ResourceCreate(ctx, resSchema, d, m)
 			if diags.HasError() {
@@ -546,8 +575,8 @@ func ResourceSystemCertificate() *schema.Resource {
 			crudMethod = crudSignViaScep
 			// https://router/rest/certificate/add-scep
 			command = "/add-scep"
-		} else if cmdBlock, ok = d.GetOk("import"); ok {
-			return certImport(ctx, cmdBlock, d, m)
+		} else if hasImport {
+			return certImport(ctx, d, m)
 		} else {
 			return diags
 		}

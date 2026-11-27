@@ -114,9 +114,11 @@ func ResourceIpIpsecIdentity() *schema.Resource {
 			Type:      schema.TypeString,
 			Optional:  true,
 			Sensitive: true,
+			WriteOnly: true,
 			Description: "XAuth or EAP password. Applicable if pre-shared key with XAuth authentication method " +
-				"(`auth-method=pre-shared-key-xauth`) or EAP (`auth-method=eap`) is used.",
+				"(`auth-method=pre-shared-key-xauth`) or EAP (`auth-method=eap`) is used. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"peer": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -163,10 +165,12 @@ func ResourceIpIpsecIdentity() *schema.Resource {
 			Type:      schema.TypeString,
 			Optional:  true,
 			Sensitive: true,
+			WriteOnly: true,
 			Description: "Secret string. If it starts with '0x', it is parsed as a hexadecimal value. Applicable if " +
 				"pre-shared key authentication method (`auth-method=pre-shared-key` and `auth-method=pre-shared-key-xauth`) " +
-				"is used.",
+				"is used. This is a write-only attribute (not stored in plan or state); increment `secret_wo_version` to update it.",
 		},
+		"secret_wo_version": PropWriteOnlyVersion("secret"),
 		"username": {
 			Type:     schema.TypeString,
 			Optional: true,

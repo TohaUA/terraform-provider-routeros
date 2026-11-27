@@ -178,16 +178,26 @@ func TestSystemCertificateImportRemovesTheKeyFile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			res := ResourceSystemCertificate()
+			importAttrs := map[string]cty.Value{
+				"cert_file_content": cty.NullVal(cty.String),
+				"cert_file_name":    cty.NullVal(cty.String),
+				"key_file_content":  cty.StringVal(certKeyCleanupKeyContent),
+				"key_file_name":     cty.NullVal(cty.String),
+				"passphrase":        cty.NullVal(cty.String),
+			}
+			block := map[string]interface{}{}
+			if tt.certFromFile {
+				importAttrs["cert_file_name"] = cty.StringVal("external.crt")
+				block["cert_file_name"] = "external.crt"
+			} else {
+				importAttrs["cert_file_content"] = cty.StringVal("cert-pem-content")
+				block["cert_file_content"] = "cert-pem-content"
+			}
 			d := resourceDataWithRawConfig(res, "", map[string]cty.Value{
 				KeyName:       cty.StringVal("external.crt"),
 				"common_name": cty.StringVal("External Certificate"),
+				"import":      cty.ListVal([]cty.Value{cty.ObjectVal(importAttrs)}),
 			})
-			block := map[string]interface{}{"key_file_content": certKeyCleanupKeyContent}
-			if tt.certFromFile {
-				block["cert_file_name"] = "external.crt"
-			} else {
-				block["cert_file_content"] = "cert-pem-content"
-			}
 			if err := d.Set("import", []interface{}{block}); err != nil {
 				t.Fatalf("setting the import block: %v", err)
 			}

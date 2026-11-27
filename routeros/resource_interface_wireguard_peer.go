@@ -127,17 +127,20 @@ func ResourceInterfaceWireguardPeer() *schema.Resource {
 			Type:      schema.TypeString,
 			Optional:  true,
 			Sensitive: true,
+			WriteOnly: true,
 			Description: "A **base64** preshared key. Optional, and may be omitted. This option adds an additional layer " +
 				"of symmetric-key cryptography to be mixed into the already existing public-key cryptography, for " +
-				"post-quantum resistance.",
+				"post-quantum resistance. This is a write-only attribute (not stored in plan or state); increment `preshared_key_wo_version` to update it.",
 		},
+		"preshared_key_wo_version": PropWriteOnlyVersion("preshared_key"),
 		"private_key": {
-			Type:             schema.TypeString,
-			Sensitive:        true,
-			Optional:         true,
-			Description:      "A base64 private key. If not specified, it will be automatically generated upon interface creation.",
-			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+			Type:        schema.TypeString,
+			Sensitive:   true,
+			WriteOnly:   true,
+			Optional:    true,
+			Description: "A base64 private key. If not specified, it will be automatically generated upon peer creation. This is a write-only attribute (not stored in plan or state); increment `private_key_wo_version` to update it.",
 		},
+		"private_key_wo_version": PropWriteOnlyVersion("private_key"),
 		"public_key": {
 			Type:        schema.TypeString,
 			Required:    true,

@@ -84,8 +84,9 @@ data "routeros_x509" "cert" {
 EOT
 }
 resource "routeros_system_certificate" "external" {
-  name        = "external.crt"
-  common_name = data.routeros_x509.cert.common_name
+  name              = "external.crt"
+  common_name       = data.routeros_x509.cert.common_name
+  import_wo_version = 1
   import {
     cert_file_content = data.routeros_x509.cert.pem
     key_file_content  = <<EOT
@@ -112,10 +113,13 @@ EOT
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `copy_from` (String)
 - `country` (String) Country Name (2 letter code).
 - `days_valid` (Number) Certificate lifetime.
-- `import` (Block Set, Max: 1) (see [below for nested schema](#nestedblock--import))
+- `import` (Block List, Max: 1) (see [below for nested schema](#nestedblock--import))
+- `import_wo_version` (Number) Increment this value to force replacement and re-apply the write-only `import` configuration.
 - `key_size` (String)
 - `key_usage` (Set of String) Detailed key usage descriptions can be found in RFC 5280.
 - `locality` (String) Locality Name (eg, city).
@@ -162,11 +166,13 @@ EOT
 
 Optional:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `cert_file_content` (String) Certificate in PEM format.
 - `cert_file_name` (String) Certificate file name that will be imported.
-- `key_file_content` (String, Sensitive) Key in PEM format.
+- `key_file_content` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Key in PEM format. This is a write-only attribute (not stored in plan or state); increment `import_wo_version` to replace and re-import.
 - `key_file_name` (String) Key file name that will be imported.
-- `passphrase` (String, Sensitive) File passphrase if there is such.
+- `passphrase` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) File passphrase if there is such. This is a write-only attribute (not stored in plan or state); increment `import_wo_version` to replace and re-import.
 
 
 <a id="nestedblock--sign"></a>

@@ -40,13 +40,17 @@ resource "routeros_user_manager_user" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `attributes` (List of String) A custom set of colon-separated attributes with their values will be added to `Access-Accept` messages for users in this group.
 - `caller_id` (String) Allow user's authentication with a specific Calling-Station-Id value.
 - `comment` (String)
 - `disabled` (Boolean)
 - `group` (String) Name of the group the user is associated with.
-- `otp_secret` (String, Sensitive) A token of a one-time code that will be attached to the password.
-- `password` (String, Sensitive) The password of the user for session authentication.
+- `otp_secret` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) A token of a one-time code that will be attached to the password. This is a write-only attribute (not stored in plan or state); increment `otp_secret_wo_version` to update it.
+- `otp_secret_wo_version` (Number) Increment this value to update the write-only `otp_secret` attribute on the router.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password of the user for session authentication. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 - `shared_users` (String) The total amount of sessions the user can simultaneously establish.
 
 ### Read-Only

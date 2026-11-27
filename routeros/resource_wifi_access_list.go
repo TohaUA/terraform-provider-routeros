@@ -91,9 +91,11 @@ func ResourceWifiAccessList() *schema.Resource {
 		"passphrase": {
 			Type:        schema.TypeString,
 			Sensitive:   true,
+			WriteOnly:   true,
 			Optional:    true,
-			Description: "PSK passphrase for the client if some PSK authentication algorithm is used.",
+			Description: "PSK passphrase for the client if some PSK authentication algorithm is used. This is a write-only attribute (not stored in plan or state); increment `passphrase_wo_version` to update it.",
 		},
+		"passphrase_wo_version": PropWriteOnlyVersion("passphrase"),
 		"radius_accounting": {
 			Type:        schema.TypeBool,
 			Optional:    true,

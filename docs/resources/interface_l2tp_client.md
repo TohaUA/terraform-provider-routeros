@@ -20,6 +20,8 @@ resource "routeros_interface_l2tp_client" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `add_default_route` (Boolean) Whether to add L2TP remote address as a default route.
 - `allow` (Set of String) Allowed authentication methods.
 - `allow_fast_path` (Boolean) Whether to allow FastPath processing. Must be disabled if IPsec tunneling is used.
@@ -29,7 +31,8 @@ resource "routeros_interface_l2tp_client" "test" {
 - `default_route_distance` (Number) Since v6.2, sets distance value applied to auto created default route, if add-default-route is also selected.
 - `dial_on_demand` (Boolean) Connects only when outbound traffic is generated. If selected, then route with gateway address from `10.112.112.0/24` network will be added while connection is not established.
 - `disabled` (Boolean)
-- `ipsec_secret` (String, Sensitive) Preshared key used when use-ipsec is enabled.
+- `ipsec_secret` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Preshared key used when use-ipsec is enabled. This is a write-only attribute (not stored in plan or state); increment `ipsec_secret_wo_version` to update it.
+- `ipsec_secret_wo_version` (Number) Increment this value to update the write-only `ipsec_secret` attribute on the router.
 - `keepalive_timeout` (Number) Since v6.0rc13, tunnel keepalive timeout in seconds.
 - `l2tp_proto_version` (String) Specify protocol version.
 - `l2tpv3_circuit_id` (String) Set the virtual circuit identifier to bind the one end of the L2TPv3 control channel.
@@ -38,7 +41,8 @@ resource "routeros_interface_l2tp_client" "test" {
 - `max_mru` (Number) Maximum Receive Unit. Max packet size that L2TP interface will be able to receive without packet fragmentation.
 - `max_mtu` (Number) Maximum Transmission Unit. Max packet size that L2TP interface will be able to send without packet fragmentation.
 - `mrru` (String) Maximum packet size that can be received on the link. If a packet is bigger than tunnel MTU, it will be split into multiple packets, allowing full size IP or Ethernet packets to be sent over the tunnel.
-- `password` (String, Sensitive) Password used for authentication.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password used for authentication. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 - `profile` (String) Specifies which PPP profile configuration will be used when establishing the tunnel.
 - `random_source_port` (Boolean)
 - `src_address` (String) Specify source address.

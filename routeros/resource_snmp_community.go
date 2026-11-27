@@ -47,8 +47,10 @@ func ResourceSNMPCommunity() *schema.Resource {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Sensitive:   true,
-			Description: "Password used to authenticate the connection to the server (SNMPv3).",
+			WriteOnly:   true,
+			Description: "Password used to authenticate the connection to the server (SNMPv3). This is a write-only attribute (not stored in plan or state); increment `authentication_password_wo_version` to update it.",
 		},
+		"authentication_password_wo_version": PropWriteOnlyVersion("authentication_password"),
 		"authentication_protocol": {
 			Type:         schema.TypeString,
 			Optional:     true,
@@ -63,8 +65,10 @@ func ResourceSNMPCommunity() *schema.Resource {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Sensitive:   true,
-			Description: "The password used for encryption (SNMPv3).",
+			WriteOnly:   true,
+			Description: "The password used for encryption (SNMPv3). This is a write-only attribute (not stored in plan or state); increment `encryption_password_wo_version` to update it.",
 		},
+		"encryption_password_wo_version": PropWriteOnlyVersion("encryption_password"),
 		"encryption_protocol": {
 			Type:     schema.TypeString,
 			Optional: true,

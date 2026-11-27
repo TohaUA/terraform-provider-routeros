@@ -13,6 +13,8 @@ resource "routeros_interface_l2tp_server" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `accept_proto_version` (String) Specify protocol version.
 - `accept_pseudowire_type` (String) Set the pseudowire signaling protocol for specific pseudowire type.
 - `allow_fast_path` (Boolean) To forward packets without additional processing in the Linux kernel.
@@ -20,7 +22,8 @@ resource "routeros_interface_l2tp_server" "test" {
 - `caller_id_type` (String) If same source IP address is used for multiple clients set id type to number.
 - `default_profile` (String) Default profile to use.
 - `enabled` (Boolean) Enables/disables service.
-- `ipsec_secret` (String, Sensitive) Preshared key used when use-ipsec is enabled.
+- `ipsec_secret` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Preshared key used when use-ipsec is enabled. This is a write-only attribute (not stored in plan or state); increment `ipsec_secret_wo_version` to update it.
+- `ipsec_secret_wo_version` (Number) Increment this value to update the write-only `ipsec_secret` attribute on the router.
 - `keepalive_timeout` (String) Sets keepalive timeout in seconds.
 - `l2tpv3_circuit_id` (String) Set the virtual circuit identifier to bind the one end of the L2TPv3 control channel.
 - `l2tpv3_cookie_length` (String) Configures an L2TP pseudowire static session cookie.

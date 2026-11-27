@@ -83,8 +83,10 @@ func ResourceRadius() *schema.Resource {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Sensitive:   true,
-			Description: "The shared secret to access the RADIUS server.",
+			WriteOnly:   true,
+			Description: "The shared secret to access the RADIUS server. This is a write-only attribute (not stored in plan or state); increment `secret_wo_version` to update it.",
 		},
+		"secret_wo_version": PropWriteOnlyVersion("secret"),
 		"service": {
 			Type:     schema.TypeSet,
 			Optional: true,

@@ -144,8 +144,10 @@ func ResourceInterfaceVrrp() *schema.Resource {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Sensitive:   true,
-			Description: "Password required for authentication. Can be ignored if authentication is not used.",
+			WriteOnly:   true,
+			Description: "Password required for authentication. Can be ignored if authentication is not used. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"preemption_mode": {
 			Type:     schema.TypeBool,
 			Optional: true,

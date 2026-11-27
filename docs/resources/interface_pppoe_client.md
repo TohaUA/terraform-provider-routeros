@@ -23,6 +23,8 @@ resource "routeros_interface_pppoe_client" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `ac_name` (String) Access Concentrator name, this may be left blank and the client will connect to any access concentrator on the broadcast domain.
 - `add_default_route` (Boolean) Enable/Disable whether to add default route automatically.
 - `allow` (Set of String) Allowed authentication methods, by default all methods are allowed.
@@ -35,7 +37,8 @@ resource "routeros_interface_pppoe_client" "test" {
 - `max_mru` (String) Maximum Receive Unit.
 - `max_mtu` (String) Maximum Transmission Unit.
 - `mrru` (String) Maximum packet size (512..65535 or disabled) that can be received on the link. If a packet is bigger than tunnel MTU, it will be split into multiple packets, allowing full size IP or Ethernet packets to be sent over the tunnel.
-- `password` (String, Sensitive) Password used to authenticate.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password used to authenticate. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 - `profile` (String) Specifies which PPP profile configuration will be used when establishing the tunnel.
 - `service_name` (String) Specifies the service name set on the access concentrator, can be left blank to connect to any PPPoE server.
 - `use_peer_dns` (Boolean) Enable/disable getting DNS settings from the peer.

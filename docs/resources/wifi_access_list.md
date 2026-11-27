@@ -15,6 +15,8 @@ resource "routeros_wifi_access_list" "radius" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `action` (String) An action to take when a client matches.
 - `allow_signal_out_of_range` (String) An option that permits the client's signal to be out of the range always or for some time interval.
 - `client_isolation` (Boolean) An option that specifies whether to deny forwarding data between clients connected to the same interface.
@@ -23,7 +25,8 @@ resource "routeros_wifi_access_list" "radius" {
 - `interface` (String) Interface name to compare with an interface to which the client actually connects to.
 - `mac_address` (String) MAC address of the client.
 - `mac_address_mask` (String) MAC address mask to apply when comparing clients' addresses.
-- `passphrase` (String, Sensitive) PSK passphrase for the client if some PSK authentication algorithm is used.
+- `passphrase` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) PSK passphrase for the client if some PSK authentication algorithm is used. This is a write-only attribute (not stored in plan or state); increment `passphrase_wo_version` to update it.
+- `passphrase_wo_version` (Number) Increment this value to update the write-only `passphrase` attribute on the router.
 - `place_before` (String) Before which position the rule will be inserted.  
 	> Please check the effect of this option, as it does not work as you think!  
 	> Best way to use in conjunction with a data source. See [example](../data-sources/ip_firewall.md#example-usage).
