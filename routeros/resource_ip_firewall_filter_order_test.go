@@ -774,7 +774,10 @@ func TestAccIPFirewallFilter_orderDrift(t *testing.T) {
 							if err != nil {
 								t.Fatalf("failed creating unmanaged drop1 rule: %v", err)
 							}
-							drop1ID = res[".id"]
+							drop1ID = res.GetID(Id)
+							if drop1ID == "" {
+								t.Fatalf("created unmanaged drop1 rule without id: %#v", res)
+							}
 						},
 						Config: testAccIPFirewallFilterOrderConfig(drop1Comment, managedComment, unrelatedComment),
 						Check: resource.ComposeTestCheckFunc(
@@ -823,7 +826,10 @@ func TestAccIPFirewallFilter_orderDrift(t *testing.T) {
 							if err != nil {
 								t.Fatalf("failed creating replacement unmanaged drop2 rule: %v", err)
 							}
-							drop2ID = res[".id"]
+							drop2ID = res.GetID(Id)
+							if drop2ID == "" {
+								t.Fatalf("created replacement unmanaged drop2 rule without id: %#v", res)
+							}
 							if err := DeleteItem(&ItemId{Type: Id, Value: drop1ID}, "/ip/firewall/filter", client); err != nil {
 								t.Fatalf("failed deleting old unmanaged drop1 rule: %v", err)
 							}
