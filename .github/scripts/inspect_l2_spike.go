@@ -26,8 +26,11 @@ func main() {
 
 	var client *routeros.Client
 	var err error
-	for i := 0; i < 24; i++ {
-		client, err = routeros.Dial(host+":8728", user, pass)
+	for i := 0; i < 60; i++ {
+		if i > 0 && i%6 == 0 {
+			log.Printf("waiting for RouterOS API at %s:8728 (attempt %d/60): %v", host, i+1, err)
+		}
+		client, err = routeros.DialTimeout(host+":8728", user, pass, 10*time.Second)
 		if err == nil {
 			break
 		}

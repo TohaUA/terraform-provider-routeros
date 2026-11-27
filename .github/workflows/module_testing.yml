@@ -95,17 +95,6 @@ jobs:
       - name: Check out code into the Go module directory
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6.1.0
 
-      - name: Setup Go environment
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16  # v6.5.0
-        with:
-          go-version-file: go.mod
-          check-latest: true
-
-      - name: Build routeros-macboot CLI
-        run: |
-          go mod download
-          go build -o /tmp/routeros-macboot ./cmd/routeros-macboot
-
       - name: Build the RouterOS container
         run: docker build --build-arg "ROUTEROS_VERSION=7.25.2" -t routeros-test .github/docker-routeros
 
@@ -128,6 +117,19 @@ jobs:
           docker network connect macboot-l2 routeros
           docker start routeros
 
+      - name: Setup Go environment
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16  # v6.5.0
+        with:
+          go-version-file: go.mod
+          check-latest: true
+
+      - name: Build routeros-macboot CLI
+        run: |
+          go mod download
+          go build -o /tmp/routeros-macboot ./cmd/routeros-macboot
+
+      - name: Wait for RouterOS container banner
+        run: |
           echo "Wait for the container to finish launching..."
           deadline=$((SECONDS + 600))
           while true; do
@@ -175,6 +177,7 @@ jobs:
             --target-interface ether2 \
             --username admin \
             --password "" \
+            --timeout 60s \
             --allow-insecure-l2 \
             --json)
           echo "$BOOT1_JSON"
@@ -192,6 +195,7 @@ jobs:
             --target-interface ether2 \
             --username admin \
             --password "" \
+            --timeout 60s \
             --allow-insecure-l2 \
             --expected-tls-fingerprint "$FP1" \
             --json)
@@ -203,6 +207,10 @@ jobs:
           fi
 
           go run .github/scripts/inspect_l2_spike.go post
+
+      - name: RouterOS L2 logs
+        if: failure()
+        run: docker logs routeros 2>&1 | tail -100
 
       - name: Cleanup L2 test container and bridge
         if: always()
