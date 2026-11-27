@@ -1,0 +1,15 @@
+# {{.Name}} ({{.Type}})
+{{ .Description | trimspace }}
+
+Reads live WireGuard peer status from `/interface/wireguard/peers` using a narrow `.proplist` query that omits `private-key` and `preshared-key` on the wire and from the Terraform schema.
+
+Returned attributes reflect the router state at the time of the Terraform read. A peer that has never completed a handshake reports `last_handshake = ""` (empty string).
+
+---
+
+{{ if .HasExample -}}
+## Example Usage
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}

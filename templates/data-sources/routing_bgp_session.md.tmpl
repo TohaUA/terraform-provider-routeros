@@ -1,0 +1,13 @@
+# {{.Name}} ({{.Type}})
+{{ .Description | trimspace }}
+
+Reads live BGP session state from `/routing/bgp/session` on the configured RouterOS device. Returned attributes reflect the router state at the time of the Terraform read (useful in verification or standalone inventory workspaces).
+
+---
+
+{{ if .HasExample -}}
+## Example Usage
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}

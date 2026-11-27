@@ -595,7 +595,11 @@ func (u *URL) GetRestURL() string {
 			entry = strings.TrimPrefix(entry, "?")
 		}
 		if k, v, ok := strings.Cut(entry, "="); ok {
-			escaped = append(escaped, escapeRestQueryPart(k)+"="+escapeRestQueryPart(v))
+			val := escapeRestQueryPart(v)
+			if k == ".proplist" {
+				val = strings.ReplaceAll(val, "%2C", ",")
+			}
+			escaped = append(escaped, escapeRestQueryPart(k)+"="+val)
 		} else if entry != "" {
 			escaped = append(escaped, escapeRestQueryPart(entry))
 		}
