@@ -7,6 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+// cakeOverheadSchemes is the RouterOS 7.25 completion list (7.25 fixed the
+// "convervative" typo to "conservative").
+var cakeOverheadSchemes = []string{
+	"bridged-llcsnap", "bridged-ptm", "bridged-vcmux", "conservative", "docsis", "ether-vlan", "ethernet",
+	"ipoa-llcsnap", "ipoa-vcmux", "pppoa-llc", "pppoa-vcmux", "pppoe-llcsnap", "pppoe-ptm", "pppoe-vcmux",
+	"raw", "via-ethernet",
+}
+
 /*
   {
     ".id": "*FFFFFFFA",
@@ -357,9 +365,11 @@ func ResourceQueueType() *schema.Resource {
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"cake_overhead_scheme": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "",
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "Shortcut that sets the CAKE overhead and ATM/PTM compensation for a common link " +
+				"encapsulation (for example `ethernet`, `pppoe-ptm`, `docsis`).",
+			ValidateFunc: validation.StringInSlice(cakeOverheadSchemes, false),
 		},
 		"cake_rtt": {
 			Type:             schema.TypeString,

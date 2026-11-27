@@ -18,6 +18,9 @@ import (
 */
 
 var validTopics = []string{
+	// RouterOS 7.25 additions (some exist only with the matching package installed).
+	"acme-client", "amt", "discover", "evpn", "mvrp", "poe-in", "pon", "ptp", "rproxy", "socksify", "ssld",
+	"wiliot", "zerotier",
 	"account", "async", "backup", "bfd", "bgp", "bridge", "calc", "caps", "certificate", "clock", "container", "critical",
 	"ddns", "debug", "dhcp", "disk", "dns", "dot1x", "dude", "e-mail", "error", "event", "fetch", "firewall", "gps", "gsm",
 	"health", "hotspot", "igmp-proxy", "info", "interface", "ipsec", "iscsi", "isdn", "isis", "kvm", "l2tp", "ldp",
