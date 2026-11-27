@@ -1,3 +1,13 @@
+## [2.2.4](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.3...v2.2.4) (2026-11-27)
+
+### Bug Fixes
+
+* **client:** harden transport safety, CA PEM check, plaintext warnings, and proxy support ([#75](https://github.com/TohaUA/terraform-provider-routeros/issues/75)) ([b28318a](https://github.com/TohaUA/terraform-provider-routeros/commit/b28318a9f895bca34a72d34315cf5c70dd376f1d)), closes [#55](https://github.com/TohaUA/terraform-provider-routeros/issues/55) [#53](https://github.com/TohaUA/terraform-provider-routeros/issues/53)
+* **container:** handle RouterOS 7.20+ state flags and check start/stop errors ([#85](https://github.com/TohaUA/terraform-provider-routeros/issues/85)) ([1a188de](https://github.com/TohaUA/terraform-provider-routeros/commit/1a188de4b1c98fc58027f049dae19616c07c7ba0)), closes [#51](https://github.com/TohaUA/terraform-provider-routeros/issues/51)
+* **firewall:** replace remaining DiffSuppressFunc panics in address lists with warnings ([#80](https://github.com/TohaUA/terraform-provider-routeros/issues/80)) ([d19e4a3](https://github.com/TohaUA/terraform-provider-routeros/commit/d19e4a304ea003c1326afbe686e8cc8bdb1f662c))
+* **firewall:** unset removed optional string matchers and default log to false ([#84](https://github.com/TohaUA/terraform-provider-routeros/issues/84)) ([aa9be65](https://github.com/TohaUA/terraform-provider-routeros/commit/aa9be65b7e53d62c7f675b5d3ff7bfdb19af97d9)), closes [#82](https://github.com/TohaUA/terraform-provider-routeros/issues/82) [#83](https://github.com/TohaUA/terraform-provider-routeros/issues/83)
+* **validation:** accept RouterOS 7.25 cake overhead schemes and logging topics ([#81](https://github.com/TohaUA/terraform-provider-routeros/issues/81)) ([844893d](https://github.com/TohaUA/terraform-provider-routeros/commit/844893d91a751d0aefa5a836fd78e02d35833c47)), closes [#47](https://github.com/TohaUA/terraform-provider-routeros/issues/47)
+
 ## [2.2.3](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.2...v2.2.3) (2026-11-26)
 
 ### Bug Fixes
