@@ -1177,7 +1177,7 @@ func TestContainerWaitRESTWire(t *testing.T) {
 					"interface":              "veth1",
 					"downloading/extracting": "true",
 				})
-			case r.Method == http.MethodGet && r.URL.Path == "/rest/container" && r.URL.RawQuery == ".id=*1":
+			case r.Method == http.MethodGet && r.URL.Path == "/rest/container" && r.URL.RawQuery == ".id=%2A1":
 				getCount++
 				switch getCount {
 				case 1:
@@ -1252,7 +1252,7 @@ func TestContainerWaitRESTWire(t *testing.T) {
 
 		wantPrefixes := []string{
 			"PUT /rest/container",
-			"GET /rest/container?.id=*1",
+			"GET /rest/container?.id=%2A1",
 			"POST /rest/container/start",
 			"POST /rest/container/stop",
 			"DELETE /rest/container/*1",

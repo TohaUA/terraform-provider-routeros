@@ -94,8 +94,8 @@ func UpdateItem(id *ItemId, resourcePath string, item MikrotikItem, c Client) (M
 	}
 
 	if c.GetTransport() == TransportREST {
-		// /interface/vlan/*39
-		resourcePath += "/" + id.Value
+		// /interface/vlan/*39 (keeping literal '*' while escaping metacharacters)
+		resourcePath += "/" + escapeRestPathSegment(id.Value)
 	} else {
 		item[".id"] = id.Value
 	}
@@ -121,8 +121,8 @@ func DeleteItem(id *ItemId, resourcePath string, c Client) error {
 		// If the deletion has been succeeded, the server responds with an empty response.
 		// For example, call to delete the record twice, on second call router will return 404 error.
 
-		// /interface/vlan/*39
-		url.Path += "/" + id.Value
+		// /interface/vlan/*39 (keeping literal '*' while escaping metacharacters)
+		url.Path += "/" + escapeRestPathSegment(id.Value)
 	} else {
 		url.Query = []string{"=.id=" + id.Value}
 	}

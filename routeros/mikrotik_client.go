@@ -513,13 +513,44 @@ func (u *URL) GetApiCmd() []string {
 	return append(res, u.Query...)
 }
 
+func escapeRestQueryPart(s string) string {
+	// Encode spaces as %20 rather than '+' so both application/x-www-form-urlencoded
+	// decoders (such as Go's url.ParseQuery) and strict RFC 3986 percent-only servers
+	// decode spaces identically, matching the previous space replacement.
+	return strings.ReplaceAll(url.QueryEscape(s), "+", "%20")
+}
+
+// escapeRestPathSegment escapes a single RouterOS REST path segment while
+// preserving literal '*' characters. RouterOS .id handles start with '*'
+// (e.g. "*39") and RouterOS REST rejects "%2A39" with 400
+// "missing or invalid resource identifier"; '*' is a valid RFC 3986 path
+// sub-delimiter while '#', '?', '%', '/', spaces, etc. remain percent-encoded.
+func escapeRestPathSegment(s string) string {
+	return strings.ReplaceAll(url.PathEscape(s), "%2A", "*")
+}
+
 // GetRestURL Returns the URL for the client
 func (u *URL) GetRestURL() string {
-	q := strings.Join(u.Query, "&")
-	if len(q) > 0 && q[0] != '?' {
-		q = "?" + q
+	if len(u.Query) == 0 {
+		return u.Path
 	}
-	return u.Path + q
+
+	escaped := make([]string, 0, len(u.Query))
+	for i, entry := range u.Query {
+		if i == 0 {
+			// ReadItems prefixes the first query entry with "?" (e.g. "?.id=*39").
+			entry = strings.TrimPrefix(entry, "?")
+		}
+		if k, v, ok := strings.Cut(entry, "="); ok {
+			escaped = append(escaped, escapeRestQueryPart(k)+"="+escapeRestQueryPart(v))
+		} else if entry != "" {
+			escaped = append(escaped, escapeRestQueryPart(entry))
+		}
+	}
+	if len(escaped) == 0 {
+		return u.Path
+	}
+	return u.Path + "?" + strings.Join(escaped, "&")
 }
 
 // EscapeChars peterGo https://groups.google.com/g/golang-nuts/c/NiQiAahnl5E/m/U60Sm1of-_YJ

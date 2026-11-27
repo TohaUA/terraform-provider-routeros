@@ -91,10 +91,15 @@ func TestRedactURL(t *testing.T) {
 		{"https://r/rest/ppp/secret?name=alice&password=hunter2", "https://r/rest/ppp/secret?name=alice&password=***"},
 		{"https://r/rest/ppp/secret?password=hun%20ter2&name=alice", "https://r/rest/ppp/secret?password=***&name=alice"},
 		{"https://r/rest/ppp/secret?pass%77ord=hunter2", "https://r/rest/ppp/secret?pass%77ord=***"},
-		// The query is not escaped, so a value can contain '&'.
-		{"https://r/rest/ppp/secret?password=hun&ter2&name=alice", "https://r/rest/ppp/secret?password=***&name=alice"},
+		// Escaped query values keep '&', '#', '+', '%', and spaces within a single parameter.
+		{"https://r/rest/ppp/secret?password=hun%26ter2&name=alice", "https://r/rest/ppp/secret?password=***&name=alice"},
+		{"https://r/rest/ppp/secret?password=web%232&name=alice", "https://r/rest/ppp/secret?password=***&name=alice"},
+		{"https://r/rest/ppp/secret?password=a%2Bb&name=alice", "https://r/rest/ppp/secret?password=***&name=alice"},
+		{"https://r/rest/ppp/secret?password=100%25&name=alice", "https://r/rest/ppp/secret?password=***&name=alice"},
+		{"https://r/rest/ppp/secret?password=a%20b&name=alice", "https://r/rest/ppp/secret?password=***&name=alice"},
 		{"https://r/rest/routing/bgp/connection?input.auth-key=k3y", "https://r/rest/routing/bgp/connection?input.auth-key=***"},
 		{"https://r/rest/ppp/secret?password=&comment=password", "https://r/rest/ppp/secret?password=&comment=password"},
+		{"https://r/rest/interface/vlan?.id=%2A39", "https://r/rest/interface/vlan?.id=%2A39"},
 		{"https://r/rest/interface/vlan?.id=*39", "https://r/rest/interface/vlan?.id=*39"},
 	} {
 		if got := redactURL(tc.raw); got != tc.want {
@@ -107,39 +112,71 @@ func TestRedactURL(t *testing.T) {
 // router has to receive it as it is, but neither the debug log nor the error
 // returned for a failed request may carry a sensitive value from it.
 func TestRESTRequestKeepsASensitiveQueryOutOfLogsAndErrors(t *testing.T) {
-	var gotQuery string
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotQuery = r.URL.RawQuery
-		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(`{"error":400,"message":"Bad Request","detail":"no such item"}`))
-	}))
-	defer srv.Close()
-
-	var logs bytes.Buffer
-	c := &RestClient{
-		ctx:       tflogtest.RootLogger(context.Background(), &logs),
-		HostURL:   srv.URL,
-		Transport: TransportREST,
-		Client:    srv.Client(),
+	tests := []struct {
+		name         string
+		password     string
+		wantRawQuery string
+		forbidden    []string
+	}{
+		{
+			name:         "plain password",
+			password:     "hunter2",
+			wantRawQuery: "name=alice&password=hunter2",
+			forbidden:    []string{"hunter2"},
+		},
+		{
+			name:         "password with URL metacharacters",
+			password:     "hun&ter#2+100% pass",
+			wantRawQuery: "name=alice&password=hun%26ter%232%2B100%25%20pass",
+			forbidden:    []string{"hun&ter#2+100% pass", "hun%26ter", "hunter"},
+		},
 	}
 
-	var res []MikrotikItem
-	err := c.SendRequest(crudRead, &URL{Path: "/ppp/secret", Query: []string{"name=alice", "password=hunter2"}}, nil, &res)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var gotQuery, gotPassword string
+			var gotParams int
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				gotQuery = r.URL.RawQuery
+				gotPassword = r.URL.Query().Get("password")
+				gotParams = len(r.URL.Query())
+				w.WriteHeader(http.StatusBadRequest)
+				_, _ = w.Write([]byte(`{"error":400,"message":"Bad Request","detail":"no such item"}`))
+			}))
+			defer srv.Close()
 
-	if gotQuery != "name=alice&password=hunter2" {
-		t.Fatalf("the router got the query %q; redacting the log must not change the request", gotQuery)
-	}
-	if err == nil {
-		t.Fatal("want the error for the 400 response")
-	}
-	if strings.Contains(err.Error(), "hunter2") {
-		t.Errorf("the returned error carries the password: %v", err)
-	}
-	if !strings.Contains(err.Error(), "password=***") {
-		t.Errorf("the returned error lost the redacted query: %v", err)
-	}
-	if strings.Contains(logs.String(), "hunter2") {
-		t.Errorf("the debug log carries the password:\n%s", logs.String())
+			var logs bytes.Buffer
+			c := &RestClient{
+				ctx:       tflogtest.RootLogger(context.Background(), &logs),
+				HostURL:   srv.URL,
+				Transport: TransportREST,
+				Client:    srv.Client(),
+			}
+
+			var res []MikrotikItem
+			err := c.SendRequest(crudRead, &URL{Path: "/ppp/secret", Query: []string{"name=alice", "password=" + tc.password}}, nil, &res)
+
+			if gotQuery != tc.wantRawQuery {
+				t.Fatalf("the router got the query %q, want %q; redacting the log must not change the request", gotQuery, tc.wantRawQuery)
+			}
+			if gotPassword != tc.password || gotParams != 2 {
+				t.Fatalf("decoded password = %q (params=%d), want %q (params=2)", gotPassword, gotParams, tc.password)
+			}
+			if err == nil {
+				t.Fatal("want the error for the 400 response")
+			}
+			for _, secret := range tc.forbidden {
+				if strings.Contains(err.Error(), secret) {
+					t.Errorf("the returned error carries secret %q: %v", secret, err)
+				}
+				if strings.Contains(logs.String(), secret) {
+					t.Errorf("the debug log carries secret %q:\n%s", secret, logs.String())
+				}
+			}
+			if !strings.Contains(err.Error(), "password=***") {
+				t.Errorf("the returned error lost the redacted query: %v", err)
+			}
+		})
 	}
 }
 
