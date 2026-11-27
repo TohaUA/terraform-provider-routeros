@@ -321,6 +321,11 @@ func restClient(key string, timeout time.Duration, tlsConf *tls.Config) *http.Cl
 		Timeout: timeout,
 		Transport: &http.Transport{
 			TLSClientConfig: tlsConf,
+			// http.DefaultTransport sets this, allows us to use proxies as set in env vars.
+			Proxy: http.ProxyFromEnvironment,
+		},
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return fmt.Errorf("HTTP redirects are not supported by the RouterOS REST client")
 		},
 	}
 	restConnections[key] = client
@@ -356,7 +361,10 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 			ColorizedDebug(ctx, "Failed to read CA file '"+caCertificate+"', error: "+err.Error())
 			return nil, diag.Errorf("Failed to read CA file '%s', %v", caCertificate, err)
 		}
-		certPool.AppendCertsFromPEM(file)
+		if !certPool.AppendCertsFromPEM(file) {
+			ColorizedDebug(ctx, "CA file '"+caCertificate+"' contains no valid PEM certificates")
+			return nil, diag.Errorf("CA file '%s' contains no valid PEM certificates", caCertificate)
+		}
 		sum := sha256.Sum256(file)
 		caFingerprint = hex.EncodeToString(sum[:])
 		tlsConf.RootCAs = certPool
@@ -379,10 +387,16 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 
 	var useTLS = true
 	var transport = TransportREST
+	var diags diag.Diagnostics
 
 	// Parse URL.
 	switch routerUrl.Scheme {
 	case "http":
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Plaintext HTTP transport configured",
+			Detail:   "Using http:// sends MikroTik credentials and configuration data unencrypted. Prefer https://.",
+		})
 	case "https":
 	case "apis":
 		routerUrl.Scheme = ""
@@ -397,8 +411,13 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 		}
 		useTLS = false
 		transport = TransportAPI
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Plaintext API transport configured",
+			Detail:   "Using api:// sends MikroTik credentials and configuration data unencrypted. Prefer apis://.",
+		})
 	default:
-		panic("[NewClient] wrong transport type: " + routerUrl.Scheme)
+		return nil, diag.Errorf("unsupported scheme %q in hosturl", routerUrl.Scheme)
 	}
 
 	RouterOSVersion = d.Get("routeros_version").(string)
@@ -431,21 +450,22 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 		// the first resource. An idle session is handed back without dialling.
 		session, err := api.pool.acquire()
 		if err != nil {
-			return nil, diag.FromErr(err)
+			return nil, append(diags, diag.FromErr(err)...)
 		}
 		api.pool.release(session, true)
 
 		if RouterOSVersion == "" {
-			ros, diags := GetRouterOSVersion(api)
-			if diags != nil {
-				return nil, diags
+			ros, versionDiags := GetRouterOSVersion(api)
+			if versionDiags.HasError() {
+				return nil, append(diags, versionDiags...)
 			}
+			diags = append(diags, versionDiags...)
 
 			RouterOSVersion = ros
 			ColorizedMessage(ctx, INFO, "RouterOS: "+RouterOSVersion)
 		}
 
-		return api, nil
+		return api, diags
 	}
 
 	rest := &RestClient{
@@ -466,16 +486,17 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 	)
 
 	if RouterOSVersion == "" {
-		ros, diags := GetRouterOSVersion(rest)
-		if diags != nil {
-			return nil, diags
+		ros, versionDiags := GetRouterOSVersion(rest)
+		if versionDiags.HasError() {
+			return nil, append(diags, versionDiags...)
 		}
+		diags = append(diags, versionDiags...)
 
 		RouterOSVersion = ros
 		ColorizedMessage(ctx, INFO, "RouterOS: "+RouterOSVersion)
 	}
 
-	return rest, nil
+	return rest, diags
 }
 
 type URL struct {
