@@ -1,7 +1,8 @@
 # RouterOS 7.25.2 support and coverage
 
-**RouterOS 7.25.2 is the support and acceptance-test target. Earlier versions are
-unsupported and are not tested in CI.**
+The provider accepts **RouterOS 7.25 and later**. The current acceptance-test target
+is **RouterOS 7.25.2** over native API and REST. Check the resource's minimum
+version and package or hardware requirements before upgrading.
 
 The provider implements all additions in MikroTik's official **7.24 → 7.25 CLI
 comparison**: 46 changed menus, 128 added properties, three flags, and eight added
@@ -28,11 +29,10 @@ additions are a separate milestone and are not included in the 7.25 support scop
 
 ## RouterOS 7.25.2 maintenance update
 
-The CI image and API/REST acceptance target are 7.25.2. The 7.25 CLI reference
-and 7.25.1 runtime captures remain pinned with their original versions; they are
-historical API evidence, not claims of new validation. New resources retain their
-7.25.1 minimum version. See `tools/schema_changes/routeros-7.25.2-validation.json`
-for the separate 7.25.2 runtime checks and scope.
+The coverage tables use the 7.25 CLI reference and the recorded 7.25.1 runtime
+captures. The resources introduced from that comparison retain their 7.25.1
+minimum version. See the [7.25.2 validation record](https://github.com/TohaUA/terraform-provider-routeros/blob/main/tools/schema_changes/routeros-7.25.2-validation.json)
+for maintenance-release runtime checks.
 
 RouterOS 7.25.2 canonicalizes surrounding whitespace in WireGuard peer public
 keys. The provider treats that padding as equivalent while preserving actual key
@@ -176,9 +176,10 @@ unless running on every apply is intended.
 Unit tests check every release addition, exact wire keys, dotted properties,
 read-only status, versioned renames, command framing, HTTP methods, progress
 replies, sensitive logging, action lifecycle, and provider schema validity.
-CI pins both the CHR image and `ROS_VERSION` to 7.25.1.
+Acceptance CI uses a CHR 7.25.2 image. The provider reads the RouterOS version from
+the device at connection time.
 
-Disposable CHR 7.25.1 tests exercise API and REST create, update, refresh, import,
+The acceptance suite exercises API and REST create, update, refresh, import,
 and cleanup for portable menus: XFRM, EoIPv6, WiFi network profiles, DHCPv6 bindings,
 SSH known hosts, RSA keys, PIM/MLD templates, bridge security, serial ports,
 IGMP/LTE/TFTP settings, fetch, and the initial seven 7.25 field additions and
@@ -191,8 +192,8 @@ VETH runs when the menu is installed; it is not excluded by RouterOS version.
 CHR cannot validate physical PTP clocks, switch ACL counters, PoE/PON behavior,
 power-line adapters, modem firmware/logging, WiFi radio behavior, or Back to Home
 cloud operations. Those have schema/wire coverage and still need the relevant
-hardware/service acceptance. Vendor reference tables are not a substitute for
-hardware testing.
+hardware or service acceptance. Physical Wi-Fi 7 MLD lifecycle validation is
+tracked in [issue #98](https://github.com/TohaUA/terraform-provider-routeros/issues/98).
 
 ```sh
 go test ./routeros/ ./tools/...

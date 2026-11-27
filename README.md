@@ -1,42 +1,30 @@
 # Terraform Provider RouterOS
 
-![module testing workflow](https://github.com/GNewbury1/terraform-provider-routeros/actions/workflows/release.yml/badge.svg?branch=main)
+[![RouterOS acceptance tests](https://github.com/TohaUA/terraform-provider-routeros/actions/workflows/module_testing.yml/badge.svg?branch=main)](https://github.com/TohaUA/terraform-provider-routeros/actions/workflows/module_testing.yml)
+
+Manage MikroTik RouterOS with Terraform over the native API or REST. This project is a fork of
+[terraform-routeros/terraform-provider-routeros](https://github.com/terraform-routeros/terraform-provider-routeros)
+from upstream commit `0d8c069`. Fork releases have their own version history.
 
 ## Using this fork
 
-**This repository is a fork.** It is [TohaUA/terraform-provider-routeros](https://github.com/TohaUA/terraform-provider-routeros),
-built on upstream [terraform-routeros/terraform-provider-routeros](https://github.com/terraform-routeros/terraform-provider-routeros)
-at commit `0d8c069` (the state of upstream `main` shortly after v1.99.1). Everything below in this
-README that is not in this section is upstream's documentation and applies unchanged.
-
-### What differs from upstream
-
-On top of `0d8c069` the fork carries six changes:
-
-| # | Change | Commit |
-|---|--------|--------|
-| 1 | 802.11be bands and 320 MHz channel width in `routeros_interface_wifi_channel` / `routeros_wifi_provisioning` | `3a729af` |
-| 2 | RouterOS 7.24 fields, round 1 (bridge, bridge port, ip service, dhcp, ip settings, neighbor discovery, wireguard peer, bgp) | `f4cfd64` |
-| 3 | Fix: updating a wifi/capsman access-list entry no longer crashes the provider | `5cf3b98` |
-| 4 | RouterOS 7.24 fields, round 2 (trust store, logging, ssh authentication) | `f748774` |
-| 5 | Dependency bumps (terraform-plugin SDK/framework, `x/crypto`, grpc, logrus, fatih/color) | `89c75e2`, `c54631a`, `8552dda` |
-| 6 | `tools/schema-drift`, a RouterOS-vs-provider schema comparison (see below) | `73857fc` |
-
-**Fork versions continue upstream's numbering, so they are not upstream's versions.** The fork's
-first release is `v1.100.0`, which is *not* upstream's 1.100.0 — upstream's `CHANGELOG.md` already
-contains a `1.100.0` section that was never tagged, and that entry describes upstream's work, not
-the fork's. When comparing, always say "fork v1.100.0" or "upstream v1.100.0" explicitly.
+- **RouterOS coverage** includes the 7.25 API additions, Wi-Fi 7 and MLD configuration,
+  operational data sources, and explicit command actions. [Coverage and migration guide](docs/guides/routeros_7_25.md)
+- **Write-only resource inputs** are available from fork v2.4.0 with Terraform 1.11 or later.
+  [Secret migration and rotation](docs/guides/write_only_secrets.md)
+- **RouterOS schema inspection** compares resource schemas with RouterOS menu responses.
+  [Schema-drift tool](tools/schema-drift/README.md)
 
 ### Installing the fork
 
-The fork is **not published on registry.terraform.io** — `TohaUA/routeros` returns 404 there today.
-Until it is, install it locally and keep `source = "terraform-routeros/routeros"` in your
-`required_providers`. Your state and your `-debug` workflow do not have to change, because `main.go`
-deliberately keeps `ProviderAddr = "terraform-routeros/routeros"`; whether `.terraform.lock.hcl`
-has to change depends on which of the two options below you use.
+Use `source = "terraform-routeros/routeros"` with the fork binaries from
+[GitHub Releases](https://github.com/TohaUA/terraform-provider-routeros/releases).
+The provider keeps the existing source address so switching binaries requires no provider address
+change in state. Select the fork binary using one of the installation methods below.
 
-Either point Terraform at a working copy with `dev_overrides` (no lock file entry is used, and
-`terraform init` is skipped for this provider, so nothing in `.terraform.lock.hcl` has to change):
+For local development, build from a working copy and use `dev_overrides`. Terraform uses the
+override for provider execution. It still resolves versions during `terraform init`, so use the
+mirror setup below when initializing a root against a fork release.
 
 ```hcl
 # ~/.terraformrc
@@ -52,9 +40,9 @@ provider_installation {
 go build -o terraform-provider-routeros .
 ```
 
-…or copy the release zips, unchanged and still zipped, into a `filesystem_mirror` in the packed
-layout, which does go through the lock file and works in CI and air-gapped environments. Put one zip
-in place for every platform you run Terraform on:
+For routine use and CI, copy the release ZIPs into a `filesystem_mirror` in the packed layout.
+This method uses the dependency lock file and works in air-gapped environments. Put one ZIP in
+the following location for each platform.
 
 ```
 <mirror>/registry.terraform.io/terraform-routeros/routeros/terraform-provider-routeros_<version>_<os>_<arch>.zip
@@ -92,131 +80,49 @@ terraform providers lock -fs-mirror=/path/to/mirror -platform=linux_amd64 -platf
 git add .terraform.lock.hcl
 ```
 
-### If the fork is ever published as `TohaUA/routeros`
-
-Should the `TohaUA` registry namespace be published, consumers switch to it like this:
-
-```hcl
-terraform {
-  required_providers {
-    routeros = {
-      source  = "TohaUA/routeros"
-      version = ">= 1.100.0"
-    }
-  }
-}
-```
-
-and migrate existing state and lock file with:
-
-```bash
-terraform state replace-provider \
-  registry.terraform.io/terraform-routeros/routeros \
-  registry.terraform.io/TohaUA/routeros
-terraform init -upgrade
-git add .terraform.lock.hcl && git commit -m "chore: move to the TohaUA/routeros provider"
-```
-
-Two things to know in that mode:
-
-* Terraform lowercases the namespace on disk, so `.terraform.lock.hcl` and the state show
-  `registry.terraform.io/tohaua/routeros` even though the configuration says `TohaUA/routeros`.
-* The `dev_overrides` key becomes `"TohaUA/routeros"`, but `main.go` still advertises
-  `terraform-routeros/routeros`, so the `TF_REATTACH_PROVIDERS` value printed by
-  `terraform-provider-routeros -debug` keeps the old key and must be edited to `TohaUA/routeros`
-  before it is exported.
-
 ### Verifying a release
 
-Releases are cut by `semantic-release` + `goreleaser`, which publishes per-platform zips, a
-`terraform-provider-routeros_<version>_SHA256SUMS` file, its detached signature
-`..._SHA256SUMS.sig`, and `terraform-provider-routeros_<version>_manifest.json`. The signature is
-made with the GPG key held in the repository secret `TERRAFORM_GPG_SIGNING_KEY`:
+Each [GitHub release](https://github.com/TohaUA/terraform-provider-routeros/releases) includes
+platform ZIP files, a SHA-256 checksum list, and a detached GPG signature for that list.
+Obtain the release signing public key through a trusted channel and save it as
+`release-signing-key.asc` before checking the signature.
+Set `version` to the downloaded release version and run these commands from the asset directory.
 
 ```bash
-gpg --import <public-key>.asc
-gpg --verify terraform-provider-routeros_<version>_SHA256SUMS.sig \
-             terraform-provider-routeros_<version>_SHA256SUMS
-sha256sum -c --ignore-missing terraform-provider-routeros_<version>_SHA256SUMS
+version=2.5.0
+checksums="terraform-provider-routeros_${version}_SHA256SUMS"
+gpg --import release-signing-key.asc &&
+gpg --verify "${checksums}.sig" "${checksums}" &&
+sha256sum -c --ignore-missing "${checksums}"
 ```
 
-The releases so far, `v1.100.0` and `v1.101.0`, are signed with the RSA key whose fingerprint is
-`BEB0718C309F7444D6763A07500B12768CF5188A`. The signature itself carries that fingerprint, so
-`gpg --list-packets terraform-provider-routeros_<version>_SHA256SUMS.sig` shows it (as
-`issuer fpr v4`) without needing the key. The public key is not yet published with this repository,
-so there is nothing here for the `gpg --import` step to import. Until it is, `sha256sum -c` only
-shows that a download matches the release's `SHA256SUMS`, not who produced it; where that matters,
-prefer building from a pinned commit.
+Without a trusted signing key, the checksum check only confirms that the download matches
+the published checksum list.
 
 ### Compatibility
 
-* Terraform plugin protocol **5.0** (`terraform-registry-manifest.json`); requires **Terraform 1.11 or later** for write-only secret attributes (OpenTofu has not been evaluated).
-* **RouterOS 7.25.2 is the support and acceptance-test target.** Earlier versions
-  are unsupported. The fork includes the documented 7.24 → 7.25 API additions,
-  including bridge security, XFRM, PON, PIM/MLD, WiFi network profiles, SSH host
-  verification, operational data sources, and explicit command actions.
-  See the [7.25 coverage and migration guide](docs/guides/routeros_7_25.md).
-  New resources require **RouterOS 7.25.1+** and the appropriate hardware/packages.
-  Existing `last_member_interval` and `reauth_timeout` attributes retain their Terraform names and translate to
-  the renamed API properties. IPsec RSA keys use `/ip/ipsec/key/rsa`.
+- The provider accepts **RouterOS 7.25 and later**. Resources added for the 7.25 release can
+  require **7.25.1 or later** and specific packages or hardware.
+- Acceptance CI targets **RouterOS 7.25.2** over both native API and REST.
+- Use **Terraform 1.11 or later** for write-only inputs in fork v2.4.0. The provider uses
+  Terraform plugin protocol 5.0.
 
-### Write-only secrets (Terraform 1.11+)
+See the [coverage and migration guide](docs/guides/routeros_7_25.md) for version and hardware details.
 
-User-supplied secret inputs (passwords, passphrases, pre-shared keys, shared secrets, PINs, TCP MD5 keys, WireGuard private keys, and imported private keys/passphrases) are **write-only** (`WriteOnly: true, Sensitive: true`) and replace the earlier state-backed plain attributes:
+### Reporting problems
 
-* **Not stored in plan or state:** Terraform keeps write-only values `null` in plan files and state.
-* **Terraform 1.11+ required:** Write-only attributes require Terraform **1.11 or later** (OpenTofu has not been evaluated).
-* **No drift detection:** A secret modified directly on the router is not read back into state and will not show up in `terraform plan`.
-* **Rotation via version attributes:** To rotate or clear a write-only secret, update it in configuration and increment the paired `<attribute>_wo_version` integer attribute (or `import_wo_version` to replace and re-import a `routeros_system_certificate`).
-* **Imports:** `terraform import` cannot populate write-only attributes; declare the secret and its `<attribute>_wo_version` when adopting or updating the resource.
+File fork-specific reports in the [fork issue tracker](https://github.com/TohaUA/terraform-provider-routeros/issues).
+Include the fork version, RouterOS version, transport, and a minimal configuration with secrets removed.
+For a bug that also reproduces with the upstream provider, use the [upstream issue tracker](https://github.com/terraform-routeros/terraform-provider-routeros/issues).
 
-### Upgrading configurations that expose secret values
+## Connecting to a router
 
-Secret attributes, file contents, and generated Wi-Fi QR codes are marked sensitive.
-When upgrading from a version that did not mark these values sensitive, add
-`sensitive = true` to outputs that reference them, including outputs derived from
-`routeros_files.files`:
+For REST over HTTPS, assign a certificate to `www-ssl` and use an `https://` URL.
+For native API over TLS, assign a certificate to `api-ssl` and use an `apis://` URL. Set
+`ca_certificate` to a local CA bundle when the router's issuer is outside the system trust store.
+Supply the provider password through `ROS_PASSWORD`. [RouterOS REST API](https://manual.mikrotik.com/docs/developer-guides/rest-api/) · [RouterOS native API](https://manual.mikrotik.com/docs/developer-guides/api/)
 
 ```hcl
-output "qrcode" {
-  value     = data.routeros_wifi_easy_connect.test.qr_code
-  sensitive = true
-}
-```
-
-Sensitivity hides values in ordinary plan and apply output; the values are still
-stored in Terraform state. `terraform output -raw qrcode` explicitly reveals this output.
-
-### Reporting problems and retiring the fork
-
-Issues are disabled on this fork. Report bugs that also reproduce with the upstream provider to
-[upstream](https://github.com/terraform-routeros/terraform-provider-routeros/issues); raise
-fork-specific problems as a pull request here, or in the repository that consumes the fork. The
-fork exists only to carry the six changes above until upstream merges them, and will be retired —
-consumers moving back to `terraform-routeros/routeros` — once it has.
-
----
-
-**Note**: In release 1.43, the resource schemas have been changed:
-* `routeros_routing_bgp_connection`
-* `routeros_ipv6_neighbor_discovery`
-* `routeros_interface_wireguard_peer`
-
-For the first two to work correctly, you must remove the resource state (`terraform state rm <name>`) and import it again (`terraform import [options] <name> <id>`).
-
-## Purpose
-
-This provider allows you to configure Mikrotik routers using [old API](https://help.mikrotik.com/docs/display/ROS/API) or [REST API](https://help.mikrotik.com/docs/display/ROS/REST+API). TLS (`https://` or `apis://`) is recommended; unencrypted `http` / `api` transports send credentials and configuration in cleartext and are for lab use only.
-RouterOS 7.25 or later is required.
-
-From version 1.0.0, the provider has been rewritten by [vaerh](https://github.com/vaerh), and their [fork](https://github.com/vaerh/terraform-provider-routeros) has now been merged. This version drastically improves adding new endpoints to the provider, enabling significantly easier development. [vaerh](https://github.com/vaerh) has been added as a maintainer to this project.
-
-_We are not affiliated in any way with Mikrotik or the development of RouterOS_
-## Using the provider
-
-To get started with the provider, you first need to enable the REST API on your router. [You can follow the Mikrotik documentation on this](https://help.mikrotik.com/docs/display/ROS/REST+API), but the gist is to create an SSL cert (in `/certificate`) and enable the `www-ssl` service (in `/ip service`) which uses that certificate. After that, export `ROS_PASSWORD` in your environment and include the following in your Terraform manifests:
-
-```terraform
 terraform {
   required_providers {
     routeros = {
@@ -226,83 +132,48 @@ terraform {
 }
 
 provider "routeros" {
-  hosturl        = "https://my.router.local"
-  username       = "my_username"
-  ca_certificate = "/path/to/ca/certificate.pem"
-  # Set ROS_PASSWORD in the environment
+  hosturl        = "https://router.example"
+  username       = "terraform"
+  ca_certificate = "/path/to/ca.pem"
 }
-
 ```
 
-> **Security note:** TLS (`https://` or `apis://`) is recommended. Unencrypted `http` / `api` transports send credentials in cleartext, and `insecure` (skipping TLS certificate verification, which cannot be combined with `ca_certificate`) disables verification — both are for lab use only.
+Use TLS for production management. Plaintext `http://` and `api://` expose credentials and
+configuration on the network. Fork v2.5.0 adds optional leaf certificate pinning for both TLS
+transports. See the [pinning setup](docs/index.md#tls-certificate-pinning) and
+[fork provider reference](docs/index.md) for configuration details.
 
-For more in-depth documentation about each of the resources and datasources, please read the [documentation on Hashicorp's Provider registry](https://registry.terraform.io/providers/terraform-routeros/routeros/latest/docs)
+## Operator guides
 
-### Versions tested
-
-- RouterOS **7.25.2**, using API and REST. CI runs this version only.
-- Go toolchain from `go.mod`; Terraform plugin protocol 5.0.
-- Earlier RouterOS versions are outside this fork's support scope.
+- [One state per router](docs/guides/one_state_per_router.md)
+- [Import existing RouterOS configuration](docs/guides/easy_import.md)
+- [Migrate and rotate write-only secrets](docs/guides/write_only_secrets.md)
+- [Wi-Fi 7 configuration and validation](docs/guides/wifi7.md)
 
 ## Changelog
 
 For a detailed changelog, please see the [changelog.md](CHANGELOG.md).
 
 ## Contributing
-This version of the module greatly simplifies the process of adding new resources.
-You are welcome!
 
-### Testing
+Use the Go version in `go.mod`. To test a local binary with Terraform, follow
+[Installing the fork](#installing-the-fork).
 
-You can build the provider locally to test fixes by following these intructions:
-- Build and copy the provider where Terraform reads it
-```
-go build *.go && \
-mkdir -p ~/.terraform.d/plugins/terraform.local/local/routeros/1.0.0/$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m) && \
-mv main ~/.terraform.d/plugins/terraform.local/local/routeros/1.0.0/$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m)/terraform-provider-routeros_v1.0.0
-```
-- Change provider from 
-```hcl
-required_providers {
-  routeros = {
-    source  = "terraform-routeros/routeros"
-    version = "1.85.1"
-  }
-}
+```bash
+go build ./...
+go test ./routeros/ ./tools/...
 ```
 
-to
-```hcl
-required_providers {
-  routeros = {
-    source  = "terraform.local/local/routeros"
-    version = "1.0.0"
-  }
-}
-```
-- Clean your providers, init and apply
-- Alternatively, you can edit/create ~/.terraformrc add add a provider installation block like:
-```hcl
-provider_installation {
-  dev_overrides {
-     "terraform-routeros/routeros" = "/path/to/your/git/clone"
-  }
+For live acceptance tests, configure `ROS_HOSTURL`, `ROS_USERNAME`, and `ROS_PASSWORD` for
+a disposable RouterOS instance and run `TF_ACC=1 go test -timeout 30m -v ./routeros`.
 
-  direct {
-  }
-}
-```
+For documentation changes, edit the relevant files under `templates/` and `examples/`, or the
+Go schema descriptions for generated attributes. Run `terraform fmt -recursive examples/`
+and regenerate `docs/` with GNU sed on PATH.
 
-and then build the provider using
+```bash
+make docs
 ```
-go build -o terraform-provider-routeros *.go
-```
-in order for Terraform to find it.
-
-The `dev_overrides` key is the provider source address, so it stays `"terraform-routeros/routeros"`
-for this fork as well — see [Installing the fork](#installing-the-fork). The same address is what
-`terraform-provider-routeros -debug` prints in `TF_REATTACH_PROVIDERS`, because `main.go` keeps
-`ProviderAddr` unchanged on purpose.
 
 ### Fixing RouterOS property drift
 
