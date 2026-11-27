@@ -1,0 +1,13 @@
+# {{.Name}} ({{.Type}})
+{{ .Description | trimspace }}
+
+Reads live neighbor discovery entries from `/ip/neighbor` over the configured provider transport. Returned records are point-in-time observations of neighbors seen by the target router (rather than local host layer-2 discovery) and are best used in standalone inventory or post-change verification workspaces.
+
+---
+
+{{ if .HasExample -}}
+## Example Usage
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
