@@ -204,14 +204,14 @@ func TestAccIpArpTest_basic(t *testing.T) {
 						Check: resource.ComposeTestCheckFunc(
 							testResourcePrimaryInstanceId(testIpArpEther2),
 							resource.TestCheckResourceAttr(testIpArpEther2, "address", "192.0.2.50"),
-							resource.TestCheckResourceAttr(testIpArpEther2, "interface", "ether2"),
+							resource.TestCheckResourceAttr(testIpArpEther2, "interface", "arp-test-br1"),
 							resource.TestCheckResourceAttr(testIpArpEther2, "mac_address", "00:11:22:33:44:55"),
-							resource.TestCheckResourceAttr(testIpArpEther2, "comment", "static arp ether2"),
+							resource.TestCheckResourceAttr(testIpArpEther2, "comment", "static arp br1"),
 							resource.TestCheckResourceAttr(testIpArpEther2, "dynamic", "false"),
 							resource.TestCheckResourceAttr(testIpArpEther2, "dhcp", "false"),
 							testResourcePrimaryInstanceId(testIpArpEther3),
 							resource.TestCheckResourceAttr(testIpArpEther3, "address", "192.0.2.50"),
-							resource.TestCheckResourceAttr(testIpArpEther3, "interface", "ether3"),
+							resource.TestCheckResourceAttr(testIpArpEther3, "interface", "arp-test-br2"),
 							resource.TestCheckResourceAttr(testIpArpEther3, "mac_address", "00:11:22:33:44:66"),
 							resource.TestCheckResourceAttr(testIpArpEther3, "dynamic", "false"),
 							resource.TestCheckResourceAttr(testIpArpEther3, "dhcp", "false"),
@@ -221,17 +221,17 @@ func TestAccIpArpTest_basic(t *testing.T) {
 						Config: testAccIpArpConfigUpdated(),
 						Check: resource.ComposeTestCheckFunc(
 							testResourcePrimaryInstanceId(testIpArpEther2),
-							resource.TestCheckResourceAttr(testIpArpEther2, "comment", "static arp ether2 updated"),
+							resource.TestCheckResourceAttr(testIpArpEther2, "comment", "static arp br1 updated"),
 							resource.TestCheckResourceAttr(testIpArpEther2, "disabled", "true"),
 							resource.TestCheckResourceAttr(testIpArpEther2, "published", "true"),
 							resource.TestCheckResourceAttr(testIpArpEther3, "address", "192.0.2.50"),
-							resource.TestCheckResourceAttr(testIpArpEther3, "interface", "ether3"),
+							resource.TestCheckResourceAttr(testIpArpEther3, "interface", "arp-test-br2"),
 						),
 					},
 					{
 						ResourceName:      testIpArpEther2,
 						ImportState:       true,
-						ImportStateId:     "192.0.2.50,ether2",
+						ImportStateId:     "192.0.2.50,arp-test-br1",
 						ImportStateVerify: true,
 					},
 					{
@@ -253,38 +253,54 @@ func TestAccIpArpTest_basic(t *testing.T) {
 
 func testAccIpArpConfigInitial() string {
 	return providerConfig + `
+resource "routeros_interface_bridge" "arp_br1" {
+  name = "arp-test-br1"
+}
+
+resource "routeros_interface_bridge" "arp_br2" {
+  name = "arp-test-br2"
+}
+
 resource "routeros_ip_arp" "arp_ether2" {
   address     = "192.0.2.50"
-  interface   = "ether2"
+  interface   = routeros_interface_bridge.arp_br1.name
   mac_address = "00:11:22:33:44:55"
-  comment     = "static arp ether2"
+  comment     = "static arp br1"
 }
 
 resource "routeros_ip_arp" "arp_ether3" {
   address     = "192.0.2.50"
-  interface   = "ether3"
+  interface   = routeros_interface_bridge.arp_br2.name
   mac_address = "00:11:22:33:44:66"
-  comment     = "static arp ether3"
+  comment     = "static arp br2"
 }
 `
 }
 
 func testAccIpArpConfigUpdated() string {
 	return providerConfig + `
+resource "routeros_interface_bridge" "arp_br1" {
+  name = "arp-test-br1"
+}
+
+resource "routeros_interface_bridge" "arp_br2" {
+  name = "arp-test-br2"
+}
+
 resource "routeros_ip_arp" "arp_ether2" {
   address     = "192.0.2.50"
-  interface   = "ether2"
+  interface   = routeros_interface_bridge.arp_br1.name
   mac_address = "00:11:22:33:44:aa"
-  comment     = "static arp ether2 updated"
+  comment     = "static arp br1 updated"
   disabled    = true
   published   = true
 }
 
 resource "routeros_ip_arp" "arp_ether3" {
   address     = "192.0.2.50"
-  interface   = "ether3"
+  interface   = routeros_interface_bridge.arp_br2.name
   mac_address = "00:11:22:33:44:66"
-  comment     = "static arp ether3"
+  comment     = "static arp br2"
 }
 `
 }
