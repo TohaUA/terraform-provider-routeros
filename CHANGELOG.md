@@ -1,3 +1,9 @@
+## [2.2.5](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.4...v2.2.5) (2026-11-27)
+
+### Bug Fixes
+
+* **ip_service:** key routeros_ip_service by RouterOS .id to avoid dynamic row collisions ([#87](https://github.com/TohaUA/terraform-provider-routeros/issues/87)) ([bc27f4c](https://github.com/TohaUA/terraform-provider-routeros/commit/bc27f4c259701c01457994c21f8bf2b9d1b46992)), closes [#50](https://github.com/TohaUA/terraform-provider-routeros/issues/50)
+
 ## [2.2.4](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.3...v2.2.4) (2026-11-27)
 
 ### Bug Fixes
