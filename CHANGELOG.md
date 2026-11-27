@@ -1,3 +1,9 @@
+## [2.6.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.5.0...v2.6.0) (2026-11-27)
+
+### Features
+
+* **ip_arp:** add managed routeros_ip_arp resource for static IPv4 ARP entries ([#103](https://github.com/TohaUA/terraform-provider-routeros/issues/103)) ([13b71d7](https://github.com/TohaUA/terraform-provider-routeros/commit/13b71d7d2240966694f29b1c956b6f431976d333))
+
 ## [2.5.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.4.0...v2.5.0) (2026-11-27)
 
 ### Features
