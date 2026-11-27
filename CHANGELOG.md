@@ -1,3 +1,9 @@
+## [2.10.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.9.0...v2.10.0) (2026-11-27)
+
+### Features
+
+* **guards:** add management lockout guards for ip_service and mac_winbox ([#109](https://github.com/TohaUA/terraform-provider-routeros/issues/109)) ([a515af0](https://github.com/TohaUA/terraform-provider-routeros/commit/a515af0d95cc2b831f3955a45d6cbbbd11e86c03)), closes [#96](https://github.com/TohaUA/terraform-provider-routeros/issues/96)
+
 ## [2.9.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.8.0...v2.9.0) (2026-11-27)
 
 ### Features
