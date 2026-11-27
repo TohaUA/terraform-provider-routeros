@@ -1,3 +1,9 @@
+## [2.11.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.10.0...v2.11.0) (2026-11-27)
+
+### Features
+
+* **firewall:** detect and reconcile rule order drift ([#108](https://github.com/TohaUA/terraform-provider-routeros/issues/108)) ([3b7f7bf](https://github.com/TohaUA/terraform-provider-routeros/commit/3b7f7bfcc5bdc80aab8cdf7352f012b02a3e3687)), closes [#95](https://github.com/TohaUA/terraform-provider-routeros/issues/95)
+
 ## [2.10.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.9.0...v2.10.0) (2026-11-27)
 
 ### Features
