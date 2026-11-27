@@ -1,3 +1,9 @@
+## [2.9.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.8.0...v2.9.0) (2026-11-27)
+
+### Features
+
+* **datasources:** add routeros_ip_neighbor and routeros_interface_bridge_host ([#107](https://github.com/TohaUA/terraform-provider-routeros/issues/107)) ([77c24f3](https://github.com/TohaUA/terraform-provider-routeros/commit/77c24f3e9e0e4db4e8da39d7886f5080026b0f16)), closes [#101](https://github.com/TohaUA/terraform-provider-routeros/issues/101)
+
 ## [2.8.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.7.0...v2.8.0) (2026-11-27)
 
 ### Features
