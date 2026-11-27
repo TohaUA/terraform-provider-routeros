@@ -1,0 +1,13 @@
+# {{.Name}} ({{.Type}})
+{{ .Description | trimspace }}
+
+Reads `/system/device-mode` on the configured RouterOS device so deployments can inspect the active device mode and feature permissions (such as `scheduler` and `fetch`). Unavailable attributes are left `null` and absent from `features`, distinct from an explicit `false`. Changing device mode settings and their physical confirmation are outside this data source.
+
+---
+
+{{ if .HasExample -}}
+## Example Usage
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
