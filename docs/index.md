@@ -33,7 +33,9 @@ transport tests, hardware requirements, and upgrade behavior.
 
 ## Getting started
 
-To get started with the provider, you first need to enable the REST API on your router. [You can follow the Mikrotik documentation on this](https://help.mikrotik.com/docs/display/ROS/REST+API), but the gist is to create an SSL cert (in `/system/certificates`) and enable the `web-ssl` service (in `/ip/services`) which uses that certificate.
+To get started with the provider, you first need to enable the REST API on your router. [You can follow the Mikrotik documentation on this](https://help.mikrotik.com/docs/display/ROS/REST+API), but the gist is to create an SSL cert (in `/certificate`) and enable the `www-ssl` service (in `/ip service`) which uses that certificate.
+
+TLS (`https://` or `apis://`) is recommended. Plaintext `http` and `api` transports send credentials and configuration in cleartext, and `insecure` skips TLS certificate verification (and cannot be combined with `ca_certificate`) — both are for lab use only.
 
 
 ## Example Usage
@@ -50,9 +52,9 @@ terraform {
 provider "routeros" {
   hosturl        = "https://router.local"        # env ROS_HOSTURL or MIKROTIK_HOST
   username       = "admin"                       # env ROS_USERNAME or MIKROTIK_USER
-  password       = ""                            # env ROS_PASSWORD or MIKROTIK_PASSWORD
   ca_certificate = "/path/to/ca/certificate.pem" # env ROS_CA_CERTIFICATE or MIKROTIK_CA_CERTIFICATE
-  insecure       = true                          # env ROS_INSECURE or MIKROTIK_INSECURE
+  # Set ROS_PASSWORD (or MIKROTIK_PASSWORD) in the environment instead of a literal password.
+  # insecure (ROS_INSECURE / MIKROTIK_INSECURE) skips TLS verification (lab use only) and cannot be combined with ca_certificate.
 }
 
 resource "routeros_interface_gre" "gre_hq" {

@@ -7,11 +7,12 @@ Original [issue](https://github.com/terraform-routeros/terraform-provider-router
 #!/bin/bash
 
 USER=admin
-PASS=
-HOST=http://router.local
+PASS="${ROS_PASSWORD:?Set ROS_PASSWORD}"
+HOST=https://router.local
+CA_CERT=/path/to/ca/certificate.pem
 
 i=0
-curl -s -u ${USER}:${PASS} ${HOST}/rest/ip/firewall/address-list | jq -c '.[] | select(.dynamic | ascii_downcase == "false") | {index: .".id", address: .address, comment: .comment, list: .list}'  | while read rec; do
+curl -s --cacert "${CA_CERT}" -u "${USER}:${PASS}" "${HOST}/rest/ip/firewall/address-list" | jq -c '.[] | select(.dynamic | ascii_downcase == "false") | {index: .".id", address: .address, comment: .comment, list: .list}'  | while read rec; do
   index=$(echo $rec | jq .index)
   idx=$(printf "%00004d" $i)
   # echo $rec

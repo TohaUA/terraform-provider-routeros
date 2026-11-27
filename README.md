@@ -197,7 +197,7 @@ For the first two to work correctly, you must remove the resource state (`terraf
 
 ## Purpose
 
-This provider allows you to configure Mikrotik routers using [old API](https://help.mikrotik.com/docs/display/ROS/API) or [REST API](https://help.mikrotik.com/docs/display/ROS/REST+API), using or not using TLS.
+This provider allows you to configure Mikrotik routers using [old API](https://help.mikrotik.com/docs/display/ROS/API) or [REST API](https://help.mikrotik.com/docs/display/ROS/REST+API). TLS (`https://` or `apis://`) is recommended; unencrypted `http` / `api` transports send credentials and configuration in cleartext and are for lab use only.
 Compatibility testing is only performed within ROS version 7.x.
 
 From version 1.0.0, the provider has been rewritten by [vaerh](https://github.com/vaerh), and their [fork](https://github.com/vaerh/terraform-provider-routeros) has now been merged. This version drastically improves adding new endpoints to the provider, enabling significantly easier development. [vaerh](https://github.com/vaerh) has been added as a maintainer to this project.
@@ -205,7 +205,7 @@ From version 1.0.0, the provider has been rewritten by [vaerh](https://github.co
 _We are not affiliated in any way with Mikrotik or the development of RouterOS_
 ## Using the provider
 
-To get started with the provider, you first need to enable the REST API on your router. [You can follow the Mikrotik documentation on this](https://help.mikrotik.com/docs/display/ROS/REST+API), but the gist is to create an SSL cert (in `/system/certificates`) and enable the `web-ssl` service (in `/ip/services`) which uses that certificate. After that, include the following in your Terraform manifests:
+To get started with the provider, you first need to enable the REST API on your router. [You can follow the Mikrotik documentation on this](https://help.mikrotik.com/docs/display/ROS/REST+API), but the gist is to create an SSL cert (in `/certificate`) and enable the `www-ssl` service (in `/ip service`) which uses that certificate. After that, export `ROS_PASSWORD` (or `MIKROTIK_PASSWORD`) in your environment and include the following in your Terraform manifests:
 
 ```terraform
 terraform {
@@ -217,12 +217,15 @@ terraform {
 }
 
 provider "routeros" {
-  hosturl  = "(http|https|api|apis)://my.router.local[:port]"
-  username = "my_username"
-  password = "my_super_secret_password"
+  hosturl        = "https://my.router.local"
+  username       = "my_username"
+  ca_certificate = "/path/to/ca/certificate.pem"
+  # Set ROS_PASSWORD (or MIKROTIK_PASSWORD) in the environment
 }
 
 ```
+
+> **Security note:** TLS (`https://` or `apis://`) is recommended. Unencrypted `http` / `api` transports send credentials in cleartext, and `insecure` (skipping TLS certificate verification, which cannot be combined with `ca_certificate`) disables verification — both are for lab use only.
 
 For more in-depth documentation about each of the resources and datasources, please read the [documentation on Hashicorp's Provider registry](https://registry.terraform.io/providers/terraform-routeros/routeros/latest/docs)
 
