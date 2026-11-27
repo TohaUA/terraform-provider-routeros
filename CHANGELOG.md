@@ -1,3 +1,9 @@
+## [2.4.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.3.3...v2.4.0) (2026-11-27)
+
+### Features
+
+* **routeros:** make user-supplied secrets write-only ([#93](https://github.com/TohaUA/terraform-provider-routeros/issues/93)) ([105ab5e](https://github.com/TohaUA/terraform-provider-routeros/commit/105ab5e3c92521345b90ec929f251e8bbe9a4e55))
+
 ## [2.3.3](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.3.2...v2.3.3) (2026-11-27)
 
 ### Bug Fixes
