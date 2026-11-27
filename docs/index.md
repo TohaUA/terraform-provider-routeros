@@ -105,3 +105,4 @@ resource "routeros_interface_gre" "gre_hq" {
 - `password` (String, Sensitive) Password for the MikroTik user (env: ROS_PASSWORD).
 - `rest_timeout` (Number) Timeout, in seconds, for a single request to the router. Applies to both the REST and the API transport.
 - `suppress_syso_del_warn` (Boolean) Suppress the system object deletion warning (env: ROS_SUPPRESS_SYSO_DEL_WARN).
+- `tls_fingerprint` (String) Expected SHA-256 fingerprint (64 hex characters, optional colons or `sha256:` prefix) of the router's TLS leaf certificate. Mutually exclusive with `insecure` and `ca_certificate` (env: ROS_TLS_FINGERPRINT).

@@ -2,7 +2,9 @@ package routeros
 
 import (
 	"context"
+	"crypto/sha256"
 	"crypto/tls"
+	"encoding/hex"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -28,6 +30,7 @@ func newClientTestResourceData(t *testing.T, overrides map[string]interface{}) *
 		"ROS_PASSWORD",
 		"ROS_CA_CERTIFICATE",
 		"ROS_INSECURE",
+		"ROS_TLS_FINGERPRINT",
 		"ROS_SUPPRESS_SYSO_DEL_WARN",
 	} {
 		t.Setenv(env, "")
@@ -503,4 +506,172 @@ func TestRESTClientUsesProxyFromEnvironment(t *testing.T) {
 	if reflect.ValueOf(tr.Proxy).Pointer() != reflect.ValueOf(http.ProxyFromEnvironment).Pointer() {
 		t.Error("expected http.Transport.Proxy to be http.ProxyFromEnvironment")
 	}
+}
+
+func TestNormalizeTLSFingerprint(t *testing.T) {
+	validHex := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+	colonUpper := "01:23:45:67:89:AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89:AB:CD:EF"
+
+	cases := []struct {
+		name    string
+		input   string
+		want    string
+		wantErr bool
+	}{
+		{name: "bare lowercase", input: validHex, want: validHex},
+		{name: "sha256 prefix with colons uppercase", input: "  SHA256:" + colonUpper + " ", want: validHex},
+		{name: "lowercase sha256 prefix", input: "sha256:" + validHex, want: validHex},
+		{name: "wrong length", input: "abcd", wantErr: true},
+		{name: "non-hex chars", input: strings.Repeat("z", 64), wantErr: true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := normalizeTLSFingerprint(tc.input)
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("expected error for %q, got %q", tc.input, got)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got != tc.want {
+				t.Errorf("got %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestNewClientTLSFingerprint(t *testing.T) {
+	validFP := strings.Repeat("a", 64)
+
+	t.Run("rejects insecure and tls_fingerprint together", func(t *testing.T) {
+		isolateClientGlobals(t)
+		d := newClientTestResourceData(t, map[string]interface{}{
+			"hosturl":         "https://127.0.0.1",
+			"insecure":        true,
+			"tls_fingerprint": validFP,
+		})
+		if _, diags := NewClient(context.Background(), d); !diags.HasError() {
+			t.Fatal("expected error for insecure + tls_fingerprint")
+		}
+	})
+
+	t.Run("rejects ca_certificate and tls_fingerprint together", func(t *testing.T) {
+		isolateClientGlobals(t)
+		d := newClientTestResourceData(t, map[string]interface{}{
+			"hosturl":         "https://127.0.0.1",
+			"ca_certificate":  "/tmp/nonexistent-ca.pem",
+			"tls_fingerprint": validFP,
+		})
+		if _, diags := NewClient(context.Background(), d); !diags.HasError() {
+			t.Fatal("expected error for ca_certificate + tls_fingerprint")
+		}
+	})
+
+	t.Run("rejects invalid tls_fingerprint", func(t *testing.T) {
+		isolateClientGlobals(t)
+		d := newClientTestResourceData(t, map[string]interface{}{
+			"hosturl":         "https://127.0.0.1",
+			"tls_fingerprint": "not-a-sha256",
+		})
+		if _, diags := NewClient(context.Background(), d); !diags.HasError() {
+			t.Fatal("expected error for invalid tls_fingerprint")
+		}
+	})
+
+	t.Run("rejects plaintext http and api schemes", func(t *testing.T) {
+		for _, scheme := range []string{"http://127.0.0.1:80", "api://127.0.0.1:8728"} {
+			isolateClientGlobals(t)
+			d := newClientTestResourceData(t, map[string]interface{}{
+				"hosturl":         scheme,
+				"tls_fingerprint": validFP,
+			})
+			if _, diags := NewClient(context.Background(), d); !diags.HasError() {
+				t.Fatalf("expected error for %s with tls_fingerprint", scheme)
+			}
+		}
+	})
+
+	t.Run("rest https accepts matching fingerprint and rejects mismatch", func(t *testing.T) {
+		tlsSrv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`[{"version":"7.25.2"}]`))
+		}))
+		defer tlsSrv.Close()
+
+		sum := sha256.Sum256(tlsSrv.TLS.Certificates[0].Certificate[0])
+		fp := "sha256:" + strings.ToUpper(hex.EncodeToString(sum[:]))
+
+		isolateClientGlobals(t)
+		d := newClientTestResourceData(t, map[string]interface{}{
+			"hosturl":         tlsSrv.URL,
+			"tls_fingerprint": fp,
+		})
+		client, diags := NewClient(context.Background(), d)
+		if client == nil || diags.HasError() {
+			t.Fatalf("expected matching tls_fingerprint to succeed, got client=%v diags=%+v", client, diags)
+		}
+
+		isolateClientGlobals(t)
+		dBad := newClientTestResourceData(t, map[string]interface{}{
+			"hosturl":         tlsSrv.URL,
+			"tls_fingerprint": strings.Repeat("0", 64),
+		})
+		clientBad, diagsBad := NewClient(context.Background(), dBad)
+		if clientBad != nil || !diagsBad.HasError() {
+			t.Fatalf("expected mismatched tls_fingerprint to fail, got client=%v diags=%+v", clientBad, diagsBad)
+		}
+		if !strings.Contains(diagsBad[0].Summary+diagsBad[0].Detail, "tls_fingerprint verification failed") {
+			t.Errorf("expected mismatch error, got %+v", diagsBad)
+		}
+	})
+
+	t.Run("apis accepts matching fingerprint and rejects mismatch", func(t *testing.T) {
+		certSource := httptest.NewTLSServer(nil)
+		cert := certSource.TLS.Certificates[0]
+		certSource.Close()
+
+		sum := sha256.Sum256(cert.Certificate[0])
+		fp := hex.EncodeToString(sum[:])
+
+		lnAccept, err := tls.Listen("tcp", "127.0.0.1:0", &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		})
+		if err != nil {
+			t.Fatalf("failed to listen TLS: %v", err)
+		}
+		doneAccept := startMockAPIServer(lnAccept)
+		isolateClientGlobals(t)
+		d := newClientTestResourceData(t, map[string]interface{}{
+			"hosturl":         "apis://" + lnAccept.Addr().String(),
+			"tls_fingerprint": fp,
+		})
+		client, diags := NewClient(context.Background(), d)
+		closeMockAPIServer(lnAccept, doneAccept)
+		if client == nil || diags.HasError() {
+			t.Fatalf("expected matching tls_fingerprint on apis:// to succeed, got client=%v diags=%+v", client, diags)
+		}
+
+		lnReject, err := tls.Listen("tcp", "127.0.0.1:0", &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		})
+		if err != nil {
+			t.Fatalf("failed to listen TLS: %v", err)
+		}
+		doneReject := startMockAPIServer(lnReject)
+		defer closeMockAPIServer(lnReject, doneReject)
+
+		isolateClientGlobals(t)
+		dBad := newClientTestResourceData(t, map[string]interface{}{
+			"hosturl":         "apis://" + lnReject.Addr().String(),
+			"tls_fingerprint": strings.Repeat("f", 64),
+		})
+		clientBad, diagsBad := NewClient(context.Background(), dBad)
+		if clientBad != nil || !diagsBad.HasError() {
+			t.Fatalf("expected mismatched tls_fingerprint on apis:// to fail, got client=%v diags=%+v", clientBad, diagsBad)
+		}
+	})
 }

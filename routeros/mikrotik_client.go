@@ -3,6 +3,7 @@ package routeros
 import (
 	"context"
 	"crypto/sha256"
+	"crypto/subtle"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/hex"
@@ -340,14 +341,34 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 	}
 
 	caCertificate := d.Get("ca_certificate").(string)
+	tlsFingerprintRaw := d.Get("tls_fingerprint").(string)
 	if tlsConf.InsecureSkipVerify && caCertificate != "" {
 		return nil, diag.Errorf("You have selected mutually exclusive options: " +
 			"ca_certificate and insecure connection. Please check the ENV variables and TF files.")
+	}
+	if tlsFingerprintRaw != "" && tlsConf.InsecureSkipVerify {
+		return nil, diag.Errorf("You have selected mutually exclusive options: " +
+			"tls_fingerprint and insecure connection. Please check the ENV variables and TF files.")
+	}
+	if tlsFingerprintRaw != "" && caCertificate != "" {
+		return nil, diag.Errorf("You have selected mutually exclusive options: " +
+			"tls_fingerprint and ca_certificate. Please check the ENV variables and TF files.")
 	}
 
 	// Keyed by content rather than by path, so a CA bundle replaced in place gets
 	// sessions built on the new trust roots instead of reusing ones built on the old.
 	caFingerprint := ""
+
+	if tlsFingerprintRaw != "" {
+		expectedFP, err := normalizeTLSFingerprint(tlsFingerprintRaw)
+		if err != nil {
+			return nil, diag.Errorf("invalid tls_fingerprint: %v", err)
+		}
+		caFingerprint = "fp:" + expectedFP
+		// Custom VerifyPeerCertificate performs leaf SHA-256 fingerprint pinning without CA validation.
+		tlsConf.InsecureSkipVerify = true
+		tlsConf.VerifyPeerCertificate = verifyPeerCertificateFingerprint(expectedFP)
+	}
 
 	if caCertificate != "" {
 		if _, err := os.Stat(caCertificate); err != nil {
@@ -392,6 +413,9 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 	// Parse URL.
 	switch routerUrl.Scheme {
 	case "http":
+		if tlsFingerprintRaw != "" {
+			return nil, diag.Errorf("tls_fingerprint cannot be used with plaintext scheme %q; use https:// or apis://", routerUrl.Scheme)
+		}
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  "Plaintext HTTP transport configured",
@@ -405,6 +429,9 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 		}
 		transport = TransportAPI
 	case "api":
+		if tlsFingerprintRaw != "" {
+			return nil, diag.Errorf("tls_fingerprint cannot be used with plaintext scheme %q; use https:// or apis://", routerUrl.Scheme)
+		}
 		routerUrl.Scheme = ""
 		if routerUrl.Port() == "" {
 			routerUrl.Host += ":8728"
@@ -492,6 +519,37 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 	ColorizedMessage(ctx, INFO, "RouterOS: "+ros)
 
 	return rest, diags
+}
+
+func normalizeTLSFingerprint(raw string) (string, error) {
+	clean := strings.TrimSpace(raw)
+	if len(clean) >= len("sha256:") && strings.EqualFold(clean[:len("sha256:")], "sha256:") {
+		clean = clean[len("sha256:"):]
+	}
+	clean = strings.ReplaceAll(clean, ":", "")
+	clean = strings.ReplaceAll(clean, " ", "")
+	clean = strings.ToLower(clean)
+	if len(clean) != 64 {
+		return "", fmt.Errorf("expected 64 hex characters (SHA-256), got length %d", len(clean))
+	}
+	if _, err := hex.DecodeString(clean); err != nil {
+		return "", fmt.Errorf("must be hex-encoded SHA-256: %w", err)
+	}
+	return clean, nil
+}
+
+func verifyPeerCertificateFingerprint(expectedHex string) func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
+	return func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
+		if len(rawCerts) == 0 {
+			return errors.New("tls_fingerprint verification failed: server presented no certificate")
+		}
+		sum := sha256.Sum256(rawCerts[0])
+		got := hex.EncodeToString(sum[:])
+		if subtle.ConstantTimeCompare([]byte(got), []byte(expectedHex)) != 1 {
+			return fmt.Errorf("tls_fingerprint verification failed: server certificate SHA-256 %s does not match expected %s", got, expectedHex)
+		}
+		return nil
+	}
 }
 
 type URL struct {
