@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -52,6 +53,10 @@ const (
 
 type ExtraParams struct {
 	SuppressSysODelWarn bool
+	ActiveService       string
+	ActivePort          int
+	ActiveHost          string
+	ClientSourceIP      string
 }
 
 // Provider configuration happens many times in one process: the acceptance
@@ -410,6 +415,11 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 	var transport = TransportREST
 	var diags diag.Diagnostics
 
+	activeService, activePort, activeHost, endpointErr := resolveConnectionEndpoint(routerUrl)
+	if endpointErr != nil {
+		return nil, diag.FromErr(endpointErr)
+	}
+
 	// Parse URL.
 	switch routerUrl.Scheme {
 	case "http":
@@ -447,6 +457,13 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 		return nil, diag.Errorf("unsupported scheme %q in hosturl", routerUrl.Scheme)
 	}
 
+	extraParams := &ExtraParams{
+		SuppressSysODelWarn: d.Get("suppress_syso_del_warn").(bool),
+		ActiveService:       activeService,
+		ActivePort:          activePort,
+		ActiveHost:          activeHost,
+	}
+
 	requestTimeout := time.Duration(d.Get("rest_timeout").(int)) * time.Second
 
 	if transport == TransportAPI {
@@ -456,9 +473,7 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 			Username:  d.Get("username").(string),
 			Password:  d.Get("password").(string),
 			Transport: TransportAPI,
-			extra: &ExtraParams{
-				SuppressSysODelWarn: d.Get("suppress_syso_del_warn").(bool),
-			},
+			extra:     extraParams,
 		}
 
 		api.pool = apiPoolFor(
@@ -496,9 +511,7 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 		Username:  d.Get("username").(string),
 		Password:  d.Get("password").(string),
 		Transport: TransportREST,
-		extra: &ExtraParams{
-			SuppressSysODelWarn: d.Get("suppress_syso_del_warn").(bool),
-		},
+		extra:     extraParams,
 	}
 
 	rest.Client = restClient(
@@ -519,6 +532,43 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 	ColorizedMessage(ctx, INFO, "RouterOS: "+ros)
 
 	return rest, diags
+}
+
+// resolveConnectionEndpoint maps a parsed RouterOS host URL (before scheme/host
+// normalization for API transport) to the corresponding /ip/service name,
+// effective TCP port, and hostname/IP.
+func resolveConnectionEndpoint(routerUrl *url.URL) (service string, port int, host string, err error) {
+	if routerUrl == nil {
+		return "", 0, "", errors.New("nil router URL")
+	}
+
+	host = routerUrl.Hostname()
+	switch routerUrl.Scheme {
+	case "http":
+		service = "www"
+		port = 80
+	case "https":
+		service = "www-ssl"
+		port = 443
+	case "apis":
+		service = "api-ssl"
+		port = 8729
+	case "api":
+		service = "api"
+		port = 8728
+	default:
+		return "", 0, "", fmt.Errorf("unsupported scheme %q in hosturl", routerUrl.Scheme)
+	}
+
+	if p := routerUrl.Port(); p != "" {
+		parsed, err := strconv.Atoi(p)
+		if err != nil || parsed < 1 || parsed > 65535 {
+			return "", 0, "", fmt.Errorf("invalid port %q in hosturl", p)
+		}
+		port = parsed
+	}
+
+	return service, port, host, nil
 }
 
 func normalizeTLSFingerprint(raw string) (string, error) {

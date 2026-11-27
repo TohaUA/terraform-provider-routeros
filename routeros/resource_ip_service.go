@@ -72,6 +72,7 @@ func ResourceIpService() *schema.Resource {
 	resSchema := map[string]*schema.Schema{
 		MetaResourcePath: PropResourcePath("/ip/service"),
 		MetaId:           PropId(Id),
+		MetaSkipFields:   PropSkipFields(KeyLockoutAck),
 
 		"address": {
 			Type:        schema.TypeString,
@@ -92,9 +93,10 @@ func ResourceIpService() *schema.Resource {
 				"that depend on certificates ( www-ssl, api-ssl ).",
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
-		KeyDisabled: PropDisabledRw,
-		KeyDynamic:  PropDynamicRo,
-		KeyInvalid:  PropInvalidRo,
+		KeyDisabled:   PropDisabledRw,
+		KeyDynamic:    PropDynamicRo,
+		KeyInvalid:    PropInvalidRo,
+		KeyLockoutAck: PropLockoutAck,
 		"max_sessions": {
 			Type:             schema.TypeInt,
 			Optional:         true,
@@ -136,6 +138,22 @@ func ResourceIpService() *schema.Resource {
 	}
 
 	resCreateUpdate := func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+		var c Client
+		if m != nil {
+			c = m.(Client)
+		}
+		if err := checkIpServiceLockout(
+			ctx,
+			d.Get("numbers").(string),
+			d.Get("disabled").(bool),
+			d.Get("port").(int),
+			d.Get("address").(string),
+			d.Get(KeyLockoutAck).(string),
+			c,
+		); err != nil {
+			return diag.FromErr(err)
+		}
+
 		item, metadata := TerraformResourceDataToMikrotik(resSchema, d)
 
 		var resUrl string
@@ -173,6 +191,24 @@ func ResourceIpService() *schema.Resource {
 
 		Importer: &schema.ResourceImporter{
 			StateContext: importIpServiceState(resSchema),
+		},
+
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+			if m == nil {
+				return nil
+			}
+			if d.Id() != "" && !d.HasChanges("disabled", "port", "address", "numbers") {
+				return nil
+			}
+			return checkIpServiceLockout(
+				ctx,
+				d.Get("numbers").(string),
+				d.Get("disabled").(bool),
+				d.Get("port").(int),
+				d.Get("address").(string),
+				d.Get(KeyLockoutAck).(string),
+				m.(Client),
+			)
 		},
 
 		Schema: resSchema,

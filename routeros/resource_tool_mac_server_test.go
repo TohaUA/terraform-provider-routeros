@@ -2,6 +2,7 @@ package routeros
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -51,11 +52,57 @@ func TestAccToolsMacServerWinBoxTest_basic(t *testing.T) {
 				ProviderFactories: testAccProviderFactories,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccToolsMacServerWinBoxConfig("none"),
+						Config: testAccToolsMacServerWinBoxConfig("static"),
 						Check: resource.ComposeTestCheckFunc(
 							testResourcePrimaryInstanceId(testToolsMacServerWinBox),
+							resource.TestCheckResourceAttr(testToolsMacServerWinBox, "allowed_interface_list", "static"),
+						),
+					},
+					{
+						Config: testAccToolsMacServerWinBoxConfig("all"),
+						Check: resource.ComposeTestCheckFunc(
+							resource.TestCheckResourceAttr(testToolsMacServerWinBox, "allowed_interface_list", "all"),
+						),
+					},
+				},
+			})
+		})
+	}
+}
+
+func TestAccToolsMacServerWinBox_lockoutGuard(t *testing.T) {
+	for _, name := range testNames {
+		t.Run(name, func(t *testing.T) {
+			resource.Test(t, resource.TestCase{
+				PreCheck: func() {
+					testAccPreCheck(t)
+					testSetTransportEnv(t, name)
+				},
+				ProviderFactories: testAccProviderFactories,
+				Steps: []resource.TestStep{
+					{
+						Config: testAccToolsMacServerWinBoxConfig("static"),
+						Check: resource.ComposeTestCheckFunc(
+							testResourcePrimaryInstanceId(testToolsMacServerWinBox),
+							resource.TestCheckResourceAttr(testToolsMacServerWinBox, "allowed_interface_list", "static"),
+						),
+					},
+					{
+						Config:      testAccToolsMacServerWinBoxConfig("none"),
+						ExpectError: regexp.MustCompile("mac-winbox:static->none"),
+					},
+					{
+						Config:      testAccToolsMacServerWinBoxConfigWithAck("none", "wrong"),
+						ExpectError: regexp.MustCompile("mac-winbox:static->none"),
+					},
+					{
+						Config: testAccToolsMacServerWinBoxConfigWithAck("none", "mac-winbox:static->none"),
+						Check: resource.ComposeTestCheckFunc(
 							resource.TestCheckResourceAttr(testToolsMacServerWinBox, "allowed_interface_list", "none"),
 						),
+					},
+					{
+						RefreshState: true,
 					},
 					{
 						Config: testAccToolsMacServerWinBoxConfig("all"),
@@ -116,6 +163,16 @@ resource "routeros_tool_mac_server_winbox" "test" {
 	allowed_interface_list  = "%v"
 }
 `, providerConfig, acl)
+}
+
+func testAccToolsMacServerWinBoxConfigWithAck(acl, ack string) string {
+	return fmt.Sprintf(`%v
+
+resource "routeros_tool_mac_server_winbox" "test" {
+	allowed_interface_list = "%v"
+	lockout_ack            = "%v"
+}
+`, providerConfig, acl, ack)
 }
 
 func testAccToolsMacServerPingConfig(enabled bool) string {

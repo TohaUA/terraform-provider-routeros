@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -348,4 +349,76 @@ resource "routeros_ip_service" "telnet" {
 	port     = 23
 }
 `
+}
+
+func TestAccIpService_lockoutGuard(t *testing.T) {
+	for _, name := range testNames {
+		t.Run(name, func(t *testing.T) {
+			activeService := "www-ssl"
+			activePort := 443
+			if strings.Contains(name, "API") {
+				activeService = "api-ssl"
+				activePort = 8729
+			}
+
+			resource.Test(t, resource.TestCase{
+				PreCheck: func() {
+					testAccPreCheck(t)
+					testSetTransportEnv(t, name)
+				},
+				ProviderFactories: testAccProviderFactories,
+				Steps: []resource.TestStep{
+					{
+						Config: testAccIpServiceConfig(),
+						Check: resource.ComposeTestCheckFunc(
+							testResourcePrimaryInstanceId(testIpServiceAddress),
+							resource.TestCheckResourceAttr(testIpServiceAddress, "name", "telnet"),
+						),
+					},
+					{
+						Config:      testAccIpServiceLockoutDisableConfig(activeService, activePort),
+						ExpectError: regexp.MustCompile(regexp.QuoteMeta("ip-service:" + activeService + ":disable")),
+					},
+					{
+						Config:      testAccIpServiceLockoutAddressConfig(activeService, activePort, "203.0.113.0/24", "wrong"),
+						ExpectError: regexp.MustCompile(regexp.QuoteMeta("ip-service:" + activeService + ":address=203.0.113.0/24")),
+					},
+					{
+						Config: testAccIpServiceConfig(),
+						Check: resource.ComposeTestCheckFunc(
+							testResourcePrimaryInstanceId(testIpServiceAddress),
+							resource.TestCheckResourceAttr(testIpServiceAddress, "name", "telnet"),
+						),
+					},
+					{
+						RefreshState: true,
+					},
+				},
+			})
+		})
+	}
+}
+
+func testAccIpServiceLockoutDisableConfig(service string, port int) string {
+	return fmt.Sprintf(`%s
+
+resource "routeros_ip_service" "active" {
+	numbers  = %q
+	disabled = true
+	port     = %d
+}
+`, testAccIpServiceConfig(), service, port)
+}
+
+func testAccIpServiceLockoutAddressConfig(service string, port int, address, ack string) string {
+	return fmt.Sprintf(`%s
+
+resource "routeros_ip_service" "active" {
+	numbers     = %q
+	disabled    = false
+	port        = %d
+	address     = %q
+	lockout_ack = %q
+}
+`, testAccIpServiceConfig(), service, port, address, ack)
 }
