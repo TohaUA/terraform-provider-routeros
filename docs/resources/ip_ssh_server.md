@@ -15,9 +15,6 @@ resource "routeros_ip_ssh_server" "test" {
 
 ### Optional
 
-- `allow_none_crypto` (Boolean) Whether to allow connection if cryptographic algorithms are set to none.
-- `always_allow_password_login` (Boolean) Whether to allow password login at the same time when public key authorization is configured for a user.
-RouterOS 7.2x replaced this property with the tri-state `password_authentication` and no longer reports it, so on those versions the field is absent from the device and is kept here only for older RouterOS.
 - `ciphers` (String) Allow to configure SSH ciphers.
 - `forwarding_enabled` (String) Allows to control which SSH forwarding method to allow:
   * no - SSH forwarding is disabled;
@@ -28,7 +25,7 @@ RouterOS 7.2x replaced this property with the tri-state `password_authentication
 - `host_key_type` (String) Select host key type.
 - `known_hosts_trusted_subnets` (Set of String) RouterOS `known-hosts-trusted-subnets` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
 - `known_hosts_validation` (Boolean) RouterOS `known-hosts-validation` property. See the linked RouterOS 7.25 CLI reference for its syntax and device requirements.
-- `password_authentication` (String) Whether a password login is accepted at all. RouterOS 7.2x replacement for `always_allow_password_login`:
+- `password_authentication` (String) Whether a password login is accepted at all:
   * no - password login is refused, only public key authentication is left;
   * yes - a password login is always accepted;
   * yes-if-no-key - a password login is accepted only for users that have no public key configured (the default).

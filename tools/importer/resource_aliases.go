@@ -14,7 +14,6 @@ var (
 		"routeros_dns":                 {},
 		"routeros_dns_record":          {},
 		"routeros_bridge":              {},
-		"routeros_bridge_mlag":         {},
 		"routeros_bridge_port":         {},
 		"routeros_bridge_vlan":         {},
 		"routeros_gre":                 {},

@@ -191,21 +191,15 @@ func Test_mikrotikResourceDataToTerraform_ipSSHServerPasswordAuthentication(t *t
 		driftSize int
 	}{
 		{
-			version:   "7.24",
+			version:   "7.25",
 			item:      MikrotikItem{"password-authentication": "yes-if-no-key"},
-			expected:  map[string]interface{}{"password_authentication": "yes-if-no-key", "always_allow_password_login": false},
+			expected:  map[string]interface{}{"password_authentication": "yes-if-no-key"},
 			driftSize: 0,
 		},
 		{
-			version:   "7.24",
+			version:   "7.25",
 			item:      MikrotikItem{"password-authentication": "no"},
-			expected:  map[string]interface{}{"password_authentication": "no", "always_allow_password_login": false},
-			driftSize: 0,
-		},
-		{
-			version:   "7.20",
-			item:      MikrotikItem{"always-allow-password-login": "true"},
-			expected:  map[string]interface{}{"password_authentication": "", "always_allow_password_login": true},
+			expected:  map[string]interface{}{"password_authentication": "no"},
 			driftSize: 0,
 		},
 	}

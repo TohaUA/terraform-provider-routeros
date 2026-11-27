@@ -20,7 +20,7 @@ func Test_mikrotikResourceDataToTerraform_BlockAtRouterDefaults(t *testing.T) {
 
 	connAtDefaults := MikrotikItem{
 		".id": "*1", "name": "neighbor-test",
-		"input.allow-as": "0", "input.ignore-as-path-len": "false",
+		"input.allow-as":                  "0",
 		"input.limit-process-routes-ipv4": "0", "input.limit-process-routes-ipv6": "0",
 	}
 	connWithValue := MikrotikItem{
@@ -31,8 +31,8 @@ func Test_mikrotikResourceDataToTerraform_BlockAtRouterDefaults(t *testing.T) {
 	templateDefaults := MikrotikItem{
 		".id": "*2", "name": "temp1",
 		"input.accept-communities": "", "input.accept-ext-communities": "", "input.accept-large-communities": "",
-		"input.accept-nlri": "", "input.accept-unknown": "", "input.affinity": "0", "input.allow-as": "0",
-		"input.filter": "", "input.ignore-as-path-len": "true",
+		"input.accept-nlri": "", "input.affinity": "0", "input.allow-as": "0",
+		"input.filter": "",
 	}
 
 	for _, tc := range []struct {
@@ -58,8 +58,8 @@ func Test_mikrotikResourceDataToTerraform_BlockAtRouterDefaults(t *testing.T) {
 		{"template: removed block at non-zero router defaults stays removed", ResourceRoutingBgpTemplate, "*2",
 			map[string]string{"input.#": "0"}, templateDefaults, 0, "", nil},
 		{"template: declared block is kept and round-trips", ResourceRoutingBgpTemplate, "*2",
-			map[string]string{"input.#": "1", "input.0.ignore_as_path_len": "true"}, templateDefaults, 1,
-			"ignore_as_path_len", true},
+			map[string]string{"input.#": "1", "input.0.affinity": "0"}, templateDefaults, 1,
+			"affinity", "0"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			attrs := map[string]string{"id": tc.id, "name": tc.item["name"]}

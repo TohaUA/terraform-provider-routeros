@@ -8,6 +8,7 @@ import (
 )
 
 const testOpenVPNServer = "routeros_ovpn_server.server"
+const testOpenVPNServer2 = "routeros_ovpn_server.server2"
 const testInterfaceOpenVPNServer = "routeros_interface_ovpn_server.user1"
 
 func TestAccOpenVPNServerTest_basic(t *testing.T) {
@@ -28,9 +29,12 @@ func TestAccOpenVPNServerTest_basic(t *testing.T) {
 						Config: testAccOpenVPNServerConfig(1194),
 						Check: resource.ComposeTestCheckFunc(
 							testResourcePrimaryInstanceId(testOpenVPNServer),
+							testResourcePrimaryInstanceId(testOpenVPNServer2),
 							testResourcePrimaryInstanceId(testInterfaceOpenVPNServer),
 							resource.TestCheckResourceAttr(testOpenVPNServer, "name", "tf-ovpn-server"),
 							resource.TestCheckResourceAttr(testOpenVPNServer, "disabled", "true"),
+							resource.TestCheckResourceAttr(testOpenVPNServer2, "name", "tf-ovpn-server-2"),
+							resource.TestCheckResourceAttr(testOpenVPNServer2, "disabled", "true"),
 							resource.TestCheckResourceAttr(testInterfaceOpenVPNServer, "name", "ovpn-in1"),
 							resource.TestCheckResourceAttr(testInterfaceOpenVPNServer, "user", "user1"),
 						),
@@ -76,6 +80,13 @@ func testAccOpenVPNServerConfig(port int) string {
 		redirect_gateway = ["def1", "ipv6"]
 		tls_version      = "only-1.2"
 	  }
+
+	  resource "routeros_ovpn_server" "server2" {
+		name        = "tf-ovpn-server-2"
+		disabled    = true
+		port        = %d
+		certificate = routeros_system_certificate.ovpn_server_crt.name
+	  }
 	  
 	  # Create the server instance before its static interfaces.
       resource "routeros_interface_ovpn_server" "user1" {
@@ -83,5 +94,5 @@ func testAccOpenVPNServerConfig(port int) string {
         user       = "user1"
         depends_on = [routeros_ovpn_server.server]
       }
-`, port)
+`, port, port+10)
 }

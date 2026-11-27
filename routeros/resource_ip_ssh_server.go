@@ -32,22 +32,6 @@ func ResourceIpSSHServer() *schema.Resource {
 		MetaResourcePath: PropResourcePath("/ip/ssh"),
 		MetaId:           PropId(Id),
 
-		"allow_none_crypto": {
-			Type:         schema.TypeBool,
-			Optional:     true,
-			Description:  "Whether to allow connection if cryptographic algorithms are set to none.",
-			ExactlyOneOf: []string{"allow_none_crypto", "strong_crypto"},
-		},
-		"always_allow_password_login": {
-			Type:     schema.TypeBool,
-			Optional: true,
-			Description: "Whether to allow password login at the same time when public key authorization is " +
-				"configured for a user.\nRouterOS 7.2x replaced this property with the tri-state " +
-				"`password_authentication` and no longer reports it, so on those versions the field is absent " +
-				"from the device and is kept here only for older RouterOS.",
-			ConflictsWith:    []string{"password_authentication"},
-			DiffSuppressFunc: AlwaysPresentNotUserProvided,
-		},
 		"ciphers": {
 			Type:             schema.TypeString,
 			Optional:         true,
@@ -83,14 +67,12 @@ func ResourceIpSSHServer() *schema.Resource {
 		"password_authentication": {
 			Type:     schema.TypeString,
 			Optional: true,
-			Description: "Whether a password login is accepted at all. RouterOS 7.2x replacement for " +
-				"`always_allow_password_login`:" +
+			Description: "Whether a password login is accepted at all:" +
 				"\n  * no - password login is refused, only public key authentication is left;" +
 				"\n  * yes - a password login is always accepted;" +
 				"\n  * yes-if-no-key - a password login is accepted only for users that have no public key " +
 				"configured (the default).",
 			ValidateFunc:     validation.StringInSlice([]string{"no", "yes", "yes-if-no-key"}, false),
-			ConflictsWith:    []string{"always_allow_password_login"},
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"publickey_authentication_options": {
@@ -105,10 +87,10 @@ func ResourceIpSSHServer() *schema.Resource {
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"strong_crypto": {
-			Type:         schema.TypeBool,
-			Optional:     true,
-			Description:  "Use stronger encryption.",
-			ExactlyOneOf: []string{"allow_none_crypto", "strong_crypto"},
+			Type:             schema.TypeBool,
+			Optional:         true,
+			Description:      "Use stronger encryption.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 	}
 

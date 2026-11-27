@@ -57,15 +57,6 @@ func ResourceRoutingBgpTemplate() *schema.Resource {
 		MetaResourcePath: PropResourcePath("/routing/bgp/template"),
 		MetaId:           PropId(Id),
 
-		"add_path_out": {
-			Type:     schema.TypeString,
-			Optional: true,
-			Description: "Advertise additional paths. The parameter was removed in RouterOS v7.22 and is only sent " +
-				"to the router when explicitly configured.",
-			ValidateFunc:     validation.StringInSlice([]string{"all", "none"}, false),
-			DiffSuppressFunc: AlwaysPresentNotUserProvided,
-			Deprecated:       DeprecatedInfo("7.22"),
-		},
 		"address_families": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -95,17 +86,6 @@ func ResourceRoutingBgpTemplate() *schema.Resource {
 			Optional:     true,
 			Description:  "VPLS NLRI length format type. Used for compatibility with Cisco VPLS.",
 			ValidateFunc: validation.StringInSlice([]string{"auto-bits", "auto-bytes", "bits", "bytes"}, false),
-		},
-		"cluster_id": {
-			Type:     schema.TypeString,
-			Optional: true,
-			Description: "In case this instance is a route reflector: the cluster ID of the router reflector " +
-				"cluster to this instance belongs. This attribute helps to recognize routing updates " +
-				"that come from another route reflector in this cluster and avoid routing information " +
-				"looping. Note that normally there is only one route reflector in a cluster; in this " +
-				"case, 'cluster-id' does not need to be configured and BGP router ID is used instead.",
-			ValidateFunc: validation.IsIPv4Address,
-			Deprecated:   DeprecatedInfo("7.20"),
 		},
 		KeyComment:  PropCommentRw,
 		KeyDefault:  PropDefaultRo,
@@ -168,17 +148,6 @@ func ResourceRoutingBgpTemplate() *schema.Resource {
 							"chain can only reject prefixes which means that it will still eat memory and will be " +
 							"visible in /routing route table as 'not active, filtered'. Changes to be applied " +
 							"required session restart.",
-					},
-					"accept_unknown": {
-						Type:     schema.TypeString,
-						Optional: true,
-						Description: "A quick way to filter incoming updates with specific 'unknown' attributes. It allows " +
-							"filtering incoming messages directly before they are even parsed and stored in memory, " +
-							"that way significantly reducing memory usage. Regular input filter chain can only " +
-							"reject prefixes which means that it will still eat memory and will be visible in " +
-							"/routing route table as 'not active, filtered'. Changes to be applied required session " +
-							"refresh.",
-						Deprecated: DeprecatedInfo("7.19"),
 					},
 					// affinity (afi | alone | instance | main | remote-as | vrf; Default: )
 					// May be "0"
@@ -257,12 +226,6 @@ func ResourceRoutingBgpTemplate() *schema.Resource {
 							"to be applied required session refresh.",
 						DiffSuppressFunc: AlwaysPresentNotUserProvided,
 					},
-					"ignore_as_path_len": {
-						Type:        schema.TypeBool,
-						Optional:    true,
-						Description: "Whether to ignore the AS_PATH attribute in the BGP route selection algorithm",
-						Deprecated:  DeprecatedInfo("7.20"),
-					},
 					// FIXME ROS 7.8: 'unknown parameter input.limit-nlri-diversity'
 					// "limit_nlri_diversity": {
 					// 	Type:     schema.TypeInt,
@@ -336,8 +299,7 @@ func ResourceRoutingBgpTemplate() *schema.Resource {
 						Optional: true,
 						Description: "Parameter defines for which address families select additional paths to be " +
 							"advertised (RFC7911). Selection of paths can be controlled with the routing select chain " +
-							"(`output.filter-select`). Accepts `ip`, `ipv6` or both as a comma separated list. " +
-							"Replaces the deprecated top-level `add_path_out` property.",
+							"(`output.filter-select`). Accepts `ip`, `ipv6` or both as a comma separated list.",
 						ValidateDiagFunc: ValidationMultiValInSlice([]string{"ip", "ipv6"}, false, false),
 						DiffSuppressFunc: AlwaysPresentNotUserProvided,
 					},
@@ -425,14 +387,6 @@ func ResourceRoutingBgpTemplate() *schema.Resource {
 				"the attribute contains only private AS numbers. The removal process happens before " +
 				"routing filters are applied and before the local, AS number is prepended to the AS path.",
 		},
-		"router_id": {
-			Type:     schema.TypeString,
-			Optional: true,
-			Description: "BGP Router ID to be used. Use the ID from the /routing/router-id configuration by " +
-				"specifying the reference name, or set the ID directly by specifying IP. Equal " +
-				"router-ids are also used to group peers into one instance.",
-			Deprecated: DeprecatedInfo("7.20"),
-		},
 		"routing_table": {
 			Type:        schema.TypeString,
 			Optional:    true,
@@ -466,13 +420,6 @@ func ResourceRoutingBgpTemplate() *schema.Resource {
 
 	return &schema.Resource{
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    (&schema.Resource{Schema: resSchema}).CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationClearInjectedDefault("add_path_out", "none"),
-				Version: 0,
-			},
-		},
 		Description: "> [!WARNING] Using this resource you may happen unexpected behavior, for example, some of the attributes " +
 			"may not be removable after adding them to the TF configuration. Please report this to GitHub and it " +
 			"may be possible to fix it. Use the resource at your own risk as it is!",

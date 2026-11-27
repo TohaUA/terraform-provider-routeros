@@ -168,7 +168,7 @@ func Test_terraformResourceDataToMikrotik_RemovedBlockIsUnset(t *testing.T) {
 			stateAttrs := map[string]string{
 				"id": "*1", "name": "peer1", "as": "65000",
 				"input.#": "1", "input.0.filter": "in", "input.0.affinity": "alone",
-				"input.0.allow_as": "2", "input.0.ignore_as_path_len": "true", "input.0.accept_nlri": "",
+				"input.0.allow_as": "2", "input.0.accept_nlri": "",
 				"output.#": "1", "output.0.filter_chain": "out",
 			}
 			blocks := []string{"input", "output"}
@@ -194,7 +194,7 @@ func Test_terraformResourceDataToMikrotik_RemovedBlockIsUnset(t *testing.T) {
 				continue
 			}
 
-			want := []string{"!input.filter", "!input.affinity", "!input.allow-as", "!input.ignore-as-path-len"}
+			want := []string{"!input.filter", "!input.affinity", "!input.allow-as"}
 			if tc.hasLocal {
 				want = append(want, "!local.address", "!local.role")
 			}
