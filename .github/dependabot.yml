@@ -13,3 +13,9 @@ updates:
       interval: daily
     labels:
       - "dependencies"
+  - package-ecosystem: "docker"
+    directory: "/.github/docker-routeros"
+    schedule:
+      interval: "daily"
+    labels:
+      - "dependencies"
