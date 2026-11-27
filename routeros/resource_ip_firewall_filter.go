@@ -3,6 +3,7 @@ package routeros
 import (
 	"context"
 	"regexp"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -134,6 +135,14 @@ func ResourceIPFirewallFilter() *schema.Resource {
 			Description: "List of destination port numbers or port number ranges.",
 		},
 		KeyDynamic: PropDynamicRo,
+		"enforce_order": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Default:  false,
+			Description: "Enable opt-in live rule order drift detection and in-place reconciliation against " +
+				"`place_before`. When `true`, Terraform verifies on refresh that this rule remains ordered " +
+				"before `place_before` and moves it in place if reordered out-of-band or if `place_before` changes.",
+		},
 		"fragment": {
 			Type:     schema.TypeBool,
 			Optional: true,
@@ -279,7 +288,12 @@ func ResourceIPFirewallFilter() *schema.Resource {
 			Description: "PCC matcher allows dividing traffic into equal streams with the ability to keep packets " +
 				"with a specific set of options in one particular stream.",
 		},
-		KeyPlaceBefore: PropPlaceBefore,
+		KeyPlaceBefore: {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: "Anchor rule ID before which this rule must appear. When `enforce_order` is `true`, " +
+				"live order drift or anchor changes reconcile in place without recreating the rule.",
+		},
 		"port": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -386,15 +400,14 @@ func ResourceIPFirewallFilter() *schema.Resource {
 	}
 	resSchema[MetaSetUnsetFields] = firewallOptionalStringUnsetFields(resSchema)
 	return &schema.Resource{
-		CreateContext: DefaultCreate(resSchema),
-		ReadContext:   DefaultRead(resSchema),
+		CreateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+			return resourceIPFirewallFilterCreate(ctx, resSchema, d, m)
+		},
+		ReadContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+			return resourceIPFirewallFilterRead(ctx, resSchema, d, m)
+		},
 		UpdateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-			// place_before only positions a new rule, so an update must not
-			// send it. Add it to the skip list of a copy made for this call:
-			// resSchema is shared by every invocation, and writing its Default
-			// here raced with concurrent creates, and two overlapping updates
-			// could leave place_before in the shared list for the rest of the run.
-			return ResourceUpdate(ctx, schemaWithSkipFields(resSchema, KeyPlaceBefore), d, m)
+			return resourceIPFirewallFilterUpdate(ctx, resSchema, d, m)
 		},
 		DeleteContext: DefaultDelete(resSchema),
 		Importer: &schema.ResourceImporter{
@@ -403,4 +416,147 @@ func ResourceIPFirewallFilter() *schema.Resource {
 
 		Schema: resSchema,
 	}
+}
+
+func firewallFilterReadSchema(resSchema map[string]*schema.Schema) map[string]*schema.Schema {
+	return schemaWithSkipFields(resSchema, "enforce_order")
+}
+
+func findFirewallRuleAndAnchorIndex(rules []MikrotikItem, ruleID, anchorID string) (int, int) {
+	ruleIdx, anchorIdx := -1, -1
+	for i, r := range rules {
+		id := r[".id"]
+		if id == ruleID {
+			ruleIdx = i
+		}
+		if id == anchorID {
+			anchorIdx = i
+		}
+	}
+	return ruleIdx, anchorIdx
+}
+
+func resourceIPFirewallFilterCreate(ctx context.Context, resSchema map[string]*schema.Schema, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	enforceOrder := d.Get("enforce_order").(bool)
+	anchor := strings.TrimSpace(d.Get(KeyPlaceBefore).(string))
+	if enforceOrder && anchor == "" {
+		return diag.Errorf("enforce_order requires place_before to be set")
+	}
+
+	diags := ResourceCreate(ctx, schemaWithSkipFields(resSchema, "enforce_order"), d, m)
+	if diags.HasError() || d.Id() == "" {
+		return diags
+	}
+
+	if enforceOrder {
+		return resourceIPFirewallFilterRead(ctx, resSchema, d, m)
+	}
+	return diags
+}
+
+func resourceIPFirewallFilterRead(ctx context.Context, resSchema map[string]*schema.Schema, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	diags := ResourceRead(ctx, firewallFilterReadSchema(resSchema), d, m)
+	if diags.HasError() || d.Id() == "" {
+		return diags
+	}
+
+	if !d.Get("enforce_order").(bool) {
+		return diags
+	}
+	anchor := strings.TrimSpace(d.Get(KeyPlaceBefore).(string))
+	if anchor == "" {
+		return diags
+	}
+
+	rules, err := ReadItems(nil, "/ip/firewall/filter", m.(Client))
+	if err != nil {
+		return append(diags, diag.FromErr(err)...)
+	}
+
+	ruleIdx, anchorIdx := findFirewallRuleAndAnchorIndex(*rules, d.Id(), anchor)
+	if ruleIdx >= 0 && anchorIdx >= 0 && ruleIdx < anchorIdx {
+		return diags
+	}
+
+	if err := d.Set(KeyPlaceBefore, ""); err != nil {
+		return append(diags, diag.FromErr(err)...)
+	}
+	return diags
+}
+
+func resourceIPFirewallFilterUpdate(ctx context.Context, resSchema map[string]*schema.Schema, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	enforceOrder := d.Get("enforce_order").(bool)
+	anchor := strings.TrimSpace(d.Get(KeyPlaceBefore).(string))
+	if enforceOrder && anchor == "" {
+		return diag.Errorf("enforce_order requires place_before to be set")
+	}
+
+	hasOrderChange := d.HasChange(KeyPlaceBefore) || d.HasChange("enforce_order")
+	hasNonOrderChange := false
+	for k := range resSchema {
+		if strings.HasPrefix(k, "___") || k == KeyPlaceBefore || k == "enforce_order" {
+			continue
+		}
+		if d.HasChange(k) {
+			hasNonOrderChange = true
+			break
+		}
+	}
+
+	if hasNonOrderChange || !hasOrderChange {
+		// place_before and enforce_order must not be sent on property updates.
+		// Copy via schemaWithSkipFields so resSchema stays concurrency-safe.
+		diags := ResourceUpdate(ctx, schemaWithSkipFields(resSchema, KeyPlaceBefore, "enforce_order"), d, m)
+		if diags.HasError() {
+			return diags
+		}
+	}
+
+	if anchor != "" && (d.HasChange(KeyPlaceBefore) || enforceOrder) {
+		if anchor == d.Id() {
+			return diag.Errorf("rule %q cannot use itself as place_before anchor", d.Id())
+		}
+
+		c := m.(Client)
+		rules, err := ReadItems(nil, "/ip/firewall/filter", c)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		ruleIdx, anchorIdx := findFirewallRuleAndAnchorIndex(*rules, d.Id(), anchor)
+		if anchorIdx == -1 {
+			diags := resourceIPFirewallFilterRead(ctx, resSchema, d, m)
+			return append(diags, diag.Errorf("anchor rule %q not found in /ip/firewall/filter", anchor)...)
+		}
+		if ruleIdx == -1 {
+			return diag.Errorf("managed rule %q not found in /ip/firewall/filter", d.Id())
+		}
+
+		if ruleIdx > anchorIdx {
+			movePath := "/ip/firewall/filter"
+			if c.GetTransport() == TransportREST {
+				movePath += "/move"
+			}
+			if err := c.SendRequest(crudMove, &URL{Path: movePath}, MikrotikItem{
+				"numbers":     d.Id(),
+				"destination": anchor,
+			}, nil); err != nil {
+				diags := resourceIPFirewallFilterRead(ctx, resSchema, d, m)
+				return append(diags, diag.Errorf("failed to move rule %q before anchor rule %q: %v", d.Id(), anchor, err)...)
+			}
+
+			rules, err = ReadItems(nil, "/ip/firewall/filter", c)
+			if err != nil {
+				diags := resourceIPFirewallFilterRead(ctx, resSchema, d, m)
+				return append(diags, diag.FromErr(err)...)
+			}
+			ruleIdx, anchorIdx = findFirewallRuleAndAnchorIndex(*rules, d.Id(), anchor)
+			if ruleIdx < 0 || anchorIdx < 0 || ruleIdx >= anchorIdx {
+				diags := resourceIPFirewallFilterRead(ctx, resSchema, d, m)
+				return append(diags, diag.Errorf("rule %q was not ordered before anchor rule %q in /ip/firewall/filter after move", d.Id(), anchor)...)
+			}
+		}
+	}
+
+	return resourceIPFirewallFilterRead(ctx, resSchema, d, m)
 }
