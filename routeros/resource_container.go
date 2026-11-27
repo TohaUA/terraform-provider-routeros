@@ -32,7 +32,7 @@ func ResourceContainer() *schema.Resource {
 	resSchema := map[string]*schema.Schema{
 		MetaResourcePath: PropResourcePath("/container"),
 		MetaId:           PropId(Id),
-		MetaSkipFields:   PropSkipFields("running", "starting", "stopped", "passed_devs", "stopping", "extracting", "config_json"),
+		MetaSkipFields:   PropSkipFields("running", "starting", "stopped", "passed_devs", "stopping", "extracting", "config_json", "starting_with_healthcheck", "deleting", "downloading/extracting"),
 
 		"arch": {
 			Type:        schema.TypeString,
@@ -285,14 +285,18 @@ func ResourceContainer() *schema.Resource {
 		}
 
 		if d.Get("running").(bool) {
-			startContainer(ctx, resSchema, d, m)
+			if diags := startContainer(ctx, resSchema, d, m); diags.HasError() {
+				return diags
+			}
 		}
 
-		return ResourceRead(ctx, resSchema, d, m)
+		return resRead(ctx, d, m)
 	}
 
 	resUpdate := func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-		stopContainer(ctx, resSchema, d, m)
+		if diags := stopContainer(ctx, resSchema, d, m); diags.HasError() {
+			return diags
+		}
 
 		// Run DefaultUpdate.
 		diags := ResourceUpdate(ctx, resSchema, d, m)
@@ -300,15 +304,19 @@ func ResourceContainer() *schema.Resource {
 			return diags
 		}
 		if d.Get("running").(bool) {
-			startContainer(ctx, resSchema, d, m)
+			if diags := startContainer(ctx, resSchema, d, m); diags.HasError() {
+				return diags
+			}
 		}
 
-		return ResourceRead(ctx, resSchema, d, m)
+		return resRead(ctx, d, m)
 	}
 
 	resDelete := func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 		// Stop container
-		stopContainer(ctx, resSchema, d, m)
+		if diags := stopContainer(ctx, resSchema, d, m); diags.HasError() {
+			return diags
+		}
 
 		// Run DefaultDelete.
 		return ResourceDelete(ctx, resSchema, d, m)
@@ -333,23 +341,57 @@ func ResourceContainer() *schema.Resource {
 	}
 }
 
+func containerState(item MikrotikItem) string {
+	switch {
+	case BoolFromMikrotikJSON(item["download/extract failed"]):
+		return "download/extract failed"
+	case BoolFromMikrotikJSON(item["deleting"]):
+		return "deleting"
+	case BoolFromMikrotikJSON(item["stopping"]):
+		return "stopping"
+	case BoolFromMikrotikJSON(item["starting-with-healthcheck"]):
+		return "starting-with-healthcheck"
+	case BoolFromMikrotikJSON(item["starting"]):
+		return "starting"
+	case BoolFromMikrotikJSON(item["downloading/extracting"]):
+		return "downloading/extracting"
+	case BoolFromMikrotikJSON(item["extracting"]):
+		return "extracting"
+	case BoolFromMikrotikJSON(item["running"]):
+		return "running"
+	case BoolFromMikrotikJSON(item["stopped"]):
+		return "stopped"
+	case item["status"] != "":
+		return item["status"]
+	default:
+		return ""
+	}
+}
+
+func containerStateRefresh(s map[string]*schema.Schema, d *schema.ResourceData, m interface{}) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		metadata := GetMetadata(s)
+
+		res, err := ReadItems(&ItemId{metadata.IdType, d.Id()}, metadata.Path, m.(Client))
+		if err != nil {
+			return nil, "", err
+		}
+		if res == nil || len(*res) == 0 {
+			return nil, "", fmt.Errorf("container instance (%s) not found", d.Id())
+		}
+
+		return res, containerState((*res)[0]), nil
+	}
+}
+
 func startContainer(ctx context.Context, s map[string]*schema.Schema, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	stopStateConf := &retry.StateChangeConf{
-		Pending: []string{"pulling", "extracting"},
+	pullStateConf := &retry.StateChangeConf{
+		Pending: []string{"pulling", "extracting", "downloading/extracting"},
 		Target:  []string{"stopped"},
-		Refresh: func() (result interface{}, state string, err error) {
-			metadata := GetMetadata(s)
-
-			res, err := ReadItems(&ItemId{metadata.IdType, d.Id()}, metadata.Path, m.(Client))
-			if err != nil {
-				return res, (*res)[0]["status"], err
-			}
-
-			return res, (*res)[0]["status"], nil
-		},
+		Refresh: containerStateRefresh(s, d, m),
 		Timeout: d.Timeout(schema.TimeoutCreate),
 	}
-	_, err := stopStateConf.WaitForStateContext(ctx)
+	_, err := pullStateConf.WaitForStateContext(ctx)
 	if err != nil {
 		err = fmt.Errorf("error waiting for container instance (%s) to be pulled: %s", d.Id(), err)
 		return diag.FromErr(err)
@@ -371,18 +413,9 @@ func startContainer(ctx context.Context, s map[string]*schema.Schema, d *schema.
 	}
 
 	startStateConf := &retry.StateChangeConf{
-		Pending: []string{"stopped"},
+		Pending: []string{"stopped", "starting", "starting-with-healthcheck"},
 		Target:  []string{"running"},
-		Refresh: func() (result interface{}, state string, err error) {
-			metadata := GetMetadata(s)
-
-			res, err := ReadItems(&ItemId{metadata.IdType, d.Id()}, metadata.Path, m.(Client))
-			if err != nil {
-				return res, (*res)[0]["status"], err
-			}
-
-			return res, (*res)[0]["status"], nil
-		},
+		Refresh: containerStateRefresh(s, d, m),
 		Timeout: d.Timeout(schema.TimeoutCreate),
 	}
 	_, err = startStateConf.WaitForStateContext(ctx)
@@ -395,6 +428,19 @@ func startContainer(ctx context.Context, s map[string]*schema.Schema, d *schema.
 }
 
 func stopContainer(ctx context.Context, s map[string]*schema.Schema, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	metadata := GetMetadata(s)
+
+	res, err := ReadItems(&ItemId{metadata.IdType, d.Id()}, metadata.Path, m.(Client))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if res == nil || len(*res) == 0 {
+		return nil
+	}
+	if containerState((*res)[0]) == "stopped" {
+		return nil
+	}
+
 	item := MikrotikItem{"number": d.Id()}
 
 	var resUrl = &URL{
@@ -404,24 +450,15 @@ func stopContainer(ctx context.Context, s map[string]*schema.Schema, d *schema.R
 		resUrl.Path += "/stop"
 	}
 
-	err := m.(Client).SendRequest(crudStop, resUrl, item, nil)
+	err = m.(Client).SendRequest(crudStop, resUrl, item, nil)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	stopStateConf := &retry.StateChangeConf{
-		Pending: []string{"stopping"},
+		Pending: []string{"running", "starting", "starting-with-healthcheck", "stopping"},
 		Target:  []string{"stopped"},
-		Refresh: func() (result interface{}, state string, err error) {
-			metadata := GetMetadata(s)
-
-			res, err := ReadItems(&ItemId{metadata.IdType, d.Id()}, metadata.Path, m.(Client))
-			if err != nil {
-				return res, (*res)[0]["status"], err
-			}
-
-			return res, (*res)[0]["status"], nil
-		},
+		Refresh: containerStateRefresh(s, d, m),
 		Timeout: d.Timeout(schema.TimeoutDelete),
 	}
 	_, err = stopStateConf.WaitForStateContext(ctx)
