@@ -89,10 +89,11 @@ resource "routeros_move_items" "fw_rules" {
 
 ### Required
 
-- `sequence` (List of String) List identifiers in the required sequence. To locate the ```sequence``` before an existing rule, add its ```id``` to the last element of the ```sequence```.
+- `sequence` (List of String) List identifiers in the required sequence. To locate the ```sequence``` before an existing rule, set ```anchor_rule``` or add the target rule ```id``` as the last element of ```sequence```.
 
 ### Optional
 
+- `anchor_rule` (String) The rule before which the ```sequence``` of rules will be placed. If this field is not specified, the rules will be placed before the last element of the ```sequence```.
 - `resource_name` (String) Resource name in the notation ```routeros_ip_firewall_filter```.
 - `resource_path` (String) URL path of the resource in the notation ```/ip/firewall/filter```.
 
