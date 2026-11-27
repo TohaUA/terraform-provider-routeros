@@ -1,3 +1,14 @@
+## [2.3.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.6...v2.3.0) (2026-11-27)
+
+### Features
+
+* **ipv6_firewall_filter:** add address_list attribute ([#77](https://github.com/TohaUA/terraform-provider-routeros/issues/77)) ([5b509ce](https://github.com/TohaUA/terraform-provider-routeros/commit/5b509ce2f859351ebd659f8f5aa22c9f936ee7fe)), closes [#1003](https://github.com/TohaUA/terraform-provider-routeros/issues/1003) [#52](https://github.com/TohaUA/terraform-provider-routeros/issues/52)
+* **routeros:** add RouterOS 7.25 parity fields and TypeInt unset support ([#86](https://github.com/TohaUA/terraform-provider-routeros/issues/86)) ([b769655](https://github.com/TohaUA/terraform-provider-routeros/commit/b769655b94deb9376e8f45e89073643c9c3a9258))
+
+### Bug Fixes
+
+* **client:** URL-escape REST query parameters and path IDs ([#76](https://github.com/TohaUA/terraform-provider-routeros/issues/76)) ([049533a](https://github.com/TohaUA/terraform-provider-routeros/commit/049533ab7b53c7306ed701480340e1fc0dfc2bdb))
+
 ## [2.2.6](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.5...v2.2.6) (2026-11-27)
 
 ### Bug Fixes
