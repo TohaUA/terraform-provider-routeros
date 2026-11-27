@@ -94,9 +94,6 @@ func (c *appTestClient) SendRequest(method crudMethod, url *URL, body MikrotikIt
 }
 
 func TestAppLifecycle(t *testing.T) {
-	oldVersion := RouterOSVersion
-	RouterOSVersion = "7.25.1"
-	t.Cleanup(func() { RouterOSVersion = oldVersion })
 	r := ResourceApp()
 	d := resourceDataWithRawConfig(r, "", map[string]cty.Value{"yaml": cty.StringVal(appTestYAML)})
 	if err := d.Set("disabled", true); err != nil {
@@ -137,9 +134,6 @@ func TestAppLifecycle(t *testing.T) {
 }
 
 func TestAppRejectsCatalogMutation(t *testing.T) {
-	oldVersion := RouterOSVersion
-	RouterOSVersion = "7.25.1"
-	t.Cleanup(func() { RouterOSVersion = oldVersion })
 	for _, operation := range []string{"read", "update", "delete"} {
 		t.Run(operation, func(t *testing.T) {
 			r := ResourceApp()
@@ -163,9 +157,6 @@ func TestAppRejectsCatalogMutation(t *testing.T) {
 }
 
 func TestAppActionLifecycle(t *testing.T) {
-	oldVersion := RouterOSVersion
-	RouterOSVersion = "7.25.1"
-	t.Cleanup(func() { RouterOSVersion = oldVersion })
 	for _, action := range []string{"restart", "update", "cleanup"} {
 		t.Run(action, func(t *testing.T) {
 			r := newAPI725Action("/app/" + action)
@@ -277,9 +268,6 @@ func TestAPIAppBodyPrivacy(t *testing.T) {
 }
 
 func TestAppActionPlanning(t *testing.T) {
-	oldVersion := RouterOSVersion
-	RouterOSVersion = "7.25.1"
-	t.Cleanup(func() { RouterOSVersion = oldVersion })
 	for _, action := range []string{"restart", "update", "cleanup"} {
 		r := newAPI725Action("/app/" + action)
 		for _, next := range []string{"*A", "*B"} {

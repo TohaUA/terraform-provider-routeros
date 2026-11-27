@@ -420,11 +420,6 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 		return nil, diag.Errorf("unsupported scheme %q in hosturl", routerUrl.Scheme)
 	}
 
-	RouterOSVersion = d.Get("routeros_version").(string)
-	if RouterOSVersion != "" {
-		ColorizedMessage(ctx, INFO, "RouterOS from env: "+RouterOSVersion)
-	}
-
 	requestTimeout := time.Duration(d.Get("rest_timeout").(int)) * time.Second
 
 	if transport == TransportAPI {
@@ -454,16 +449,16 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 		}
 		api.pool.release(session, true)
 
-		if RouterOSVersion == "" {
-			ros, versionDiags := GetRouterOSVersion(api)
-			if versionDiags.HasError() {
-				return nil, append(diags, versionDiags...)
-			}
-			diags = append(diags, versionDiags...)
-
-			RouterOSVersion = ros
-			ColorizedMessage(ctx, INFO, "RouterOS: "+RouterOSVersion)
+		ros, versionDiags := GetRouterOSVersion(api)
+		if versionDiags.HasError() {
+			return nil, append(diags, versionDiags...)
 		}
+		diags = append(diags, versionDiags...)
+		if minDiags := validateMinRouterOSVersion(ros); minDiags.HasError() {
+			return nil, append(diags, minDiags...)
+		}
+		api.Version = ros
+		ColorizedMessage(ctx, INFO, "RouterOS: "+ros)
 
 		return api, diags
 	}
@@ -485,16 +480,16 @@ func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 		requestTimeout, &tlsConf,
 	)
 
-	if RouterOSVersion == "" {
-		ros, versionDiags := GetRouterOSVersion(rest)
-		if versionDiags.HasError() {
-			return nil, append(diags, versionDiags...)
-		}
-		diags = append(diags, versionDiags...)
-
-		RouterOSVersion = ros
-		ColorizedMessage(ctx, INFO, "RouterOS: "+RouterOSVersion)
+	ros, versionDiags := GetRouterOSVersion(rest)
+	if versionDiags.HasError() {
+		return nil, append(diags, versionDiags...)
 	}
+	diags = append(diags, versionDiags...)
+	if minDiags := validateMinRouterOSVersion(ros); minDiags.HasError() {
+		return nil, append(diags, minDiags...)
+	}
+	rest.Version = ros
+	ColorizedMessage(ctx, INFO, "RouterOS: "+ros)
 
 	return rest, diags
 }
@@ -571,6 +566,20 @@ func EscapeChars(data []byte) []byte {
 }
 
 // Obtain a version of RouterOS to automatically customize resource schemas.
+const minSupportedRouterOSVersion = "7.25"
+
+func validateMinRouterOSVersion(detected string) diag.Diagnostics {
+	current, err := parseRouterOSVersion(detected)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	minimum, _ := parseRouterOSVersion(minSupportedRouterOSVersion)
+	if current < minimum {
+		return diag.Errorf("RouterOS version %s is not supported; minimum required version is %s", detected, minSupportedRouterOSVersion)
+	}
+	return nil
+}
+
 func GetRouterOSVersion(m interface{}) (string, diag.Diagnostics) {
 	res, err := ReadItems(nil, "/system/resource", m.(Client))
 	if err != nil {

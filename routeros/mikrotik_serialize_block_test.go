@@ -51,18 +51,9 @@ func blockTestApplyUpdate(t *testing.T, res *schema.Resource, state *terraform.I
 	return
 }
 
-func blockTestSetVersion(t *testing.T, version string) {
-	t.Helper()
-	previous := RouterOSVersion
-	RouterOSVersion = version
-	t.Cleanup(func() { RouterOSVersion = previous })
-}
-
 // The configuration declares no `output` block; the state carries the block a previous Read
 // populated (RouterOS 7.24 always reports `output.add-path`); the user changes `comment`.
 func Test_terraformResourceDataToMikrotik_ComputedBlockAbsentFromConfig(t *testing.T) {
-	blockTestSetVersion(t, "7.24")
-
 	for _, tc := range []struct {
 		name string
 		mk   func() *schema.Resource
@@ -109,8 +100,6 @@ func Test_terraformResourceDataToMikrotik_ComputedBlockAbsentFromConfig(t *testi
 // The configuration declares `output { filter_chain = "x" }` while the state also carries
 // the router-reported `add_path`; the declared block must still be serialized.
 func Test_terraformResourceDataToMikrotik_ComputedBlockDeclaredInConfig(t *testing.T) {
-	blockTestSetVersion(t, "7.24")
-
 	res := ResourceRoutingBgpConnection()
 	ty, attrs := blockTestNullRawConfig(res)
 	attrs["name"] = cty.StringVal("peer1")
@@ -150,8 +139,6 @@ func Test_terraformResourceDataToMikrotik_ComputedBlockDeclaredInConfig(t *testi
 // the `local` block is dropped too: every property it carried is unset, the Required `role` included,
 // since Required binds only while the block is declared and a leftover role would bring the block back.
 func Test_terraformResourceDataToMikrotik_RemovedBlockIsUnset(t *testing.T) {
-	blockTestSetVersion(t, "7.24")
-
 	for _, tc := range []struct {
 		name     string
 		mk       func() *schema.Resource
@@ -219,8 +206,6 @@ func Test_terraformResourceDataToMikrotik_RemovedBlockIsUnset(t *testing.T) {
 
 // Create path: no state and no `output` block in the configuration.
 func Test_terraformResourceDataToMikrotik_ComputedBlockAbsentOnCreate(t *testing.T) {
-	blockTestSetVersion(t, "7.24")
-
 	res := ResourceRoutingBgpConnection()
 	ty, attrs := blockTestNullRawConfig(res)
 	attrs["name"] = cty.StringVal("peer1")

@@ -206,10 +206,6 @@ func TestIPv6FirewallFilterAddressList_SchemaAndValidation(t *testing.T) {
 }
 
 func TestIPv6FirewallFilterAddressList_SerializationAndUpdate(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.25"
-	defer func() { RouterOSVersion = old }()
-
 	res := ResourceIPv6FirewallFilter()
 
 	for _, action := range []string{"add-src-to-address-list", "add-dst-to-address-list"} {
@@ -292,10 +288,6 @@ func TestIPv6FirewallFilterAddressList_SerializationAndUpdate(t *testing.T) {
 }
 
 func TestIPv6FirewallFilterAddressList_Datasource(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.25"
-	defer func() { RouterOSVersion = old }()
-
 	ds := DatasourceIPv6Firewall()
 	s := maps.Clone(ds.Schema)
 	s[MetaResourcePath] = PropResourcePath("/ipv6/firewall/filter")

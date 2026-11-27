@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testResourceDnsTask = "routeros_dns.test"
+const testResourceDnsTask = "routeros_ip_dns.test"
 
 func TestAccResourceDnsTest_basic(t *testing.T) {
 	for _, name := range testNames {
@@ -37,7 +37,7 @@ func TestAccResourceDnsTest_basic(t *testing.T) {
 
 func testAccResourceDnsConfig() string {
 	return providerConfig + `
-resource "routeros_dns" "test" {
+resource "routeros_ip_dns" "test" {
 	allow_remote_requests = true
 	cache_max_ttl = "3d"
 	cache_size = 4096

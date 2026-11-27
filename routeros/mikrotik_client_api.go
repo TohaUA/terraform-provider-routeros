@@ -12,9 +12,14 @@ type ApiClient struct {
 	HostURL   string
 	Username  string
 	Password  string
+	Version   string
 	Transport TransportType
 	extra     *ExtraParams
 	pool      *apiPool
+}
+
+func (c *ApiClient) GetRouterOSVersion() string {
+	return c.Version
 }
 
 var (

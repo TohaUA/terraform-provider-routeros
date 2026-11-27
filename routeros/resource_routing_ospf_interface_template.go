@@ -1,9 +1,6 @@
 package routeros
 
 import (
-	"context"
-	"reflect"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -197,30 +194,5 @@ func ResourceRoutingOspfInterfaceTemplate() *schema.Resource {
 
 		Schema:        resSchema,
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type: ResourceRoutingOspfInterfaceTemplateV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: func(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
-					defer delete(rawState, "network")
-
-					if rawState["network"] == nil {
-						return rawState, nil
-					}
-
-					value := reflect.ValueOf(rawState["network"])
-					if value.IsZero() {
-						rawState["networks"] = []interface{}{}
-						return rawState, nil
-					}
-
-					slice := reflect.MakeSlice(reflect.SliceOf(value.Type()), 0, 1)
-					reflect.Append(slice, value)
-					rawState["networks"] = slice.Interface()
-
-					return rawState, nil
-				},
-				Version: 0,
-			},
-		},
 	}
 }

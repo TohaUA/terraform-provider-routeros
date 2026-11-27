@@ -1,5 +1,5 @@
 # routeros_wifi_aaa (Resource)
-*<span style="color:red">This resource requires a minimum version of RouterOS 7.13.</span>*
+
 
 ## Example Usage
 ```terraform

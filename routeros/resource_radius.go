@@ -127,13 +127,6 @@ func ResourceRadius() *schema.Resource {
 
 		Schema:        resSchema,
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    ResourceRadiusV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationScalarToList("service"),
-				Version: 0,
-			},
-		},
 	}
 }
 

@@ -104,7 +104,7 @@ func api725CoversWire(s map[string]*schema.Schema, wire string) bool {
 	}
 	// Versioned renames preserve older Terraform attribute names.
 	if path := s[MetaResourcePath]; path != nil {
-		for name, target := range driftAttributeSlice.GetDriftMap("7.25", path.Default.(string), false) {
+		for name, target := range driftAttributeSlice.GetDriftMap(path.Default.(string), false) {
 			if target == wire && s[name] != nil {
 				return true
 			}

@@ -15,64 +15,64 @@ func TestAccIpDnsRecordTest_basic(t *testing.T) {
 					testSetTransportEnv(t, name)
 				},
 				ProviderFactories: testAccProviderFactories,
-				CheckDestroy:      testCheckResourceDestroy("/ip/dns/static", "routeros_dns_record"),
+				CheckDestroy:      testCheckResourceDestroy("/ip/dns/static", "routeros_ip_dns_record"),
 				Steps: []resource.TestStep{
 					{
 						Config: testAccIpDnsRecordConfig(),
 						Check: resource.ComposeTestCheckFunc(
 							// A
-							testResourcePrimaryInstanceId("routeros_dns_record.test_dns_a"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_a", "name", "ipv4"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_a", "address", "127.0.0.1"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_a", "type", "A"),
+							testResourcePrimaryInstanceId("routeros_ip_dns_record.test_dns_a"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_a", "name", "ipv4"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_a", "address", "127.0.0.1"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_a", "type", "A"),
 							// A regexp
-							testResourcePrimaryInstanceId("routeros_dns_record.test_dns_a_regexp"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_a", "address", "127.0.0.1"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_a_regexp", "regexp", "regexp"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_a_regexp", "type", "A"),
+							testResourcePrimaryInstanceId("routeros_ip_dns_record.test_dns_a_regexp"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_a", "address", "127.0.0.1"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_a_regexp", "regexp", "regexp"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_a_regexp", "type", "A"),
 							// AAAA
-							testResourcePrimaryInstanceId("routeros_dns_record.test_dns_aaaa"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_aaaa", "name", "ipv6"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_aaaa", "address", "ff00::1"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_aaaa", "type", "AAAA"),
+							testResourcePrimaryInstanceId("routeros_ip_dns_record.test_dns_aaaa"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_aaaa", "name", "ipv6"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_aaaa", "address", "ff00::1"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_aaaa", "type", "AAAA"),
 							// CNAME
-							testResourcePrimaryInstanceId("routeros_dns_record.test_dns_cname"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_cname", "cname", "ipv4"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_cname", "name", "cname"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_cname", "type", "CNAME"),
+							testResourcePrimaryInstanceId("routeros_ip_dns_record.test_dns_cname"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_cname", "cname", "ipv4"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_cname", "name", "cname"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_cname", "type", "CNAME"),
 							// FWD
-							testResourcePrimaryInstanceId("routeros_dns_record.test_dns_fwd"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_fwd", "name", "fwd"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_fwd", "forward_to", "127.0.0.1"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_fwd", "type", "FWD"),
+							testResourcePrimaryInstanceId("routeros_ip_dns_record.test_dns_fwd"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_fwd", "name", "fwd"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_fwd", "forward_to", "127.0.0.1"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_fwd", "type", "FWD"),
 							// MX
-							testResourcePrimaryInstanceId("routeros_dns_record.test_dns_mx"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_mx", "name", "mx"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_mx", "mx_exchange", "127.0.0.1"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_mx", "mx_preference", "10"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_mx", "type", "MX"),
+							testResourcePrimaryInstanceId("routeros_ip_dns_record.test_dns_mx"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_mx", "name", "mx"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_mx", "mx_exchange", "127.0.0.1"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_mx", "mx_preference", "10"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_mx", "type", "MX"),
 							// NS
-							testResourcePrimaryInstanceId("routeros_dns_record.test_dns_ns"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_ns", "name", "ns"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_ns", "ns", "127.0.0.1"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_ns", "type", "NS"),
+							testResourcePrimaryInstanceId("routeros_ip_dns_record.test_dns_ns"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_ns", "name", "ns"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_ns", "ns", "127.0.0.1"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_ns", "type", "NS"),
 							// NXDOMAIN
-							testResourcePrimaryInstanceId("routeros_dns_record.test_dns_nxdomain"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_nxdomain", "name", "nxdomain"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_nxdomain", "type", "NXDOMAIN"),
+							testResourcePrimaryInstanceId("routeros_ip_dns_record.test_dns_nxdomain"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_nxdomain", "name", "nxdomain"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_nxdomain", "type", "NXDOMAIN"),
 							// SRV
-							testResourcePrimaryInstanceId("routeros_dns_record.test_dns_srv"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_srv", "name", "srv"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_srv", "srv_port", "8080"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_srv", "srv_priority", "10"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_srv", "srv_target", "127.0.0.1"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_srv", "srv_weight", "100"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_srv", "type", "SRV"),
+							testResourcePrimaryInstanceId("routeros_ip_dns_record.test_dns_srv"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_srv", "name", "srv"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_srv", "srv_port", "8080"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_srv", "srv_priority", "10"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_srv", "srv_target", "127.0.0.1"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_srv", "srv_weight", "100"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_srv", "type", "SRV"),
 							// TXT
-							testResourcePrimaryInstanceId("routeros_dns_record.test_dns_txt"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_txt", "name", "_acme-challenge.yourwebsite.com"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_txt", "text", "dW6MrI3nBy3eJgYWH3QAg1Cwk_TvjFESOuKo+mp6nm1"),
-							resource.TestCheckResourceAttr("routeros_dns_record.test_dns_txt", "type", "TXT"),
+							testResourcePrimaryInstanceId("routeros_ip_dns_record.test_dns_txt"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_txt", "name", "_acme-challenge.yourwebsite.com"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_txt", "text", "dW6MrI3nBy3eJgYWH3QAg1Cwk_TvjFESOuKo+mp6nm1"),
+							resource.TestCheckResourceAttr("routeros_ip_dns_record.test_dns_txt", "type", "TXT"),
 						),
 					},
 				},
@@ -85,7 +85,7 @@ func TestAccIpDnsRecordTest_basic(t *testing.T) {
 func testAccIpDnsRecordConfig() string {
 	return providerConfig + `
 
-resource "routeros_dns_record" "test_dns_a" {
+resource "routeros_ip_dns_record" "test_dns_a" {
 	address         = "127.0.0.1"
 	address_list    = "subdomain"
 	disabled        = false
@@ -95,14 +95,14 @@ resource "routeros_dns_record" "test_dns_a" {
 	type            = "A"
 }
 
-resource "routeros_dns_record" "test_dns_a_regexp" {
+resource "routeros_ip_dns_record" "test_dns_a_regexp" {
 	address         = "127.0.0.1"
 	disabled        = true
 	regexp          = "regexp"
 	type            = "A"
 }
 
-resource "routeros_dns_record" "test_dns_aaaa" {
+resource "routeros_ip_dns_record" "test_dns_aaaa" {
 	address         = "ff00::1"
 	address_list    = "subdomain"
 	disabled        = false
@@ -112,7 +112,7 @@ resource "routeros_dns_record" "test_dns_aaaa" {
 	type            = "AAAA"
 }
   
-resource "routeros_dns_record" "test_dns_cname" {
+resource "routeros_ip_dns_record" "test_dns_cname" {
 	address_list    = "subdomain"
 	cname           = "ipv4"
 	disabled        = false
@@ -122,7 +122,7 @@ resource "routeros_dns_record" "test_dns_cname" {
 	type            = "CNAME"
 }
   
-resource "routeros_dns_record" "test_dns_fwd" {
+resource "routeros_ip_dns_record" "test_dns_fwd" {
 	address_list    = "subdomain"
 	disabled        = false
 	forward_to      = "127.0.0.1"
@@ -132,7 +132,7 @@ resource "routeros_dns_record" "test_dns_fwd" {
 	type            = "FWD"
 }
   
-resource "routeros_dns_record" "test_dns_mx" {
+resource "routeros_ip_dns_record" "test_dns_mx" {
 	address_list    = "subdomain"
 	disabled        = false
 	match_subdomain = true
@@ -143,7 +143,7 @@ resource "routeros_dns_record" "test_dns_mx" {
 	type            = "MX"
 }
   
-resource "routeros_dns_record" "test_dns_ns" {
+resource "routeros_ip_dns_record" "test_dns_ns" {
 	address_list    = "subdomain"
 	disabled        = false
 	match_subdomain = true
@@ -153,7 +153,7 @@ resource "routeros_dns_record" "test_dns_ns" {
 	type            = "NS"
 }
   
-resource "routeros_dns_record" "test_dns_nxdomain" {
+resource "routeros_ip_dns_record" "test_dns_nxdomain" {
 	address_list    = "subdomain"
 	disabled        = false
 	match_subdomain = true
@@ -162,7 +162,7 @@ resource "routeros_dns_record" "test_dns_nxdomain" {
 	type            = "NXDOMAIN"
 }
   
-resource "routeros_dns_record" "test_dns_srv" {
+resource "routeros_ip_dns_record" "test_dns_srv" {
 	address_list    = "subdomain"
 	disabled        = false
 	match_subdomain = true
@@ -175,7 +175,7 @@ resource "routeros_dns_record" "test_dns_srv" {
 	type            = "SRV"
 }
 
-resource "routeros_dns_record" "test_dns_txt" {
+resource "routeros_ip_dns_record" "test_dns_txt" {
 	address_list    = "subdomain"
 	disabled        = false
 	match_subdomain = true

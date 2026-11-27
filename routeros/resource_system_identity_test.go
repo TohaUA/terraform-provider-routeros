@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testSystemIdentityTask = "routeros_identity.test"
+const testSystemIdentityTask = "routeros_system_identity.test"
 
 func TestAccSystemIdentityTest_basic(t *testing.T) {
 	for _, name := range testNames {
@@ -42,7 +42,7 @@ func TestAccSystemIdentityTest_basic(t *testing.T) {
 func testAccSystemIdentityConfig(name string) string {
 	return fmt.Sprintf(`%v
 
-resource "routeros_identity" "test" {
+resource "routeros_system_identity" "test" {
 	name = "%v"
 }
 `, providerConfig, name)

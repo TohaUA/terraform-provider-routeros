@@ -106,16 +106,18 @@ func TestREST725CommandFramingAndErrors(t *testing.T) {
 }
 
 type api725Recorder struct {
-	calls  int
-	method crudMethod
-	path   string
-	body   MikrotikItem
-	rows   []MikrotikItem
-	err    error
+	calls   int
+	method  crudMethod
+	path    string
+	body    MikrotikItem
+	rows    []MikrotikItem
+	err     error
+	version string
 }
 
 func (c *api725Recorder) GetTransport() TransportType  { return TransportREST }
 func (c *api725Recorder) GetExtraParams() *ExtraParams { return &ExtraParams{} }
+func (c *api725Recorder) GetRouterOSVersion() string   { return c.version }
 func (c *api725Recorder) SendRequest(method crudMethod, url *URL, item MikrotikItem, result interface{}) error {
 	c.calls++
 	c.method = method
@@ -131,12 +133,12 @@ func (c *api725Recorder) SendRequest(method crudMethod, url *URL, item MikrotikI
 }
 
 func TestAPI725ActionLifecycle(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.25.1"
-	t.Cleanup(func() { RouterOSVersion = old })
 	r := ResourceToolFetch()
 	d := resourceDataWithRawConfig(r, "", map[string]cty.Value{"url": cty.StringVal("https://example.test/")})
-	c := &api725Recorder{rows: []MikrotikItem{{"status": "connecting"}, {"status": "finished", "data": "payload"}}}
+	c := &api725Recorder{
+		version: "7.25.1",
+		rows:    []MikrotikItem{{"status": "connecting"}, {"status": "finished", "data": "payload"}},
+	}
 	if diags := r.CreateContext(context.Background(), d, c); diags.HasError() {
 		t.Fatal(diags)
 	}
@@ -178,7 +180,7 @@ func TestAPI725ActionLifecycle(t *testing.T) {
 	if diags := r.CreateContext(context.Background(), d, c); !diags.HasError() || d.Id() != "" {
 		t.Fatal("failed command recorded as successful")
 	}
-	RouterOSVersion = "7.25"
+	c.version = "7.25"
 	before := c.calls
 	if diags := r.CreateContext(context.Background(), d, c); !diags.HasError() || c.calls != before {
 		t.Fatal("unsupported router was called")
@@ -186,12 +188,12 @@ func TestAPI725ActionLifecycle(t *testing.T) {
 }
 
 func TestAPI725DatasourceDottedState(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.25.1"
-	t.Cleanup(func() { RouterOSVersion = old })
 	r := DatasourceRoutingPimsmInterfaces()
 	d := r.TestResourceData()
-	c := &api725Recorder{rows: []MikrotikItem{{"interface": "ether1", "gmp.state.robustness": "3", "gmp.querier": "true"}}}
+	c := &api725Recorder{
+		version: "7.25.1",
+		rows:    []MikrotikItem{{"interface": "ether1", "gmp.state.robustness": "3", "gmp.querier": "true"}},
+	}
 	if diags := r.ReadContext(context.Background(), d, c); diags.HasError() {
 		t.Fatal(diags)
 	}

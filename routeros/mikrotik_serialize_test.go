@@ -179,25 +179,19 @@ func Test_loadSkipFields(t *testing.T) {
 // `password-authentication`. The resource models the new key as its own attribute, so no drift
 // entry may rename it away before the schema lookup; otherwise the attribute is never read back.
 func Test_mikrotikResourceDataToTerraform_ipSSHServerPasswordAuthentication(t *testing.T) {
-	originalVersion := RouterOSVersion
-	defer func() { RouterOSVersion = originalVersion }()
-
 	res := ResourceIpSSHServer()
 
 	testData := []struct {
-		version   string
 		item      MikrotikItem
 		expected  map[string]interface{}
 		driftSize int
 	}{
 		{
-			version:   "7.25",
 			item:      MikrotikItem{"password-authentication": "yes-if-no-key"},
 			expected:  map[string]interface{}{"password_authentication": "yes-if-no-key"},
 			driftSize: 0,
 		},
 		{
-			version:   "7.25",
 			item:      MikrotikItem{"password-authentication": "no"},
 			expected:  map[string]interface{}{"password_authentication": "no"},
 			driftSize: 0,
@@ -205,20 +199,18 @@ func Test_mikrotikResourceDataToTerraform_ipSSHServerPasswordAuthentication(t *t
 	}
 
 	for _, tc := range testData {
-		RouterOSVersion = tc.version
-
-		if drift := driftAttributeSlice.GetDriftMap(tc.version, "/ip/ssh", true); len(drift) != tc.driftSize {
-			t.Fatalf("bad: (version: %v) unexpected /ip/ssh drift map %#v", tc.version, drift)
+		if drift := driftAttributeSlice.GetDriftMap("/ip/ssh", true); len(drift) != tc.driftSize {
+			t.Fatalf("bad: unexpected /ip/ssh drift map %#v", drift)
 		}
 
 		d := res.TestResourceData()
 		if diags := MikrotikResourceDataToTerraform(tc.item, res.Schema, d); len(diags) != 0 {
-			t.Fatalf("bad: (version: %v) unexpected diagnostics: %v", tc.version, diags)
+			t.Fatalf("bad: unexpected diagnostics: %v", diags)
 		}
 
 		for key, expected := range tc.expected {
 			if actual := d.Get(key); !reflect.DeepEqual(actual, expected) {
-				t.Fatalf("bad: (version: %v) %v expected:%#v\tactual:%#v", tc.version, key, expected, actual)
+				t.Fatalf("bad: %v expected:%#v\tactual:%#v", key, expected, actual)
 			}
 		}
 	}

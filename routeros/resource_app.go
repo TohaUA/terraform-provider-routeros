@@ -60,7 +60,7 @@ func ResourceApp() *schema.Resource {
 		}),
 		ReadContext: read,
 		UpdateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-			if ds := requireAPI725(); ds.HasError() {
+			if ds := requireAPI725(m); ds.HasError() {
 				return ds
 			}
 			rows, err := ReadItems(&ItemId{Id, d.Id()}, "/app", m.(Client))

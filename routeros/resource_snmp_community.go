@@ -114,12 +114,5 @@ func ResourceSNMPCommunity() *schema.Resource {
 
 		Schema:        resSchema,
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    ResourceSNMPCommunityV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationScalarToList("addresses"),
-				Version: 0,
-			},
-		},
 	}
 }

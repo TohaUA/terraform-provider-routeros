@@ -67,10 +67,6 @@ func TestAccessListUpdateDoesNotPanic(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			old := RouterOSVersion
-			RouterOSVersion = "7.24"
-			defer func() { RouterOSVersion = old }()
-
 			d := resourceDataWithRawConfig(tt.res, "*1", map[string]cty.Value{
 				"comment": cty.StringVal("x"),
 			})
@@ -151,10 +147,6 @@ func (c *recordingClient) SendRequest(method crudMethod, url *URL, item Mikrotik
 // that proves nothing, but under -race it is what lets the race detector see
 // the shared write, since the channel hand-offs above order every access.
 func TestCreateKeepsPlaceBeforeDuringUpdate(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.24"
-	defer func() { RouterOSVersion = old }()
-
 	tests := []struct {
 		name string
 		res  *schema.Resource
@@ -289,10 +281,6 @@ func TestCreateKeepsPlaceBeforeDuringUpdate(t *testing.T) {
 // ethernet interface being created, updated or read, and a list that grew for
 // the life of the provider process. The read must still skip those counters.
 func TestEthernetReadLeavesSharedSchemaAlone(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.24"
-	defer func() { RouterOSVersion = old }()
-
 	res := ResourceInterfaceEthernet()
 	declared, _ := res.Schema[MetaSkipFields].Default.(string)
 	item := MikrotikItem{
@@ -444,10 +432,6 @@ func btoi(b bool) int {
 // catches any future resource that sets Schema[MetaSkipFields].Default (or any
 // other absent key) without declaring it.
 func TestUpdateContextDoesNotPanicOnAnyResource(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.24"
-	defer func() { RouterOSVersion = old }()
-
 	// routeros_move_items slices into its `command` list and panics with
 	// "slice bounds out of range [:-1]" on an all-null config. That is a
 	// separate latent bug in an unrelated handler, not the schema-key

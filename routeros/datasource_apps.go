@@ -28,7 +28,7 @@ func DatasourceApps() *schema.Resource {
 		Description: "Read App definitions and deployment status on RouterOS 7.25.1 with the container package. Reading does not start or update Apps. Returned definitions may contain secrets and are stored in Terraform state.",
 		Schema:      s,
 		ReadContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-			if ds := requireAPI725(); ds.HasError() {
+			if ds := requireAPI725(m); ds.HasError() {
 				return ds
 			}
 			rows, err := ReadItemsFiltered(buildReadFilter(d.Get(KeyFilter).(map[string]interface{})), "/app", m.(Client))

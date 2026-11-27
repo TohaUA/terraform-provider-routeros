@@ -13,9 +13,6 @@ import (
 // Refresh must read that as true and must also clear stale true state when
 // the flag disappears, rather than hiding a route changed outside Terraform.
 func TestRouteBlackholeRefresh(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.25.2"
-	t.Cleanup(func() { RouterOSVersion = old })
 	for _, route := range []struct {
 		name string
 		res  func() *schema.Resource

@@ -10,17 +10,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testSystemPackageLocalUpdateSourceMinVersion = "7.17"
 const testSystemPackageLocalUpdateSource = "routeros_system_package_local_update_source.test"
 
 // The password has to reach the device. Listing it in the skip fields is the obvious way to keep a masked
 // value out of the state, and it is the wrong one: a skipped field is left out of the request as well, so
 // the entry would be written without the credential it exists to carry. This fails if anyone tries it.
 func TestSystemPackageLocalUpdateSourceSendsThePassword(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.24"
-	defer func() { RouterOSVersion = old }()
-
 	res := ResourceSystemPackageLocalUpdateSource()
 	d := resourceDataWithRawConfig(res, "*1", map[string]cty.Value{
 		"address":  cty.StringVal("192.168.88.1"),
@@ -47,10 +42,6 @@ func TestSystemPackageLocalUpdateSourceSendsThePassword(t *testing.T) {
 // Reading such an entry must still succeed and must leave the address and the user alone, because those
 // are what an import and the next plan recognise the entry by.
 func TestSystemPackageLocalUpdateSourceReadsAMaskedPassword(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.24"
-	defer func() { RouterOSVersion = old }()
-
 	res := ResourceSystemPackageLocalUpdateSource()
 	item := MikrotikItem{
 		".id":      "*1",
@@ -83,10 +74,6 @@ func TestSystemPackageLocalUpdateSourceReadsAMaskedPassword(t *testing.T) {
 // credential on the source router with three asterisks. The same check over every resource in the provider
 // is TestSensitiveValuesAreNotSentUnlessDeclared.
 func TestSystemPackageLocalUpdateSourceDoesNotSendAnUndeclaredPassword(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.24"
-	defer func() { RouterOSVersion = old }()
-
 	res := ResourceSystemPackageLocalUpdateSource()
 
 	// The configuration names the address and the user and says nothing about the password. The state
@@ -124,11 +111,6 @@ func TestSystemPackageLocalUpdateSourceDoesNotSendAnUndeclaredPassword(t *testin
 // masked-password path: the workflow logs in as `admin`, which carries the `sensitive` policy and reads
 // the real password back rather than a mask. The unit tests above are what cover that path.
 func TestAccSystemPackageLocalUpdateSourceTest_basic(t *testing.T) {
-	if !testCheckMinVersion(t, testSystemPackageLocalUpdateSourceMinVersion) {
-		t.Logf("Test skipped, the minimum required version is %v", testSystemPackageLocalUpdateSourceMinVersion)
-		return
-	}
-
 	for _, name := range testNames {
 		t.Run(name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{

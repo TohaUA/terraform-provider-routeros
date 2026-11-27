@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testIPFirewallFilterAddress = "routeros_firewall_filter.rule"
+const testIPFirewallFilterAddress = "routeros_ip_firewall_filter.rule"
 
 func TestAccIPFirewallFilterTest_basic(t *testing.T) {
 	for _, name := range testNames {
@@ -17,7 +17,7 @@ func TestAccIPFirewallFilterTest_basic(t *testing.T) {
 					testSetTransportEnv(t, name)
 				},
 				ProviderFactories: testAccProviderFactories,
-				CheckDestroy:      testCheckResourceDestroy("/ip/firewall/filter", "routeros_firewall_filter"),
+				CheckDestroy:      testCheckResourceDestroy("/ip/firewall/filter", "routeros_ip_firewall_filter"),
 				Steps: []resource.TestStep{
 					{
 						Config: testAccIPFirewallFilterConfig(),
@@ -35,7 +35,7 @@ func TestAccIPFirewallFilterTest_basic(t *testing.T) {
 
 func testAccIPFirewallFilterConfig() string {
 	return providerConfig + `
-resource "routeros_firewall_filter" "rule" {
+resource "routeros_ip_firewall_filter" "rule" {
 	action 		= "accept"
 	chain   	= "forward"
 	src_address = "10.0.0.1"

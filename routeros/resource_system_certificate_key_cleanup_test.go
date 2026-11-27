@@ -118,10 +118,6 @@ func (c *certKeyCleanupClient) SendRequest(method crudMethod, url *URL, item Mik
 // file list. The handler must remove the key file on every path, and a file the
 // router already consumed must not turn a successful import into an error.
 func TestSystemCertificateImportRemovesTheKeyFile(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.24"
-	t.Cleanup(func() { RouterOSVersion = old })
-
 	tests := []struct {
 		name string
 		// certFromFile imports the certificate from an existing file, so the key

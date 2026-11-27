@@ -207,7 +207,6 @@ jobs:
           ROS_PASSWORD: ''
           ROS_INSECURE: true
           TF_ACC: 1
-          ROS_VERSION: ${{ matrix.routeros }}
           TEST_RUN: ${{ github.event.inputs.run }}
 
       - name: RouterOS logs

@@ -59,9 +59,6 @@ func TestWireguardPeerPublicKeyWhitespacePlanning(t *testing.T) {
 
 func TestAccInterfaceWireguardPeer7252Whitespace(t *testing.T) {
 	testAccPreCheck(t)
-	if !testCheckMinVersion(t, "7.25.2") {
-		t.Skip("requires RouterOS 7.25.2+")
-	}
 	for _, transport := range testNames {
 		t.Run(transport, func(t *testing.T) {
 			config := func(key string) string {

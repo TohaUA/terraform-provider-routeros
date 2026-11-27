@@ -17,9 +17,6 @@ func TestAccRouterOS725Resources(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("requires a disposable RouterOS instance")
 	}
-	if !testCheckMinVersion(t, "7.25.1") {
-		t.Skip("requires RouterOS 7.25.1+")
-	}
 	private := ed25519.NewKeyFromSeed(make([]byte, ed25519.SeedSize))
 	public, err := ssh.NewPublicKey(private.Public())
 	if err != nil {
@@ -127,9 +124,6 @@ func TestAccRouterOS725PimTemplates(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("requires a disposable RouterOS instance")
 	}
-	if !testCheckMinVersion(t, "7.25.1") {
-		t.Skip("requires RouterOS 7.25.1+")
-	}
 	for _, transport := range testNames {
 		t.Run(transport, func(t *testing.T) {
 			config := providerConfig + `
@@ -176,9 +170,6 @@ func TestAccRouterOS725FetchAction(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("requires a disposable RouterOS instance")
 	}
-	if !testCheckMinVersion(t, "7.25.1") {
-		t.Skip("requires RouterOS 7.25.1+")
-	}
 	for _, transport := range testNames {
 		t.Run(transport, func(t *testing.T) {
 			// Fetch only this disposable router's identity through its own REST API.
@@ -204,9 +195,6 @@ resource "routeros_tool_fetch" "test725" {
 func TestAccRouterOS725BridgeSecurity(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("requires a disposable RouterOS instance")
-	}
-	if !testCheckMinVersion(t, "7.25.1") {
-		t.Skip("requires RouterOS 7.25.1+")
 	}
 	for _, transport := range testNames {
 		t.Run(transport, func(t *testing.T) {
@@ -241,9 +229,6 @@ resource "routeros_interface_bridge_port" "security725" {
 func TestAccRouterOS725Settings(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("requires a disposable RouterOS instance")
-	}
-	if !testCheckMinVersion(t, "7.25.1") {
-		t.Skip("requires RouterOS 7.25.1+")
 	}
 	for _, transport := range testNames {
 		t.Run(transport, func(t *testing.T) {

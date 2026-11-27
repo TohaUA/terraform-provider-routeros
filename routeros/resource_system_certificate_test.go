@@ -265,11 +265,6 @@ var uuidFileName = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9
 // RouterOS removes it only after a successful import, so a failed import must not
 // leave the key in the file list.
 func TestAccSystemCertificate_importFailureCleansUp(t *testing.T) {
-	// ROS 7.12.x does not return IDs for created files.
-	if !testCheckMinVersion(t, testFileMinVersion) {
-		t.Skipf("Test skipped, the minimum required version is %v", testFileMinVersion)
-	}
-
 	for _, name := range testNames {
 		t.Run(name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{

@@ -16,8 +16,6 @@ import (
 // telling defaults apart by value cannot work. A block the resource data holds is still read, and a
 // value changed on the router shows as drift.
 func Test_mikrotikResourceDataToTerraform_BlockAtRouterDefaults(t *testing.T) {
-	blockTestSetVersion(t, "7.24")
-
 	connAtDefaults := MikrotikItem{
 		".id": "*1", "name": "neighbor-test",
 		"input.allow-as":                  "0",

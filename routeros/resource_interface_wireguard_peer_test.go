@@ -8,15 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testInterfaceWireguardPeerMinVersion = "7.12"
 const testInterfaceWireguardPeerAddress = "routeros_interface_wireguard_peer.wg_peer"
 
 func TestAccInterfaceWireguardPeerTest_basic(t *testing.T) {
-	if !testCheckMinVersion(t, testInterfaceWireguardPeerMinVersion) {
-		t.Logf("Test skipped, the minimum required version is %v", testInterfaceWireguardPeerMinVersion)
-		return
-	}
-
 	for _, name := range testNames {
 		t.Run(name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{

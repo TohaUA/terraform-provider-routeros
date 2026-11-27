@@ -63,13 +63,6 @@ func ResourceInterfaceDot1xClient() *schema.Resource {
 
 		Schema:        resSchema,
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    ResourceInterfaceDot1xClientV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationScalarToList("eap_methods"),
-				Version: 0,
-			},
-		},
 	}
 }
 
@@ -172,12 +165,5 @@ func ResourceInterfaceDot1xServer() *schema.Resource {
 
 		Schema:        resSchema,
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    ResourceInterfaceDot1xServerV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationScalarToList("auth_types"),
-				Version: 0,
-			},
-		},
 	}
 }

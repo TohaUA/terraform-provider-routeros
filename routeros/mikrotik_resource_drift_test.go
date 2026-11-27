@@ -1,9 +1,6 @@
 package routeros
 
 import (
-	"errors"
-	"os"
-	"os/exec"
 	"reflect"
 	"testing"
 
@@ -37,34 +34,26 @@ func testResourceDataWithConfig(t *testing.T, s map[string]*schema.Schema, id st
 }
 
 // RouterOS 7.24 renamed `address` to `available-from` in /ip/service. The rename is
-// compensated through the drift table, so the schema keeps the single `address` attribute
-// and the serializer translates it in both directions once the router reports >= 7.24.
+// applied unconditionally through the drift table, so the schema keeps `address`
+// and the serializer translates it in both directions.
 func Test_driftIpServiceAvailableFrom(t *testing.T) {
-	originalVersion := RouterOSVersion
-	defer func() { RouterOSVersion = originalVersion }()
-
 	t.Run("drift map", func(t *testing.T) {
 		tests := []struct {
-			ros     string
 			reverse bool
 			want    map[string]string
 		}{
-			{"7.23", false, map[string]string{}},
-			{"7.23", true, map[string]string{}},
-			{"7.24", false, map[string]string{"address": "available-from"}},
-			{"7.24", true, map[string]string{"available-from": "address"}},
-			{"7.24.1", true, map[string]string{"available-from": "address"}},
+			{false, map[string]string{"address": "available-from"}},
+			{true, map[string]string{"available-from": "address"}},
 		}
 		for _, tt := range tests {
-			got := driftAttributeSlice.GetDriftMap(tt.ros, "/ip/service", tt.reverse)
+			got := driftAttributeSlice.GetDriftMap("/ip/service", tt.reverse)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetDriftMap(%q, /ip/service, reverse=%v) = %#v, want %#v", tt.ros, tt.reverse, got, tt.want)
+				t.Errorf("GetDriftMap(/ip/service, reverse=%v) = %#v, want %#v", tt.reverse, got, tt.want)
 			}
 		}
 	})
 
 	t.Run("resource read maps available-from to address", func(t *testing.T) {
-		RouterOSVersion = "7.24"
 		s := ResourceIpService().Schema
 		d := (&schema.Resource{Schema: s}).Data(&terraform.InstanceState{ID: "telnet"})
 
@@ -78,7 +67,6 @@ func Test_driftIpServiceAvailableFrom(t *testing.T) {
 	})
 
 	t.Run("resource write sends available-from", func(t *testing.T) {
-		RouterOSVersion = "7.24"
 		s := ResourceIpService().Schema
 		d := testResourceDataWithConfig(t, s, "telnet", map[string]string{"address": "10.0.0.0/8"})
 
@@ -87,26 +75,11 @@ func Test_driftIpServiceAvailableFrom(t *testing.T) {
 			t.Errorf("available-from = %q, want %q (item: %#v)", got, "10.0.0.0/8", item)
 		}
 		if _, ok := item["address"]; ok {
-			t.Errorf("address must not be sent alongside available-from on 7.24 (item: %#v)", item)
-		}
-	})
-
-	t.Run("resource write keeps address before 7.24", func(t *testing.T) {
-		RouterOSVersion = "7.23"
-		s := ResourceIpService().Schema
-		d := testResourceDataWithConfig(t, s, "telnet", map[string]string{"address": "10.0.0.0/8"})
-
-		item, _ := TerraformResourceDataToMikrotik(s, d)
-		if got := item["address"]; got != "10.0.0.0/8" {
-			t.Errorf("address = %q, want %q (item: %#v)", got, "10.0.0.0/8", item)
-		}
-		if _, ok := item["available-from"]; ok {
-			t.Errorf("available-from must not be sent before 7.24 (item: %#v)", item)
+			t.Errorf("address must not be sent alongside available-from (item: %#v)", item)
 		}
 	})
 
 	t.Run("datasource maps available-from to address without warnings", func(t *testing.T) {
-		RouterOSVersion = "7.24"
 		s := DatasourceIPServices().Schema
 		d := (&schema.Resource{Schema: s}).Data(&terraform.InstanceState{ID: "services"})
 
@@ -146,26 +119,5 @@ func TestParseRouterOSVersionExtraParts(t *testing.T) {
 		if got != tt.want {
 			t.Errorf("parseRouterOSVersion(%q) = %d, want %d", tt.version, got, tt.want)
 		}
-	}
-}
-
-// An empty RouterOS version stops the process, exactly like a malformed one. The
-// provider sets the version before any resource is serialized, so an empty one means
-// something ran out of order, and carrying on without the renames would silently send
-// attribute names the router does not use. log.Fatal exits the process, so the call
-// runs in a child test binary.
-func TestGetDriftMapWithoutAVersionIsFatal(t *testing.T) {
-	if os.Getenv("ROUTEROS_DRIFT_FATAL_CHILD") == "1" {
-		driftAttributeSlice.GetDriftMap("", "/ip/service", false)
-		return
-	}
-
-	cmd := exec.Command(os.Args[0], "-test.run=^TestGetDriftMapWithoutAVersionIsFatal$")
-	cmd.Env = append(os.Environ(), "ROUTEROS_DRIFT_FATAL_CHILD=1")
-	out, err := cmd.CombinedOutput()
-
-	var exitErr *exec.ExitError
-	if !errors.As(err, &exitErr) {
-		t.Fatalf("GetDriftMap with an empty version returned instead of stopping the process (err: %v, output: %s)", err, out)
 	}
 }

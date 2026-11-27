@@ -93,13 +93,6 @@ policy = ["ftp", "read", "write"]
 		},
 
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    ResourceSystemSchedulerV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationNameToId(resSchema[MetaResourcePath].Default.(string)),
-				Version: 0,
-			},
-		},
 
 		Schema: resSchema,
 	}

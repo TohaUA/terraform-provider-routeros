@@ -149,18 +149,11 @@ func (c *Comparer) newMenuContext(path string, res *Resource) (*menuContext, err
 		attrs:    make(map[string]Attr, len(res.Attrs)),
 		mapAttrs: make(map[string]struct{}),
 	}
-	if c.Version != "" {
-		drift, err := routeros.ResourceDriftMap(c.Version, path, true)
-		if err != nil {
-			return nil, err
-		}
-		for k, v := range drift {
-			m.toTF[k] = v
-		}
-		drift, _ = routeros.ResourceDriftMap(c.Version, path, false)
-		for k, v := range drift {
-			m.toMT[k] = v
-		}
+	for k, v := range routeros.ResourceDriftMap(path, true) {
+		m.toTF[k] = v
+	}
+	for k, v := range routeros.ResourceDriftMap(path, false) {
+		m.toMT[k] = v
 	}
 	for _, a := range res.Attrs {
 		m.attrs[a.Name] = a

@@ -33,11 +33,11 @@ var ErrMenuAbsent = errors.New("menu absent on device")
 // and this tool; rest_test.go fails when they diverge. ROS_CACERT is not a provider variable: it is
 // the name this tool used before and is kept, last, so existing setups keep working.
 var (
-	envHostURL  = []string{"ROS_HOSTURL", "MIKROTIK_HOST"}
-	envUsername = []string{"ROS_USERNAME", "MIKROTIK_USER"}
-	envPassword = []string{"ROS_PASSWORD", "MIKROTIK_PASSWORD"}
-	envCACert   = []string{"ROS_CA_CERTIFICATE", "MIKROTIK_CA_CERTIFICATE", "ROS_CACERT"}
-	envInsecure = []string{"ROS_INSECURE", "MIKROTIK_INSECURE"}
+	envHostURL  = []string{"ROS_HOSTURL"}
+	envUsername = []string{"ROS_USERNAME"}
+	envPassword = []string{"ROS_PASSWORD"}
+	envCACert   = []string{"ROS_CA_CERTIFICATE", "ROS_CACERT"}
+	envInsecure = []string{"ROS_INSECURE"}
 )
 
 // connEnv is the connection configuration resolved from the environment.

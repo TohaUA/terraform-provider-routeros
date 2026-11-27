@@ -89,8 +89,8 @@ func TestClientGetIsGetOnly(t *testing.T) {
 	}
 }
 
-// clearConnEnv blanks every connection variable the tool reads, so that a developer's own ROS_* or
-// MIKROTIK_* environment cannot leak into a test. An empty value counts as unset.
+// clearConnEnv blanks every connection variable the tool reads, so that a developer's own ROS_*
+// environment cannot leak into a test. An empty value counts as unset.
 func clearConnEnv(t *testing.T) {
 	t.Helper()
 	for _, names := range [][]string{envHostURL, envUsername, envPassword, envCACert, envInsecure} {
@@ -114,33 +114,14 @@ func TestResolveEnv(t *testing.T) {
 		want    connEnv
 		wantErr string
 	}{
-		{name: "nothing set", getenv: env(), wantErr: "ROS_HOSTURL or MIKROTIK_HOST is not set"},
-		{name: "blank host", getenv: env("ROS_HOSTURL", "  ", "ROS_USERNAME", "u"), wantErr: "ROS_HOSTURL or MIKROTIK_HOST is not set"},
-		{name: "no username", getenv: env("ROS_HOSTURL", "https://r"), wantErr: "ROS_USERNAME or MIKROTIK_USER is not set"},
+		{name: "nothing set", getenv: env(), wantErr: "ROS_HOSTURL is not set"},
+		{name: "blank host", getenv: env("ROS_HOSTURL", "  ", "ROS_USERNAME", "u"), wantErr: "ROS_HOSTURL is not set"},
+		{name: "no username", getenv: env("ROS_HOSTURL", "https://r"), wantErr: "ROS_USERNAME is not set"},
 		{
 			name: "ROS names",
 			getenv: env("ROS_HOSTURL", " https://r ", "ROS_USERNAME", "u", "ROS_PASSWORD", "p",
 				"ROS_CA_CERTIFICATE", "/ca.pem", "ROS_INSECURE", "false"),
 			want: connEnv{HostURL: "https://r", Username: "u", Password: "p", CACert: "/ca.pem", CACertVar: "ROS_CA_CERTIFICATE"},
-		},
-		{
-			name: "MIKROTIK names",
-			getenv: env("MIKROTIK_HOST", "https://m", "MIKROTIK_USER", "mu", "MIKROTIK_PASSWORD", "mp",
-				"MIKROTIK_CA_CERTIFICATE", "/m.pem", "MIKROTIK_INSECURE", "1"),
-			want: connEnv{HostURL: "https://m", Username: "mu", Password: "mp", CACert: "/m.pem", CACertVar: "MIKROTIK_CA_CERTIFICATE", Insecure: true},
-		},
-		{
-			// Provider order: the ROS_* name wins, even ROS_INSECURE=false over MIKROTIK_INSECURE=true.
-			name: "ROS names take precedence",
-			getenv: env("ROS_HOSTURL", "https://r", "MIKROTIK_HOST", "https://m", "ROS_USERNAME", "u", "MIKROTIK_USER", "mu",
-				"ROS_PASSWORD", "p", "MIKROTIK_PASSWORD", "mp", "ROS_CA_CERTIFICATE", "/ca.pem", "MIKROTIK_CA_CERTIFICATE", "/m.pem",
-				"ROS_CACERT", "/old.pem", "ROS_INSECURE", "false", "MIKROTIK_INSECURE", "true"),
-			want: connEnv{HostURL: "https://r", Username: "u", Password: "p", CACert: "/ca.pem", CACertVar: "ROS_CA_CERTIFICATE"},
-		},
-		{
-			name:   "empty ROS value falls through to MIKROTIK",
-			getenv: env("ROS_HOSTURL", "", "MIKROTIK_HOST", "https://m", "ROS_USERNAME", "u"),
-			want:   connEnv{HostURL: "https://m", Username: "u"},
 		},
 		{
 			name:   "legacy ROS_CACERT still works",
@@ -149,8 +130,8 @@ func TestResolveEnv(t *testing.T) {
 		},
 		{
 			name:   "provider CA variable beats ROS_CACERT",
-			getenv: env("ROS_HOSTURL", "https://r", "ROS_USERNAME", "u", "ROS_CACERT", "/old.pem", "MIKROTIK_CA_CERTIFICATE", "/m.pem"),
-			want:   connEnv{HostURL: "https://r", Username: "u", CACert: "/m.pem", CACertVar: "MIKROTIK_CA_CERTIFICATE"},
+			getenv: env("ROS_HOSTURL", "https://r", "ROS_USERNAME", "u", "ROS_CACERT", "/old.pem", "ROS_CA_CERTIFICATE", "/ca.pem"),
+			want:   connEnv{HostURL: "https://r", Username: "u", CACert: "/ca.pem", CACertVar: "ROS_CA_CERTIFICATE"},
 		},
 		{
 			name:   "insecure accepts what strconv.ParseBool accepts",
@@ -159,8 +140,8 @@ func TestResolveEnv(t *testing.T) {
 		},
 		{
 			name:    "insecure not a boolean",
-			getenv:  env("ROS_HOSTURL", "https://r", "ROS_USERNAME", "u", "MIKROTIK_INSECURE", "yes"),
-			wantErr: `MIKROTIK_INSECURE: "yes" is not a boolean`,
+			getenv:  env("ROS_HOSTURL", "https://r", "ROS_USERNAME", "u", "ROS_INSECURE", "yes"),
+			wantErr: `ROS_INSECURE: "yes" is not a boolean`,
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -225,15 +206,15 @@ func TestEnvNamesMatchProvider(t *testing.T) {
 	}
 }
 
-// Only the MIKROTIK_* names are set, and the device's certificate is trusted through
-// MIKROTIK_CA_CERTIFICATE: the client must reach the TLS device with the right credentials.
-func TestNewClientFromEnvProviderAliases(t *testing.T) {
+// The device's certificate is trusted through ROS_CA_CERTIFICATE: the client must reach the TLS
+// device with the right credentials.
+func TestNewClientFromEnvROS(t *testing.T) {
 	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if u, p, _ := r.BasicAuth(); u != "reader" || p != "secret" {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		_, _ = w.Write([]byte(`{"version":"7.24 (stable)"}`))
+		_, _ = w.Write([]byte(`{"version":"7.25.2"}`))
 	}))
 	defer srv.Close()
 	ca := filepath.Join(t.TempDir(), "ca.pem")
@@ -242,20 +223,20 @@ func TestNewClientFromEnvProviderAliases(t *testing.T) {
 	}
 
 	clearConnEnv(t)
-	t.Setenv("MIKROTIK_HOST", srv.URL)
-	t.Setenv("MIKROTIK_USER", "reader")
-	t.Setenv("MIKROTIK_PASSWORD", "secret")
-	t.Setenv("MIKROTIK_CA_CERTIFICATE", ca)
+	t.Setenv("ROS_HOSTURL", srv.URL)
+	t.Setenv("ROS_USERNAME", "reader")
+	t.Setenv("ROS_PASSWORD", "secret")
+	t.Setenv("ROS_CA_CERTIFICATE", ca)
 	c, err := NewClientFromEnv(5 * time.Second)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if v, err := c.Version(); err != nil || v != "7.24" {
+	if v, err := c.Version(); err != nil || v != "7.25.2" {
 		t.Errorf("version %q %v", v, err)
 	}
 
-	t.Setenv("MIKROTIK_CA_CERTIFICATE", filepath.Join(t.TempDir(), "missing.pem"))
-	if _, err := NewClientFromEnv(time.Second); err == nil || !strings.HasPrefix(err.Error(), "MIKROTIK_CA_CERTIFICATE: ") {
+	t.Setenv("ROS_CA_CERTIFICATE", filepath.Join(t.TempDir(), "missing.pem"))
+	if _, err := NewClientFromEnv(time.Second); err == nil || !strings.HasPrefix(err.Error(), "ROS_CA_CERTIFICATE: ") {
 		t.Errorf("unreadable CA file must name the variable it came from: %v", err)
 	}
 }

@@ -21,7 +21,6 @@ func TestSecretLenValidatorDoesNotEchoValue(t *testing.T) {
 		length string
 	}{
 		{"capsman_security", ResourceCapsManSecurity().Schema, "passphrase", hex64, "64"},
-		{"capsman_security_v0", ResourceCapsManSecurityV0().Schema, "passphrase", hex64, "64"},
 		{"wireless_security_profiles", ResourceInterfaceWirelessSecurityProfiles().Schema, "wpa_pre_shared_key", hex64 + "z", "65"},
 		{"wireless_security_profiles", ResourceInterfaceWirelessSecurityProfiles().Schema, "wpa2_pre_shared_key", hex64 + "z", "65"},
 		{"wifi_security_multi_passphrase", ResourceWifiSecurityMultiPassphrase().Schema, "passphrase", hex64 + "z", "65"},

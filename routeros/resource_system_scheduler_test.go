@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testSystemSchedulerTask = "routeros_scheduler.test_task"
+const testSystemSchedulerTask = "routeros_system_scheduler.test_task"
 
 func TestAccSystemSchedulerTest_basic(t *testing.T) {
 	for _, name := range testNames {
@@ -17,7 +17,7 @@ func TestAccSystemSchedulerTest_basic(t *testing.T) {
 					testSetTransportEnv(t, name)
 				},
 				ProviderFactories: testAccProviderFactories,
-				CheckDestroy:      testCheckResourceDestroy("/system/scheduler", "routeros_scheduler"),
+				CheckDestroy:      testCheckResourceDestroy("/system/scheduler", "routeros_system_scheduler"),
 				Steps: []resource.TestStep{
 					{
 						Config: testAccSystemSchedulerConfig(),
@@ -37,7 +37,7 @@ func TestAccSystemSchedulerTest_basic(t *testing.T) {
 
 func testAccSystemSchedulerConfig() string {
 	return providerConfig + `
-resource "routeros_scheduler" "test_task" {
+resource "routeros_system_scheduler" "test_task" {
 	name = "TestTask"
 	on_event="script1"
 	disabled = true

@@ -107,12 +107,5 @@ func ResourceInterfaceBridgeVlan() *schema.Resource {
 
 		Schema:        resSchema,
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    ResourceInterfaceBridgeVlanV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationScalarToList("vlan_ids"),
-				Version: 0,
-			},
-		},
 	}
 }

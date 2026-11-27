@@ -10,10 +10,7 @@ import (
 const testInterfaceWirelessAccessList = "routeros_interface_wireless_access_list.test"
 
 func TestAccInterfaceWirelessAccessListTest_basic(t *testing.T) {
-	if !testCheckMaxVersion(t, testCapsManChannelMaxVersion) {
-		t.Logf("Test skipped, the maximum supported version is %v", testCapsManChannelMaxVersion)
-		return
-	}
+	t.Skip("legacy wireless/CAPsMAN v1 requires the optional wireless package not installed on RouterOS 7.25 CHR")
 
 	// t.Parallel()
 	for _, name := range testNames {
