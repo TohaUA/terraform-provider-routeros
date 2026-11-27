@@ -19,7 +19,8 @@ resource "routeros_user_manager_user" "test" {
     "${routeros_user_manager_attribute.mikrotik_wireless_comment.name}:Test Group",
     "${routeros_user_manager_attribute.mikrotik_wireless_vlanid.name}:100",
   ]
-  group    = routeros_user_manager_user_group.test.name
-  name     = "test"
-  password = "password"
+  group        = routeros_user_manager_user_group.test.name
+  name         = "test"
+  password     = "password"
+  shared_users = "unlimited"
 }
