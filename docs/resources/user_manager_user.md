@@ -24,9 +24,10 @@ resource "routeros_user_manager_user" "test" {
     "${routeros_user_manager_attribute.mikrotik_wireless_comment.name}:Test Group",
     "${routeros_user_manager_attribute.mikrotik_wireless_vlanid.name}:100",
   ]
-  group    = routeros_user_manager_user_group.test.name
-  name     = "test"
-  password = "password"
+  group        = routeros_user_manager_user_group.test.name
+  name         = "test"
+  password     = "password"
+  shared_users = "unlimited"
 }
 ```
 
@@ -46,7 +47,7 @@ resource "routeros_user_manager_user" "test" {
 - `group` (String) Name of the group the user is associated with.
 - `otp_secret` (String, Sensitive) A token of a one-time code that will be attached to the password.
 - `password` (String, Sensitive) The password of the user for session authentication.
-- `shared_users` (Number) The total amount of sessions the user can simultaneously establish.
+- `shared_users` (String) The total amount of sessions the user can simultaneously establish.
 
 ### Read-Only
 
