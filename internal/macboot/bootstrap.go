@@ -255,8 +255,10 @@ func BuildBootstrapScript(cfg BootstrapConfig, nonce string) (string, error) {
 		":global mbC " + qCert,
 		":global mbN " + qNonce,
 		`:if ([:len [/ip/address/find address=$mbA interface=$mbI]]=0) do={/ip/address/add address=$mbA interface=$mbI}`,
-		`:if ([:len [/certificate/find name=$mbC]]=0) do={/certificate/add name=$mbC common-name=routeros key-size=prime256v1 key-usage=tls-server}`,
-		`:if ([:len [/certificate/get ([/certificate/find name=$mbC]->0) fingerprint]]=0) do={/certificate/sign ([/certificate/find name=$mbC]->0)}`,
+		`:global mbF [/certificate/find name=$mbC]`,
+		`:if ([:len $mbF]=0) do={/certificate/add name=$mbC common-name=$mbC key-size=prime256v1 key-usage=digital-signature,key-agreement,tls-server}`,
+		`:if ([:len [/certificate/get [/certificate/find name=$mbC] fingerprint]]=0) do={/certificate/sign [/certificate/find name=$mbC]}`,
+		`:for i from=1 to=20 do={:if ([:len [/certificate/get [/certificate/find name=$mbC] fingerprint]]=0) do={:delay 500ms}}`,
 		`/ip/service/set www-ssl certificate=$mbC disabled=no`,
 	}
 	if cfg.EnableAPISSL {
@@ -264,12 +266,12 @@ func BuildBootstrapScript(cfg BootstrapConfig, nonce string) (string, error) {
 	}
 	lines = append(lines,
 		`:put ("===MACBOOT-" . "BEGIN-" . $mbN . "===")`,
-		`:put ("fingerprint=" . [/certificate/get ([/certificate/find name=$mbC]->0) fingerprint])`,
+		`:put ("fingerprint=" . [/certificate/get [/certificate/find name=$mbC] fingerprint])`,
 		`:put ("address=" . [/ip/address/get ([/ip/address/find address=$mbA interface=$mbI]->0) address])`,
 		`:put ("identity=" . [/system/identity/get name])`,
 		`:put ("version=" . [/system/resource/get version])`,
 		`:put ("===MACBOOT-" . "END-" . $mbN . "===")`,
-		`:set mbA; :set mbC; :set mbI; :set mbN`,
+		`:set mbA; :set mbC; :set mbF; :set mbI; :set mbN`,
 	)
 
 	return strings.Join(lines, "\n"), nil
@@ -332,7 +334,11 @@ func Bootstrap(ctx context.Context, cfg BootstrapConfig) (BootstrapResult, error
 
 	res, err := ParseBootstrapOutput(rawOut, nonce)
 	if err != nil {
-		return BootstrapResult{}, fmt.Errorf("parse bootstrap output: %w", err)
+		tail := rawOut
+		if len(tail) > 800 {
+			tail = tail[len(tail)-800:]
+		}
+		return BootstrapResult{}, fmt.Errorf("parse bootstrap output: %w (output=%q)", err, tail)
 	}
 
 	if expectedFP != "" {
