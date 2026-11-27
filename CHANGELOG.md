@@ -1,3 +1,9 @@
+## [2.3.1](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.3.0...v2.3.1) (2026-11-27)
+
+### Bug Fixes
+
+* **importer:** verify SSH host keys, secure password/file mode, and escape HCL ([#90](https://github.com/TohaUA/terraform-provider-routeros/issues/90)) ([7aec8af](https://github.com/TohaUA/terraform-provider-routeros/commit/7aec8af9099f2a3963ecdd3b6964f9d21d8df52d)), closes [#58](https://github.com/TohaUA/terraform-provider-routeros/issues/58)
+
 ## [2.3.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.6...v2.3.0) (2026-11-27)
 
 ### Features
