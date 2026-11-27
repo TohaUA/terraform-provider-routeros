@@ -53,7 +53,7 @@ const (
 var (
 	macTelnetCPMagic = [4]byte{0x56, 0x34, 0x12, 0xff}
 	ansiEscapeRegexp = regexp.MustCompile(`\x1b\[[0-9;?]*[a-zA-Z]|\x1b[@-Z\\-_]`)
-	rosPromptRegexp  = regexp.MustCompile(`(?m)\[[^\r\n\]]+@[^\r\n\]]+\][^\r\n>]*>\s*$`)
+	rosPromptRegexp  = regexp.MustCompile(`(?:^|\n)\[[^\r\n\]]+@[^\r\n\]]+\][^\r\n>]*>[ \t]*\z`)
 )
 
 // MACTelnetOptions configures a MAC-Telnet client session.
@@ -385,46 +385,57 @@ func (s *MACTelnetSession) readLoop() {
 func (s *MACTelnetSession) handleDataPacket(pkt MACTelnetPacket) {
 	s.mu.Lock()
 	expected := s.rxCounter
-	payload := pkt.Payload
-	if pkt.Counter < expected && pkt.Counter+uint32(len(payload)) > expected {
-		payload = payload[expected-pkt.Counter:]
-	}
-	if pkt.Counter == expected || (pkt.Counter < expected && len(payload) > 0) {
-		s.rxCounter += uint32(len(payload))
-		newAck := s.rxCounter
+	pktStart := uint64(pkt.Counter)
+	pktEnd := pktStart + uint64(len(pkt.Payload))
+	exp64 := uint64(expected)
+
+	var newData []byte
+	switch {
+	case pktStart == exp64:
+		newData = pkt.Payload
+	case pktStart < exp64 && pktEnd > exp64:
+		newData = pkt.Payload[exp64-pktStart:]
+	default:
+		// Pure duplicate (pktEnd <= exp64) or out-of-order future packet (pktStart > exp64).
 		s.mu.Unlock()
-
-		ack := EncodeMACTelnetPacket(true, macTelnetPTypeAck, s.localMAC, s.targetMAC, s.sesKey, macTelnetClientType, newAck, nil)
-		s.debugHex("tx-ack", ack, -1, 0)
+		ack := EncodeMACTelnetPacket(true, macTelnetPTypeAck, s.localMAC, s.targetMAC, s.sesKey, macTelnetClientType, expected, nil)
+		s.debugHex("tx-ack-dup", ack, -1, 0)
 		_, _ = s.conn.WriteTo(ack, s.remoteAddr)
-
-		ctrls, plain, err := ParseDataPayload(payload)
-		if err != nil {
-			s.logf("malformed MAC-Telnet data payload: %v", err)
-			return
-		}
-		for _, cp := range ctrls {
-			select {
-			case s.ctrlCh <- cp:
-			default:
-			}
-		}
-		if len(plain) > 0 {
-			s.mu.Lock()
-			s.termBuf.Write(plain)
-			s.mu.Unlock()
-			select {
-			case s.termNotify <- struct{}{}:
-			default:
-			}
-		}
 		return
 	}
+
+	s.rxCounter += uint32(len(newData))
+	newAck := s.rxCounter
 	s.mu.Unlock()
 
-	// Out-of-order or duplicate DATA: re-ack current rxCounter.
-	ack := EncodeMACTelnetPacket(true, macTelnetPTypeAck, s.localMAC, s.targetMAC, s.sesKey, macTelnetClientType, expected, nil)
+	ack := EncodeMACTelnetPacket(true, macTelnetPTypeAck, s.localMAC, s.targetMAC, s.sesKey, macTelnetClientType, newAck, nil)
+	s.debugHex("tx-ack", ack, -1, 0)
 	_, _ = s.conn.WriteTo(ack, s.remoteAddr)
+
+	if len(newData) == 0 {
+		return
+	}
+
+	ctrls, plain, err := ParseDataPayload(newData)
+	if err != nil {
+		s.logf("malformed MAC-Telnet data payload: %v", err)
+		return
+	}
+	for _, cp := range ctrls {
+		select {
+		case s.ctrlCh <- cp:
+		default:
+		}
+	}
+	if len(plain) > 0 {
+		s.mu.Lock()
+		s.termBuf.Write(plain)
+		s.mu.Unlock()
+		select {
+		case s.termNotify <- struct{}{}:
+		default:
+		}
+	}
 }
 
 func (s *MACTelnetSession) keepaliveLoop() {

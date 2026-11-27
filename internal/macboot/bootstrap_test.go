@@ -194,6 +194,7 @@ type fakeMACTelnetServer struct {
 	certFP     string
 
 	firstLoginPrompts bool
+	duplicateDataOnce bool
 
 	mu         sync.Mutex
 	addrSet    bool
@@ -361,9 +362,19 @@ func (s *fakeMACTelnetServer) serve() {
 					lineBuf.Reset()
 					lineBuf.Write(rest)
 
-					respText := s.execFakeCmd(cmd) + "\r\n[admin@MikroTik] > "
-					sendToClient(macTelnetPTypeData, txCounter, []byte(respText))
-					txCounter += uint32(len(respText))
+					if s.duplicateDataOnce {
+						echo := cmd + "\r\n"
+						sendToClient(macTelnetPTypeData, txCounter, []byte(echo))
+						txCounter += uint32(len(echo))
+						sendToClient(macTelnetPTypeData, txCounter-uint32(len(echo)), []byte(echo))
+						prompt := "[admin@MikroTik] > "
+						sendToClient(macTelnetPTypeData, txCounter, []byte(prompt))
+						txCounter += uint32(len(prompt))
+					} else {
+						respText := s.execFakeCmd(cmd) + "\r\n[admin@MikroTik] > "
+						sendToClient(macTelnetPTypeData, txCounter, []byte(respText))
+						txCounter += uint32(len(respText))
+					}
 				}
 			}
 		}
@@ -585,4 +596,35 @@ func TestMACTelnetFirstLoginPrompts(t *testing.T) {
 		t.Fatalf("DialMACTelnet with first-login prompts failed: %v", err)
 	}
 	_ = sess.Close()
+}
+
+func TestMACTelnetIgnoresDuplicateRetransmittedData(t *testing.T) {
+	macSrv := startFakeMACTelnetServer(t, "admin", "", strings.Repeat("AB", 32))
+	macSrv.duplicateDataOnce = true
+	loopIf := loopbackInterfaceName(t)
+
+	sess, err := DialMACTelnet(context.Background(), MACTelnetOptions{
+		Interface:  loopIf,
+		TargetMAC:  "54:05:AB:01:02:03",
+		Username:   "admin",
+		Password:   "",
+		Timeout:    5 * time.Second,
+		RemoteAddr: macSrv.conn.LocalAddr().String(),
+	})
+	if err != nil {
+		t.Fatalf("DialMACTelnet failed: %v", err)
+	}
+	defer func() { _ = sess.Close() }()
+
+	const cmd = `:set mbA; :set mbC; :set mbI; :set mbN`
+	out, err := sess.Exec(context.Background(), cmd)
+	if err != nil {
+		t.Fatalf("Exec with duplicate retransmitted data failed: %v (output=%q)", err, out)
+	}
+	if count := strings.Count(out, cmd); count != 1 {
+		t.Fatalf("expected command once in output, got %d occurrences: %q", count, out)
+	}
+	if !strings.HasSuffix(out, "[admin@MikroTik] > ") {
+		t.Fatalf("expected output to end with RouterOS prompt, got %q", out)
+	}
 }
