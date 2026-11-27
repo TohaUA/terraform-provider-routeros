@@ -15,10 +15,16 @@ import (
 // https://help.mikrotik.com/docs/display/ROS/IPsec#IPsec-Groups
 func ResourceIpIpsecPolicyGroup() *schema.Resource {
 	resSchema := map[string]*schema.Schema{
-		MetaResourcePath: PropResourcePath("/ip/ipsec/policy/group"),
-		MetaId:           PropId(Id),
+		MetaResourcePath:   PropResourcePath("/ip/ipsec/policy/group"),
+		MetaId:             PropId(Id),
+		MetaSetUnsetFields: PropSetUnsetFields("interface"),
 
 		KeyDefault: PropDefaultRo,
+		"interface": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Interface associated with the IPsec policy group. Requires RouterOS 7.25.1 or later.",
+		},
 		KeyName:    PropName(""),
 		KeyComment: PropCommentRw,
 	}

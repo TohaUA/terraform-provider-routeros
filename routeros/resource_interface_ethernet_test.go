@@ -1,12 +1,14 @@
 package routeros
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-
+	"github.com/hashicorp/go-cty/cty"
+	sdkterraform "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testInterfaceEthernetMinVersion = "7.12"
@@ -122,4 +124,106 @@ resource "routeros_interface_ethernet" "importtest" {
   speed                     = "1Gbps" 
 }
 `
+}
+
+func TestResourceInterfaceEthernetPowerCyclePingAddressValidation(t *testing.T) {
+	validate := ResourceInterfaceEthernet().Schema["power_cycle_ping_address"].ValidateFunc
+	if validate == nil {
+		t.Fatal("expected ValidateFunc on power_cycle_ping_address")
+	}
+
+	for _, valid := range []string{
+		"192.0.2.1",
+		"2001:db8::1",
+		"00:11:22:33:44:55",
+		"AA:BB:CC:DD:EE:FF",
+		"00-11-22-33-44-55",
+	} {
+		if _, errs := validate(valid, "power_cycle_ping_address"); len(errs) != 0 {
+			t.Errorf("valid address %q rejected: %v", valid, errs)
+		}
+	}
+
+	for _, invalid := range []string{
+		"",
+		"example.com",
+		"not-an-address",
+		"192.0.2.999",
+		"00:11:22:33:44",
+	} {
+		if _, errs := validate(invalid, "power_cycle_ping_address"); len(errs) == 0 {
+			t.Errorf("invalid address %q unexpectedly accepted", invalid)
+		}
+	}
+}
+
+func TestResourceInterfaceEthernetPowerCyclePingAddressDiffSuppress(t *testing.T) {
+	res := ResourceInterfaceEthernet()
+	ds := res.Schema["power_cycle_ping_address"].DiffSuppressFunc
+	if ds == nil {
+		t.Fatal("expected DiffSuppressFunc on power_cycle_ping_address")
+	}
+
+	if !ds("power_cycle_ping_address", "aa:bb:cc:dd:ee:ff", "AA:BB:CC:DD:EE:FF", nil) {
+		t.Error("expected case-only MAC diff to be suppressed")
+	}
+	if !ds("power_cycle_ping_address", "", "", nil) {
+		t.Error("expected empty-to-empty diff to be suppressed")
+	}
+	if ds("power_cycle_ping_address", "aa:bb:cc:dd:ee:ff", "00:11:22:33:44:55", nil) {
+		t.Error("expected distinct MAC diff not to be suppressed")
+	}
+	if ds("power_cycle_ping_address", "aa:bb:cc:dd:ee:ff", "", nil) {
+		t.Error("expected MAC removal diff not to be suppressed")
+	}
+
+	// Drive full SDK Diff: case-only MAC change is a no-op, while removal plans an update.
+	state := &sdkterraform.InstanceState{
+		ID: "*1",
+		Attributes: map[string]string{
+			"id":                       "*1",
+			"factory_name":             "ether1",
+			"name":                     "ether1",
+			"power_cycle_ping_enabled": "true",
+			"power_cycle_ping_address": "aa:bb:cc:dd:ee:ff",
+		},
+	}
+
+	cfgSame := sdkterraform.NewResourceConfigRaw(map[string]interface{}{
+		"factory_name":             "ether1",
+		"name":                     "ether1",
+		"power_cycle_ping_enabled": true,
+		"power_cycle_ping_address": "AA:BB:CC:DD:EE:FF",
+	})
+	cfgSame.CtyValue = resourceDataWithRawConfig(res, "*1", map[string]cty.Value{
+		"factory_name":             cty.StringVal("ether1"),
+		"name":                     cty.StringVal("ether1"),
+		"power_cycle_ping_enabled": cty.True,
+		"power_cycle_ping_address": cty.StringVal("AA:BB:CC:DD:EE:FF"),
+	}).GetRawConfig()
+	diff, err := res.Diff(context.Background(), state, cfgSame, nil)
+	if err != nil {
+		t.Fatalf("diff same MAC: %v", err)
+	}
+	if diff != nil && !diff.Empty() {
+		t.Fatalf("expected empty diff for case-only MAC change, got %#v", diff.Attributes)
+	}
+
+	cfgRemoved := sdkterraform.NewResourceConfigRaw(map[string]interface{}{
+		"factory_name":             "ether1",
+		"name":                     "ether1",
+		"power_cycle_ping_enabled": true,
+	})
+	cfgRemoved.CtyValue = resourceDataWithRawConfig(res, "*1", map[string]cty.Value{
+		"factory_name":             cty.StringVal("ether1"),
+		"name":                     cty.StringVal("ether1"),
+		"power_cycle_ping_enabled": cty.True,
+	}).GetRawConfig()
+	diff, err = res.Diff(context.Background(), state, cfgRemoved, nil)
+	if err != nil {
+		t.Fatalf("diff removed MAC: %v", err)
+	}
+	if diff == nil || diff.Attributes["power_cycle_ping_address"] == nil {
+		t.Fatalf("expected diff on power_cycle_ping_address when removed, got %#v", diff)
+	}
 }
