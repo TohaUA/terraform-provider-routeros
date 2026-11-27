@@ -82,6 +82,15 @@ func Provider() *schema.Provider {
 				),
 				Description: "Skip TLS certificate verification (not recommended) (env: ROS_INSECURE).",
 			},
+			"tls_fingerprint": {
+				Type:     schema.TypeString,
+				Optional: true,
+				DefaultFunc: schema.MultiEnvDefaultFunc(
+					[]string{"ROS_TLS_FINGERPRINT"},
+					nil,
+				),
+				Description: "Expected SHA-256 fingerprint (64 hex characters, optional colons or `sha256:` prefix) of the router's TLS leaf certificate. Mutually exclusive with `insecure` and `ca_certificate` (env: ROS_TLS_FINGERPRINT).",
+			},
 			"suppress_syso_del_warn": {
 				Type:     schema.TypeBool,
 				Optional: true,
