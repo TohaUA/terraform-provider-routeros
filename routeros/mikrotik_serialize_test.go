@@ -1,10 +1,14 @@
 package routeros
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 var (
@@ -224,4 +228,164 @@ func Test_mikrotikResourceDataToTerraform_ipSSHServerPasswordAuthentication(t *t
 			}
 		}
 	}
+}
+
+func Test_terraformResourceDataToMikrotik_TypeIntSetUnsetFields(t *testing.T) {
+	makeResource := func() *schema.Resource {
+		return &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				MetaResourcePath:   PropResourcePath("/test/int-unset"),
+				MetaId:             PropId(Id),
+				MetaSetUnsetFields: PropSetUnsetFields("client_mtu"),
+				"comment": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"client_mtu": {
+					Type:     schema.TypeInt,
+					Optional: true,
+				},
+			},
+		}
+	}
+
+	t.Run("removed_int_attr_emits_unset", func(t *testing.T) {
+		res := makeResource()
+		_, attrs := blockTestNullRawConfig(res)
+		state := &terraform.InstanceState{
+			ID: "*1",
+			Attributes: map[string]string{
+				"id":         "*1",
+				"client_mtu": "1380",
+			},
+			RawConfig: cty.ObjectVal(attrs),
+		}
+		cfg := terraform.NewResourceConfigRaw(map[string]interface{}{})
+		cfg.CtyValue = cty.ObjectVal(attrs)
+
+		var item MikrotikItem
+		res.UpdateContext = func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+			item, _ = TerraformResourceDataToMikrotik(res.Schema, d)
+			return nil
+		}
+		diff, err := res.Diff(context.Background(), state, cfg, nil)
+		if err != nil {
+			t.Fatalf("diff: %v", err)
+		}
+		if diff == nil || diff.Attributes["client_mtu"] == nil {
+			t.Fatalf("expected diff on client_mtu, got %#v", diff)
+		}
+		if _, diags := res.Apply(context.Background(), state, diff, nil); diags.HasError() {
+			t.Fatalf("apply: %v", diags)
+		}
+		if got, ok := item["!client-mtu"]; !ok || got != "" {
+			t.Fatalf("expected !client-mtu=\"\", got item=%#v", item)
+		}
+		if _, ok := item["client-mtu"]; ok {
+			t.Fatalf("did not expect client-mtu in item=%#v", item)
+		}
+	})
+
+	t.Run("explicit_zero_int_attr_emits_zero", func(t *testing.T) {
+		res := makeResource()
+		_, attrs := blockTestNullRawConfig(res)
+		attrs["client_mtu"] = cty.NumberIntVal(0)
+		state := &terraform.InstanceState{
+			ID: "*1",
+			Attributes: map[string]string{
+				"id":         "*1",
+				"client_mtu": "1380",
+			},
+			RawConfig: cty.ObjectVal(attrs),
+		}
+		cfg := terraform.NewResourceConfigRaw(map[string]interface{}{
+			"client_mtu": 0,
+		})
+		cfg.CtyValue = cty.ObjectVal(attrs)
+
+		var item MikrotikItem
+		res.UpdateContext = func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+			item, _ = TerraformResourceDataToMikrotik(res.Schema, d)
+			return nil
+		}
+		diff, err := res.Diff(context.Background(), state, cfg, nil)
+		if err != nil {
+			t.Fatalf("diff: %v", err)
+		}
+		if diff == nil || diff.Attributes["client_mtu"] == nil {
+			t.Fatalf("expected diff on client_mtu, got %#v", diff)
+		}
+		if _, diags := res.Apply(context.Background(), state, diff, nil); diags.HasError() {
+			t.Fatalf("apply: %v", diags)
+		}
+		if got, ok := item["client-mtu"]; !ok || got != "0" {
+			t.Fatalf("expected client-mtu=\"0\", got item=%#v", item)
+		}
+		if _, ok := item["!client-mtu"]; ok {
+			t.Fatalf("did not expect !client-mtu when explicitly set to 0, got item=%#v", item)
+		}
+	})
+
+	t.Run("never_set_unrelated_update_omits_both", func(t *testing.T) {
+		res := makeResource()
+		_, attrs := blockTestNullRawConfig(res)
+		attrs["comment"] = cty.StringVal("new")
+		state := &terraform.InstanceState{
+			ID: "*1",
+			Attributes: map[string]string{
+				"id":      "*1",
+				"comment": "old",
+			},
+			RawConfig: cty.ObjectVal(attrs),
+		}
+		cfg := terraform.NewResourceConfigRaw(map[string]interface{}{
+			"comment": "new",
+		})
+		cfg.CtyValue = cty.ObjectVal(attrs)
+
+		var item MikrotikItem
+		res.UpdateContext = func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+			item, _ = TerraformResourceDataToMikrotik(res.Schema, d)
+			return nil
+		}
+		diff, err := res.Diff(context.Background(), state, cfg, nil)
+		if err != nil {
+			t.Fatalf("diff: %v", err)
+		}
+		if _, diags := res.Apply(context.Background(), state, diff, nil); diags.HasError() {
+			t.Fatalf("apply: %v", diags)
+		}
+		if item["comment"] != "new" {
+			t.Fatalf("expected comment=new, got item=%#v", item)
+		}
+		if _, ok := item["client-mtu"]; ok {
+			t.Fatalf("did not expect client-mtu, got item=%#v", item)
+		}
+		if _, ok := item["!client-mtu"]; ok {
+			t.Fatalf("did not expect !client-mtu, got item=%#v", item)
+		}
+	})
+
+	t.Run("null_raw_config_does_not_panic", func(t *testing.T) {
+		res := &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				MetaResourcePath:   PropResourcePath("/test/int-unset-null"),
+				MetaId:             PropId(Id),
+				MetaSetUnsetFields: PropSetUnsetFields("client_mtu"),
+				"comment": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"client_mtu": {
+					Type: schema.TypeInt,
+				},
+			},
+		}
+		d := res.TestResourceData()
+		d.SetId("*1")
+		item, _ := TerraformResourceDataToMikrotik(res.Schema, d)
+		if got, ok := item["!client-mtu"]; !ok || got != "" {
+			t.Fatalf("expected !client-mtu=\"\" with null raw config, got item=%#v", item)
+		}
+	})
 }

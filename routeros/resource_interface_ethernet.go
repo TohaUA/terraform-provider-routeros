@@ -215,11 +215,12 @@ func ResourceInterfaceEthernet() *schema.Resource {
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"power_cycle_ping_address": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Description:  "An address to monitor.",
-			ValidateFunc: validation.IsIPAddress,
-			RequiredWith: []string{"power_cycle_ping_enabled"},
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "An address to monitor.",
+			ValidateFunc:     validation.Any(validation.IsIPAddress, validation.IsMACAddress),
+			RequiredWith:     []string{"power_cycle_ping_enabled"},
+			DiffSuppressFunc: MacAddressEqual,
 		},
 		"power_cycle_ping_timeout": {
 			Type:        schema.TypeString,

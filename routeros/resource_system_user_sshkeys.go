@@ -29,6 +29,13 @@ func ResourceUserSshKeys() *schema.Resource {
 			Description: "username to which the SSH key is assigned.",
 		},
 		KeyComment: PropCommentRw,
+		"info": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "Free-text label for the key.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+		},
 		"key": {
 			Type:        schema.TypeString,
 			Required:    true,

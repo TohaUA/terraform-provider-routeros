@@ -40,6 +40,13 @@ func GetMetadata(s map[string]*schema.Schema) *MikrotikItemMetadata {
 	return meta
 }
 
+func rawConfigAttr(rawConfig cty.Value, name string) cty.Value {
+	if rawConfig.IsNull() || !rawConfig.IsKnown() || !rawConfig.Type().IsObjectType() || !rawConfig.Type().HasAttribute(name) {
+		return cty.NullVal(cty.DynamicPseudoType)
+	}
+	return rawConfig.GetAttr(name)
+}
+
 func isEmpty(propName string, schemaProp *schema.Schema, d *schema.ResourceData, confValue cty.Value) bool {
 	v := d.Get(propName)
 	switch schemaProp.Type {
@@ -195,7 +202,7 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 			fmt.Printf("%25s - old: '%10v', new: '%10v', isNull: %v", terraformSnakeName, old, new, conf)
 		*/
 		if terraformMetadata.Optional && !d.HasChange(terraformSnakeName) &&
-			isEmpty(terraformSnakeName, s[terraformSnakeName], d, rawConfig.GetAttr(terraformSnakeName)) {
+			isEmpty(terraformSnakeName, s[terraformSnakeName], d, rawConfigAttr(rawConfig, terraformSnakeName)) {
 			// fmt.Println(" ... skipped")
 			continue
 		}
@@ -209,7 +216,7 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 		// working credential with it. A declared value still goes out, and so does a
 		// removal, which changes the value and has to clear the secret.
 		if terraformMetadata.Optional && terraformMetadata.Sensitive && !d.HasChange(terraformSnakeName) &&
-			rawConfig.GetAttr(terraformSnakeName).IsNull() {
+			rawConfigAttr(rawConfig, terraformSnakeName).IsNull() {
 			continue
 		}
 
@@ -236,6 +243,12 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 		case schema.TypeFloat:
 			item[mikrotikKebabName] = strconv.FormatFloat(value.(float64), 'f', -1, 64)
 		case schema.TypeInt:
+			if _, ok := setUnsetFields[terraformSnakeName]; ok && value.(int) == 0 &&
+				rawConfigAttr(rawConfig, terraformSnakeName).IsNull() {
+				// Unset
+				item["!"+mikrotikKebabName] = ""
+				continue
+			}
 			item[mikrotikKebabName] = strconv.Itoa(value.(int))
 		case schema.TypeBool:
 			// true:  {...,"interfaces":"ether3","passive":"","priority":"128",...}
@@ -263,7 +276,7 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 				// A Computed block can be present in the state (materialized by Read) while the
 				// configuration does not declare it: the raw config is then an empty list (absent
 				// nested block) or null. Nothing was configured, so there is nothing to send.
-				ctyBlock := rawConfig.GetAttr(terraformSnakeName)
+				ctyBlock := rawConfigAttr(rawConfig, terraformSnakeName)
 				if ctyBlock.IsNull() || !ctyBlock.IsKnown() || ctyBlock.LengthInt() == 0 {
 					// A block that is not Computed and was removed from the configuration is a real
 					// change, not a router-owned block: RouterOS keeps every property a `set` leaves
@@ -328,8 +341,10 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 				// old = ... read, !telnet, !rommon, api, !local, winbox
 				// new = api, read
 				var res []string
-				for _, v := range d.GetRawConfig().GetAttr(terraformSnakeName).AsValueSet().Values() {
-					res = append(res, v.AsString())
+				if attr := rawConfigAttr(rawConfig, terraformSnakeName); !attr.IsNull() && attr.IsKnown() {
+					for _, v := range attr.AsValueSet().Values() {
+						res = append(res, v.AsString())
+					}
 				}
 
 				old, _ := d.GetChange(terraformSnakeName)

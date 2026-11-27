@@ -2,15 +2,23 @@ package routeros
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 // ResourceInterfaceVlan https://help.mikrotik.com/docs/spaces/ROS/pages/88014957/VLAN
 func ResourceInterfaceVlan() *schema.Resource {
 	resSchema := map[string]*schema.Schema{
-		MetaResourcePath: PropResourcePath("/interface/vlan"),
-		MetaId:           PropId(Id),
+		MetaResourcePath:   PropResourcePath("/interface/vlan"),
+		MetaId:             PropId(Id),
+		MetaSetUnsetFields: PropSetUnsetFields("forced_mac_address"),
 
-		"forced_mac_address":       PropMacAddressRw("Override the VLAN interface MAC address. Requires RouterOS 7.25.1 or later.", false),
+		"forced_mac_address": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "Override the VLAN interface MAC address. Requires RouterOS 7.25.1 or later.",
+			ValidateFunc:     validation.IsMACAddress,
+			DiffSuppressFunc: MacAddressEqual,
+		},
 		KeyArp:                     PropArpRw,
 		KeyArpTimeout:              PropArpTimeoutRw,
 		KeyComment:                 PropCommentRw,
