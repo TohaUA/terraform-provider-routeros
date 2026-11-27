@@ -249,7 +249,7 @@ func TestRESTCRUDPathEscaping(t *testing.T) {
 		{
 			name:            "asterisk id",
 			id:              "*39",
-			wantEscapedPath: "/rest/ip/pool/%2A39",
+			wantEscapedPath: "/rest/ip/pool/*39",
 		},
 		{
 			name:            "id with path and query metacharacters",

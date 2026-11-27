@@ -126,7 +126,7 @@ func TestSystemCertificateImportAppliesSettings(t *testing.T) {
 			if got := updates[0].item; !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("settings request item = %v, want %v", got, tt.want)
 			}
-			if got, want := updates[0].path, "/certificate/%2AA"; got != want {
+			if got, want := updates[0].path, "/certificate/*A"; got != want {
 				t.Errorf("settings request path = %q, want %q", got, want)
 			}
 			if update < lastImport {

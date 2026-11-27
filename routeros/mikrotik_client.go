@@ -520,6 +520,15 @@ func escapeRestQueryPart(s string) string {
 	return strings.ReplaceAll(url.QueryEscape(s), "+", "%20")
 }
 
+// escapeRestPathSegment escapes a single RouterOS REST path segment while
+// preserving literal '*' characters. RouterOS .id handles start with '*'
+// (e.g. "*39") and RouterOS REST rejects "%2A39" with 400
+// "missing or invalid resource identifier"; '*' is a valid RFC 3986 path
+// sub-delimiter while '#', '?', '%', '/', spaces, etc. remain percent-encoded.
+func escapeRestPathSegment(s string) string {
+	return strings.ReplaceAll(url.PathEscape(s), "%2A", "*")
+}
+
 // GetRestURL Returns the URL for the client
 func (u *URL) GetRestURL() string {
 	if len(u.Query) == 0 {
