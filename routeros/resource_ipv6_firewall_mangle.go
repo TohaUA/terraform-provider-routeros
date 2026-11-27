@@ -30,8 +30,6 @@ func ResourceIPv6FirewallMangle() *schema.Resource {
 		MetaResourcePath: PropResourcePath("/ipv6/firewall/mangle"),
 		MetaId:           PropId(Id),
 		MetaSkipFields:   PropSkipFields("bytes", "packets"),
-		MetaSetUnsetFields: PropSetUnsetFields("dst_address_list", "src_address_list", "in_interface", "in_interface_list",
-			"out_interface", "out_interface_list", "in_bridge_port_list", "out_bridge_port_list"),
 
 		"action": {
 			Type:        schema.TypeString,
@@ -401,6 +399,7 @@ func ResourceIPv6FirewallMangle() *schema.Resource {
 			Description: "Matches packets TTL value.",
 		},
 	}
+	resSchema[MetaSetUnsetFields] = firewallOptionalStringUnsetFields(resSchema)
 	return &schema.Resource{
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),
