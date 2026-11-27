@@ -9,6 +9,7 @@ import (
 
 // Resources that legitimately have no RouterOS menu.
 var noMenuAllowlist = map[string]struct{}{
+	"routeros_mac_bootstrap":  {}, // runs over local layer-2 MAC-Telnet, path "local"
 	"routeros_wireguard_keys": {}, // generates key pairs locally, path "local"
 }
 

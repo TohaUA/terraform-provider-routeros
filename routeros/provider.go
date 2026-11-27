@@ -20,12 +20,12 @@ func Provider() *schema.Provider {
 		Schema: map[string]*schema.Schema{
 			"hosturl": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc(
 					[]string{"ROS_HOSTURL"},
 					nil,
 				),
-				Description: `URL of the MikroTik router, default is TLS connection to REST.
+				Description: `URL of the MikroTik router, default is TLS connection to REST. Required for IP/API/REST resources; optional when using only layer-2 discovery/bootstrap resources.
 	* API: api[s]://host[:port]
 		* api://router.local
 		* apis://router.local:8729
@@ -43,12 +43,12 @@ func Provider() *schema.Provider {
 			},
 			"username": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc(
 					[]string{"ROS_USERNAME"},
 					nil,
 				),
-				Description: `Username for the MikroTik WEB/Winbox.
+				Description: `Username for the MikroTik WEB/Winbox. Required for IP/API/REST resources.
 
 
 	export ROS_USERNAME=admin
@@ -351,6 +351,7 @@ func Provider() *schema.Provider {
 			"routeros_snmp_community": ResourceSNMPCommunity(),
 
 			// Helpers
+			"routeros_mac_bootstrap":  ResourceMacBootstrap(),
 			"routeros_wireguard_keys": ResourceWireguardKeys(),
 			"routeros_move_items":     ResourceMoveItems(),
 
@@ -438,6 +439,7 @@ func Provider() *schema.Provider {
 			"routeros_ip_dhcp_server_leases":                  DatasourceIpDhcpServerLeases(),
 			"routeros_ip_firewall":                            DatasourceIPFirewall(),
 			"routeros_ip_neighbor":                            DatasourceIpNeighbor(),
+			"routeros_mndp_neighbors":                         DatasourceMNDPNeighbors(),
 			"routeros_ip_routes":                              DatasourceIPRoutes(),
 			"routeros_ip_services":                            DatasourceIPServices(),
 			"routeros_ipv6_addresses":                         DatasourceIPv6Addresses(),
