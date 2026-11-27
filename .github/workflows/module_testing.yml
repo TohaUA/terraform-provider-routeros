@@ -44,6 +44,8 @@ on:
     paths:
       - 'main.go'
       - 'routeros/*.go'
+      - 'internal/**'
+      - 'cmd/**'
       # The unit job builds and tests the tools too, including schema-drift.
       - 'tools/**'
       # go.mod picks the toolchain and, with go.sum, every dependency the
@@ -77,10 +79,163 @@ jobs:
       - name: Build and unit test
         run: |
           go build ./...
-          go test ./routeros/ ./tools/...
+          go test ./routeros/ ./tools/... ./internal/... ./cmd/...
+          go test ./internal/macboot -fuzz=FuzzDecodeMNDP -fuzztime=5s
+          go test ./internal/macboot -fuzz=FuzzParseBootstrapOutput -fuzztime=5s
 
       - name: Vulnerability scan
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.10.0 ./...
+
+  layer2-bootstrap:
+    name: Layer-2 Bootstrap (CHR 7.25.2)
+    needs: []
+    if: github.event_name != 'schedule' && (github.event_name != 'pull_request' || !github.event.pull_request.draft)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6.1.0
+
+      - name: Build the RouterOS container
+        run: docker build --build-arg "ROUTEROS_VERSION=7.25.2" -t routeros-test .github/docker-routeros
+
+      - name: Create L2 bridge and start RouterOS
+        run: |
+          docker network create \
+            --driver bridge \
+            --subnet 172.30.99.0/24 \
+            --gateway 172.30.99.1 \
+            -o com.docker.network.bridge.name=macbootbr0 \
+            macboot-l2
+          BRIDGE_GW=$(docker network inspect bridge -f '{{(index .IPAM.Config 0).Gateway}}')
+          docker create --name routeros \
+            --cap-add=NET_ADMIN \
+            --device /dev/net/tun \
+            --device /dev/kvm \
+            -e ROUTEROS_MEMORY=2048 \
+            -e BRIDGE_GW="$BRIDGE_GW" \
+            -p 8728:8728 \
+            --entrypoint /usr/bin/env \
+            routeros-test \
+            bash -c '
+              if ip -4 addr show dev eth0 | grep -q "172\.30\.99\."; then
+                ip link set eth0 down
+                ip link set eth1 down
+                ip link set eth0 name eth_l2
+                ip link set eth1 name eth0
+                ip link set eth_l2 name eth1
+                ip link set eth0 up
+                ip link set eth1 up
+              fi
+              if [ -n "$BRIDGE_GW" ]; then
+                ip route replace default via "$BRIDGE_GW" dev eth0
+              fi
+              ip -br addr
+              ip route
+              exec /routeros/entrypoint_with_four_interfaces.sh
+            '
+          docker network connect macboot-l2 routeros
+          docker start routeros
+
+      - name: Setup Go environment
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16  # v6.5.0
+        with:
+          go-version-file: go.mod
+          check-latest: true
+
+      - name: Build routeros-macboot CLI
+        run: |
+          go mod download
+          go build -o /tmp/routeros-macboot ./cmd/routeros-macboot
+
+      - name: Wait for RouterOS container banner
+        run: |
+          echo "Wait for the container to finish launching..."
+          deadline=$((SECONDS + 600))
+          while true; do
+            if docker logs routeros 2>&1 | grep -q MikroTik; then
+              echo "RouterOS is up."
+              break
+            fi
+            if ! docker inspect -f '{{.State.Running}}' routeros 2>/dev/null | grep -q true; then
+              docker logs routeros 2>&1 | tail -50
+              exit 1
+            fi
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              docker logs routeros 2>&1 | tail -50
+              exit 1
+            fi
+            sleep 10
+          done
+
+      - name: Run CHR 7.25.2 L2 discovery and bootstrap checks
+        run: |
+          echo "=== SPIKE: Host interface macbootbr0 state ==="
+          ip addr show macbootbr0
+
+          go run .github/scripts/inspect_l2_spike.go pre
+
+          echo "=== SPIKE: Unprivileged (non-root) MNDP discover on addressed macbootbr0 ==="
+          /tmp/routeros-macboot discover --interface macbootbr0 --timeout 6s --json
+
+          echo "=== SPIKE: Privileged (SO_BINDTODEVICE) MNDP discover on macbootbr0 ==="
+          DISCOVER_JSON=$(sudo /tmp/routeros-macboot discover --interface macbootbr0 --timeout 6s --json)
+          echo "$DISCOVER_JSON"
+
+          CHR_MAC=$(echo "$DISCOVER_JSON" | jq -r '.[] | select(.interface_name == "ether2") | .mac_address' | head -n 1)
+          if [ -z "$CHR_MAC" ]; then
+            echo "ERROR: unaddressed CHR ether2 MAC was not discovered via MNDP"
+            exit 1
+          fi
+          echo "Discovered unaddressed CHR ether2 MAC: $CHR_MAC"
+
+          echo "=== SPIKE: First MAC-Telnet EC-SRP5 bootstrap on unaddressed ether2 ==="
+          BOOT1_JSON=$(sudo /tmp/routeros-macboot bootstrap \
+            --interface macbootbr0 \
+            --mac "$CHR_MAC" \
+            --address 172.30.99.2/24 \
+            --target-interface ether2 \
+            --username admin \
+            --password "" \
+            --timeout 60s \
+            --allow-insecure-l2 \
+            --json)
+          echo "$BOOT1_JSON"
+          FP1=$(echo "$BOOT1_JSON" | jq -r '.tls_fingerprint')
+          if [ -z "$FP1" ] || [ "$FP1" = "null" ]; then
+            echo "ERROR: missing tls_fingerprint in first bootstrap"
+            exit 1
+          fi
+
+          echo "=== SPIKE: Second idempotent bootstrap with pinned expected-tls-fingerprint ==="
+          BOOT2_JSON=$(sudo /tmp/routeros-macboot bootstrap \
+            --interface macbootbr0 \
+            --mac "$CHR_MAC" \
+            --address 172.30.99.2/24 \
+            --target-interface ether2 \
+            --username admin \
+            --password "" \
+            --timeout 60s \
+            --allow-insecure-l2 \
+            --expected-tls-fingerprint "$FP1" \
+            --json)
+          echo "$BOOT2_JSON"
+          FP2=$(echo "$BOOT2_JSON" | jq -r '.tls_fingerprint')
+          if [ "$FP1" != "$FP2" ]; then
+            echo "ERROR: non-idempotent TLS certificate rotation ($FP1 != $FP2)"
+            exit 1
+          fi
+
+          go run .github/scripts/inspect_l2_spike.go post
+
+      - name: RouterOS L2 logs
+        if: failure()
+        run: docker logs routeros 2>&1 | tail -100
+
+      - name: Cleanup L2 test container and bridge
+        if: always()
+        run: |
+          docker rm -f routeros || true
+          docker network rm macboot-l2 || true
 
   build:
     name: RouterOS ${{ matrix.routeros }}

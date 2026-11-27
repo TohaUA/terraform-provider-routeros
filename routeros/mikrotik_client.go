@@ -339,7 +339,35 @@ func restClient(key string, timeout time.Duration, tlsConf *tls.Config) *http.Cl
 	return client
 }
 
+type unconfiguredClient struct {
+	extra *ExtraParams
+}
+
+func (c *unconfiguredClient) GetExtraParams() *ExtraParams {
+	return c.extra
+}
+
+func (c *unconfiguredClient) GetTransport() TransportType {
+	return TransportREST
+}
+
+func (c *unconfiguredClient) SendRequest(_ crudMethod, _ *URL, _ MikrotikItem, _ interface{}) error {
+	return errors.New("routeros provider hosturl and username must be configured for IP/REST/API resources")
+}
+
 func NewClient(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	hostURL := strings.TrimSpace(d.Get("hosturl").(string))
+	username := d.Get("username").(string)
+	if hostURL == "" {
+		return &unconfiguredClient{
+			extra: &ExtraParams{
+				SuppressSysODelWarn: d.Get("suppress_syso_del_warn").(bool),
+			},
+		}, nil
+	}
+	if username == "" {
+		return nil, diag.Errorf("username must be configured when hosturl is set")
+	}
 
 	tlsConf := tls.Config{
 		InsecureSkipVerify: d.Get("insecure").(bool),

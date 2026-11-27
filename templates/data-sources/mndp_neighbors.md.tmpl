@@ -1,0 +1,15 @@
+# {{.Name}} ({{.Type}})
+{{ .Description | trimspace }}
+
+Sends MikroTik Neighbor Discovery Protocol (MNDP) probes over UDP port `5678` bound to the specified local interface and returns deduplicated neighbors sorted by `mac_address`.
+
+~> **Security note:** MNDP announcements are unauthenticated broadcasts and can be spoofed on shared networks. Use only on trusted, isolated provisioning segments. See the [Layer-2 MAC bootstrap security guide](../guides/l2_mac_bootstrap_security.md).
+
+---
+
+{{ if .HasExample -}}
+## Example Usage
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}

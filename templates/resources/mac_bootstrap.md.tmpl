@@ -1,0 +1,13 @@
+# {{.Name}} ({{.Type}})
+{{ .Description | trimspace }}
+
+~> **Security warning:** Although MAC-Telnet uses EC-SRP5 to protect credentials during login, the post-login terminal session is **cleartext with no server authentication**. Only run `routeros_mac_bootstrap` on a trusted, isolated layer-2 bench or provisioning VLAN, rotate the admin password over TLS afterward if `expected_tls_fingerprint` was not pinned out-of-band, and lock down MAC services in Stage 2. See the [Layer-2 MAC bootstrap security guide](../guides/l2_mac_bootstrap_security.md).
+
+---
+
+{{ if .HasExample -}}
+## Example Usage
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}

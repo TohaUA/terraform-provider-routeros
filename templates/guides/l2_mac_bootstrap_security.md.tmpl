@@ -1,0 +1,31 @@
+# Layer-2 MAC bootstrap security and two-stage workflow
+
+Use `routeros_mndp_neighbors` and `routeros_mac_bootstrap` (or the standalone `routeros-macboot` CLI) only during **Stage 1** initial provisioning of unaddressed MikroTik RouterOS devices on a trusted, isolated layer-2 bench or provisioning VLAN.
+
+## Security model and threat boundaries
+
+- **EC-SRP5 PAKE password protection:** RouterOS 6.45+ and 7.x authenticate MAC-Telnet (UDP/20561) logins with EC-SRP5 over Wei25519. Your login password is not transmitted in plaintext on the wire during authentication.
+- **Cleartext post-login session:** After EC-SRP5 authentication completes, the MAC-Telnet terminal stream is **unencrypted and unauthenticated**. Any active attacker on the layer-2 segment can observe or inject commands, tamper with returned certificate fingerprints, or impersonate the router.
+- **Spoofed MNDP and MITM risks:** MNDP (UDP/5678) announcements are unauthenticated UDP broadcasts. Do not run MNDP-driven bootstrap on shared, untrusted, or production LANs. Always verify the target MAC address and run only on a physically isolated bench cable or dedicated provisioning VLAN.
+- **Explicit opt-in:** Both `routeros_mac_bootstrap` (`allow_insecure_l2 = true`) and `routeros-macboot` (`--allow-insecure-l2`) refuse to open a MAC-Telnet session unless you explicitly opt in.
+- **Out-of-band `expected_tls_fingerprint` and password rotation:**
+  - When `expected_tls_fingerprint` is supplied, bootstrap fails closed before touching REST if the router presents a different SHA-256 leaf fingerprint.
+  - When `expected_tls_fingerprint` is omitted (Trust-On-First-Use over cleartext L2), **rotate the administrator password over pinned HTTPS/API-SSL in Stage 2** and pin `tls_fingerprint` in your Stage 2 provider block.
+- **Secret handling and debug redaction:**
+  - `routeros_mac_bootstrap` generates idempotent RouterOS scripts that **never contain passwords or secrets**.
+  - Prefer `password_wo` (Terraform 1.11+ write-only argument) over `password` so credentials stay out of plan and state files.
+  - Logs redact passwords and credentials by default; raw hex packet dumps are emitted only when `--unsafe-raw-debug` is explicitly passed to `routeros-macboot`.
+
+## Two-stage provisioning workflow
+
+### Stage 1: Layer-2 bootstrap
+
+Stage 1 discovers the unaddressed router on a local interface, assigns an IPv4 management address, creates a self-signed TLS server certificate (idempotently without rotating existing certificates), enables `www-ssl`, and verifies `/rest/system/resource` over TLS pinned to the returned SHA-256 fingerprint.
+
+{{ tffile "examples/guides/l2_mac_bootstrap/stage1_bootstrap.tf" }}
+
+### Stage 2: Pinned TLS configuration and L2 lockdown
+
+Stage 2 connects over `https://` with `tls_fingerprint` pinned to the Stage 1 leaf certificate, rotates the administrator password (via write-only/ephemeral secrets), and disables MAC-Telnet, MAC-WinBox, MAC-Ping, and MNDP neighbor discovery.
+
+{{ tffile "examples/guides/l2_mac_bootstrap/stage2_lockdown.tf" }}
