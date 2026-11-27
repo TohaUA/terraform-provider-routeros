@@ -83,9 +83,11 @@ func ResourcePPPSecret() *schema.Resource {
 		"password": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Password used for authentication.",
 			Sensitive:   true,
+			WriteOnly:   true,
+			Description: "Password used for authentication. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"profile": {
 			Type:        schema.TypeString,
 			Optional:    true,

@@ -8,9 +8,11 @@
 
 ### Required
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `connect_to` (String) Remote address of the SSTP server.
 - `name` (String) Descriptive name of the interface.
-- `password` (String, Sensitive) Password used for authentication.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password used for authentication. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
 - `user` (String) User name used for authentication.
 
 ### Optional
@@ -29,6 +31,7 @@
 - `max_mru` (Number) Maximum Receive Unit.
 - `max_mtu` (Number) Maximum Transmission Unit.
 - `mrru` (String) Maximum packet size that can be received on the link. If a packet is bigger than tunnel MTU, it will be split into multiple packets, allowing full size IP or Ethernet packets to be sent over the tunnel.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 - `pfs` (Boolean) Specifies which TLS authentication to use. With pfs=yes, TLS will use ECDHE-RSA- and DHE-RSA-. For maximum security setting pfs=required will use only ECDHE.
 - `port` (String) Sets port used.
 - `profile` (String) Specifies which PPP profile configuration will be used when establishing the tunnel.

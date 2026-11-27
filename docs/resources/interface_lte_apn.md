@@ -19,6 +19,8 @@ resource "routeros_interface_lte_apn" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `add_default_route` (Boolean) Whether to add a default route to forward all traffic over the LTE interface.
 - `apn` (String) Service Provider's Access Point Name.
 - `authentication` (String) Allowed protocol to use for authentication.
@@ -30,7 +32,8 @@ resource "routeros_interface_lte_apn" "test" {
 - `passthrough_interface` (String) Interface to passthrough IP configuration (activates passthrough).
 - `passthrough_mac` (String) If set to auto, then will learn MAC from the first packet.
 - `passthrough_subnet_selection` (String) `auto` selects the smallest possible subnet to be used for the passthrough interface. `p2p` sets the passthrough interface subnet as `/32` and picks gateway address from `10.177.0.0/16` range. The gateway address stays the same until the apn configuration is changed.
-- `password` (String, Sensitive) Password used if any of the authentication protocols are active.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password used if any of the authentication protocols are active. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 - `use_network_apn` (Boolean) Parameter is available starting from RouterOS v7 and used only for MBIM modems. If set to yes, uses network provided APN.
 - `use_peer_dns` (Boolean) If set to yes, uses DNS received from LTE interface.
 - `user` (String) Username used if any of the authentication protocols are active.

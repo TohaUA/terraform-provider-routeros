@@ -16,8 +16,11 @@ resource "routeros_container_config" "config" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `layer_dir` (String) Container layers directory.
-- `password` (String, Sensitive) Specifies the password for authentication (starting from ROS 7.8)
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Specifies the password for authentication (starting from ROS 7.8). This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 - `ram_high` (String) RAM usage limit.
 - `registry_url` (String) External registry url from where the container will be downloaded.
 - `tmpdir` (String) Container extraction directory.

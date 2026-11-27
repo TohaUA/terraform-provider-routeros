@@ -67,8 +67,9 @@ data "routeros_x509" "cert" {
 EOT
 }
 resource "routeros_system_certificate" "external" {
-  name        = "external.crt"
-  common_name = data.routeros_x509.cert.common_name
+  name              = "external.crt"
+  common_name       = data.routeros_x509.cert.common_name
+  import_wo_version = 1
   import {
     cert_file_content = data.routeros_x509.cert.pem
     key_file_content  = <<EOT

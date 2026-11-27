@@ -43,8 +43,10 @@ func ResourceInterfaceDot1xClient() *schema.Resource {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Sensitive:   true,
-			Description: "Cleartext password for the supplicant.",
+			WriteOnly:   true,
+			Description: "Cleartext password for the supplicant. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"status": {
 			Type:     schema.TypeString,
 			Computed: true,

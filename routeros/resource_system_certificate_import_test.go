@@ -46,6 +46,8 @@ func TestAccSystemCertificatesTest_import(t *testing.T) {
 							// are what must show the configured value on this first step.
 							resource.TestCheckResourceAttr("routeros_system_certificate.external", "trust_store", "www"),
 							testCheckMikrotikItemAttr("routeros_system_certificate.external", &externalCrt, "trust-store", "www"),
+							resource.TestCheckNoResourceAttr("routeros_system_certificate.external", "import.0.passphrase"),
+							resource.TestCheckNoResourceAttr("routeros_system_certificate.external", "import.0.key_file_content"),
 						),
 					},
 				},

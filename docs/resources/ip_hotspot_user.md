@@ -17,6 +17,8 @@ resource "routeros_ip_hotspot_user" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `address` (Number) IP address, when specified client will get the address from the HotSpot one-to-one NAT translations. Address does not restrict HotSpot login only from this address.
 - `comment` (String)
 - `disabled` (Boolean)
@@ -26,7 +28,8 @@ resource "routeros_ip_hotspot_user" "test" {
 - `limit_bytes_total` (Number) (limit-bytes-in+limit-bytes-out). User is disconnected from HotSpot after the limit is reached.
 - `limit_uptime` (Number) Uptime limit for the HotSpot client, user is disconnected from HotSpot as soon as uptime is reached.
 - `mac_address` (Number) Client is allowed to login only from the specified MAC-address. If value is 00:00:00:00:00:00, any mac address is allowed.
-- `password` (String, Sensitive) User password.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) User password. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 - `profile` (String) User profile configured in `/ip hotspot user profile`.
 - `routes` (String) Routes added to HotSpot gateway when client is connected. The route format dst-address gateway metric (for example, `192.168.1.0/24 192.168.0.1 1`).
 - `server` (String) HotSpot server's name to which user is allowed login.

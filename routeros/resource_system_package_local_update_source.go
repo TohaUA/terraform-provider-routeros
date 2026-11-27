@@ -48,13 +48,10 @@ func ResourceSystemPackageLocalUpdateSource() *schema.Resource {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Sensitive:   true,
-			Description: "Password of the account the client authenticates to the package source with.",
-			// Keeps an entry with no declared password out of the plan. Nothing is written for it either:
-			// the serializer never sends an unchanged sensitive value that configuration does not declare,
-			// so a mask read back into state cannot replace the credential. A declared password still diffs
-			// and is still sent, which is what lets a rotation reach the device.
-			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+			WriteOnly:   true,
+			Description: "Password of the account the client authenticates to the package source with. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"user": {
 			Type:     schema.TypeString,
 			Optional: true,

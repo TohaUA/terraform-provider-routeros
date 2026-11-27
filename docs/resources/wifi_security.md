@@ -4,11 +4,12 @@
 ## Example Usage
 ```terraform
 resource "routeros_wifi_security" "security1" {
-  name                 = "security1"
-  authentication_types = ["wpa2-psk", "wpa3-psk"]
-  ft                   = true
-  ft_preserve_vlanid   = true
-  passphrase           = "password"
+  name                  = "security1"
+  authentication_types  = ["wpa2-psk", "wpa3-psk"]
+  ft                    = true
+  ft_preserve_vlanid    = true
+  passphrase            = "password"
+  passphrase_wo_version = 1
 }
 
 # Optional WiFi 7 / fast-roaming controls:
@@ -25,6 +26,8 @@ resource "routeros_wifi_security" "security1" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `authentication_types` (Set of String) Authentication types to enable on the interface.
 - `beacon_protection` (String) Beacon integrity protection: enabled or disabled. Requires the beacon-protection radio capability. An explicit empty string restores the driver default.
 - `comment` (String)
@@ -37,7 +40,8 @@ resource "routeros_wifi_security" "security1" {
 - `eap_anonymous_identity` (String) An option to specify anonymous identity for EAP outer authentication.
 - `eap_certificate_mode` (String) A policy for handling the TLS certificate of the RADIUS server.
 - `eap_methods` (Set of String) A set of EAP methods to consider for authentication.
-- `eap_password` (String, Sensitive) Password to use when the chosen EAP method requires one.
+- `eap_password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password to use when the chosen EAP method requires one. This is a write-only attribute (not stored in plan or state); increment `eap_password_wo_version` to update it.
+- `eap_password_wo_version` (Number) Increment this value to update the write-only `eap_password` attribute on the router.
 - `eap_tls_certificate` (String) Name or id of a certificate in the device's certificate store to use when the chosen EAP authentication method requires one.
 - `eap_username` (String) Username to use when the chosen EAP method requires one.
 - `encryption` (Set of String) A list of ciphers to support for encrypting unicast traffic.
@@ -54,7 +58,8 @@ resource "routeros_wifi_security" "security1" {
 - `management_protection` (String) An option to enable 802.11w management frame protection.
 - `multi_passphrase_group` (String) Name of `/interface/wifi/security/multi-passphrase/` group that will be used. Only a single group can be defined under the security profile.
 - `owe_transition_interface` (String) Name or internal ID of an interface which MAC address and SSID to advertise as the matching AP when running in OWE transition mode.
-- `passphrase` (String, Sensitive) Passphrase to use for PSK authentication types.
+- `passphrase` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Passphrase to use for PSK authentication types. This is a write-only attribute (not stored in plan or state); increment `passphrase_wo_version` to update it.
+- `passphrase_wo_version` (Number) Increment this value to update the write-only `passphrase` attribute on the router.
 - `sae_anti_clogging_threshold` (String) A parameter to mitigate DoS attacks by specifying a threshold of in-progress SAE authentications.
 - `sae_max_failure_rate` (String) Rate of failed SAE (WPA3) associations per minute, at which the AP will stop processing new association requests.
 - `sae_pwe` (String) Methods to support for deriving SAE password element.

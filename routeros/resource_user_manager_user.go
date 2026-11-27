@@ -48,15 +48,19 @@ func ResourceUserManagerUser() *schema.Resource {
 		"otp_secret": {
 			Type:        schema.TypeString,
 			Sensitive:   true,
+			WriteOnly:   true,
 			Optional:    true,
-			Description: "A token of a one-time code that will be attached to the password.",
+			Description: "A token of a one-time code that will be attached to the password. This is a write-only attribute (not stored in plan or state); increment `otp_secret_wo_version` to update it.",
 		},
+		"otp_secret_wo_version": PropWriteOnlyVersion("otp_secret"),
 		"password": {
 			Type:        schema.TypeString,
 			Sensitive:   true,
+			WriteOnly:   true,
 			Optional:    true,
-			Description: "The password of the user for session authentication.",
+			Description: "The password of the user for session authentication. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"shared_users": {
 			Type:        schema.TypeString, // Maybe "unlimited"
 			Optional:    true,

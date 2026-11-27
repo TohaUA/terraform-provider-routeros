@@ -537,9 +537,11 @@ func ResourceRoutingBgpConnection() *schema.Resource {
 			Type:      schema.TypeString,
 			Optional:  true,
 			Sensitive: true,
+			WriteOnly: true,
 			Description: "The key used to authenticate the connection with TCP MD5 signature as described in RFC 2385. " +
-				"If not specified, authentication is not used.",
+				"If not specified, authentication is not used. This is a write-only attribute (not stored in plan or state); increment `tcp_md5_key_wo_version` to update it.",
 		},
+		"tcp_md5_key_wo_version": PropWriteOnlyVersion("tcp_md5_key"),
 		"templates": {
 			Type:        schema.TypeSet,
 			Optional:    true,

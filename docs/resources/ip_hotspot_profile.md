@@ -19,6 +19,8 @@ resource "routeros_ip_hotspot_profile" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `dns_name` (String) DNS name of the HotSpot server (it appears as the location of the login page). This name will automatically be added as a static DNS entry in the DNS cache. Name can affect if Hotspot is automatically detected by client device. For example, iOS devices may not detect Hotspot that has a name which includes `.local`.
 - `hotspot_address` (String) IP address of HotSpot service.
 - `html_directory` (String) Directory name in which HotSpot HTML pages are stored (by default hotspot directory). It is possible to specify different directory with modified HTML pages. To change HotSpot login page, connect to the router with FTP and download hotspot directory contents. v6.31 and older software builds: For devices where `flash` directory is present, hotspot html directory must be stored there and path must be typed in as follows: `/(hotspot_dir)`. This must be done in this order as hotspot sees `flash` directory as root location. v6.32 and newer software builds: full path must be typed in html-directory field, including `/flash/(hotspot_dir)`.
@@ -35,7 +37,8 @@ resource "routeros_ip_hotspot_profile" "test" {
  * mac - client is authenticated without asking login form. Client MAC-address is added to `/ip hotspot user` database, client is authenticated as soon as connected to the HotSpot
  * trial - client is allowed to use internet without HotSpot login for the specified amount of time.
 - `mac_auth_mode` (String) Allows to control User-Name and User-Password RADIUS attributes when using MAC authentication.
-- `mac_auth_password` (String, Sensitive) Used together with MAC authentication, field used to specify password for the users to be authenticated by their MAC addresses. The following option is required, when specific RADIUS server rejects authentication for the clients with blank password.
+- `mac_auth_password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Used together with MAC authentication, field used to specify password for the users to be authenticated by their MAC addresses. The following option is required, when specific RADIUS server rejects authentication for the clients with blank password. This is a write-only attribute (not stored in plan or state); increment `mac_auth_password_wo_version` to update it.
+- `mac_auth_password_wo_version` (Number) Increment this value to update the write-only `mac_auth_password` attribute on the router.
 - `nas_port_type` (String) `NAS-Port-Type` value to be sent to RADIUS server, `NAS-Port-Type` values are described in the RADIUS RFC 2865. This optional value attribute indicates the type of the physical port of the HotSpot server.
 - `radius_accounting` (Boolean) Send RADIUS server accounting information for each user, when yes is used.
 - `radius_default_domain` (String) Default domain to use for RADIUS requests. Allows to use separate RADIUS server per `/ip hotspot profile`. If used, same domain name should be specified under `/radius domain` value.

@@ -20,9 +20,12 @@ resource "routeros_user_manager_router" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `coa_port` (Number) Port number of CoA (Change of Authorization) communication.
 - `disabled` (Boolean)
-- `shared_secret` (String, Sensitive) The shared secret to secure communication.
+- `shared_secret` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The shared secret to secure communication. This is a write-only attribute (not stored in plan or state); increment `shared_secret_wo_version` to update it.
+- `shared_secret_wo_version` (Number) Increment this value to update the write-only `shared_secret` attribute on the router.
 
 ### Read-Only
 

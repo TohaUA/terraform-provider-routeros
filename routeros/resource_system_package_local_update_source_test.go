@@ -17,7 +17,7 @@ const testSystemPackageLocalUpdateSource = "routeros_system_package_local_update
 // the entry would be written without the credential it exists to carry. This fails if anyone tries it.
 func TestSystemPackageLocalUpdateSourceSendsThePassword(t *testing.T) {
 	res := ResourceSystemPackageLocalUpdateSource()
-	d := resourceDataWithRawConfig(res, "*1", map[string]cty.Value{
+	d := resourceDataWithRawConfig(res, "", map[string]cty.Value{
 		"address":  cty.StringVal("192.168.88.1"),
 		"user":     cty.StringVal("package-source"),
 		"password": cty.StringVal("package-source-secret"),
@@ -40,7 +40,7 @@ func TestSystemPackageLocalUpdateSourceSendsThePassword(t *testing.T) {
 
 // A router that answers an account without the `sensitive` policy returns a mask where the password is.
 // Reading such an entry must still succeed and must leave the address and the user alone, because those
-// are what an import and the next plan recognise the entry by.
+// are what an import and the next plan recognise the entry by, while never storing the write-only password in state.
 func TestSystemPackageLocalUpdateSourceReadsAMaskedPassword(t *testing.T) {
 	res := ResourceSystemPackageLocalUpdateSource()
 	item := MikrotikItem{
@@ -52,7 +52,7 @@ func TestSystemPackageLocalUpdateSourceReadsAMaskedPassword(t *testing.T) {
 	expected := map[string]interface{}{
 		"address":  "192.168.88.1",
 		"user":     "package-source",
-		"password": "***",
+		"password": "",
 	}
 
 	d := res.TestResourceData()

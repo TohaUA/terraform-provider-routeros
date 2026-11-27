@@ -14,13 +14,17 @@ resource "routeros_user_manager_advanced" "settings" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `paypal_allow` (Boolean) An option whether to enable PayPal functionality for User Manager.
 - `paypal_currency` (String) The currency related to price setting in which users will be billed.
-- `paypal_password` (String, Sensitive) The password of the PayPal API account.
+- `paypal_password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password of the PayPal API account. This is a write-only attribute (not stored in plan or state); increment `paypal_password_wo_version` to update it.
+- `paypal_password_wo_version` (Number) Increment this value to update the write-only `paypal_password` attribute on the router.
 - `paypal_signature` (String) The signature of the PayPal API account.
 - `paypal_use_sandbox` (Boolean) An option whether to use PayPal's sandbox environment for testing purposes.
 - `paypal_user` (String) The username of the PayPal API account.
-- `web_private_password` (String, Sensitive) The password for accessing `/um/PRIVATE/` section over HTTP.
+- `web_private_password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password for accessing `/um/PRIVATE/` section over HTTP. This is a write-only attribute (not stored in plan or state); increment `web_private_password_wo_version` to update it.
+- `web_private_password_wo_version` (Number) Increment this value to update the write-only `web_private_password` attribute on the router.
 - `web_private_username` (String) The username for accessing `/um/PRIVATE/` section over HTTP.
 
 ### Read-Only

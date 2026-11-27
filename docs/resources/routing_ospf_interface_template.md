@@ -26,10 +26,14 @@ resource "routeros_routing_ospf_interface_template" "test_routing_ospf_interface
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `auth` (String) Specifies authentication method for OSPF protocol messages.
 - `auth_id` (Number) The key id is used to calculate message digest (used when MD5 or SHA authentication is enabled).
-- `auth_key` (String, Sensitive) The authentication key to be used, should match on all the neighbors of the network segment (available since RouterOS 7.x).
-- `authentication_key` (String, Sensitive) The authentication key to be used, should match on all the neighbors of the network segment (for versions before RouterOS 7.x).
+- `auth_key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The authentication key to be used, should match on all the neighbors of the network segment (available since RouterOS 7.x). This is a write-only attribute (not stored in plan or state); increment `auth_key_wo_version` to update it.
+- `auth_key_wo_version` (Number) Increment this value to update the write-only `auth_key` attribute on the router.
+- `authentication_key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The authentication key to be used, should match on all the neighbors of the network segment (for versions before RouterOS 7.x). This is a write-only attribute (not stored in plan or state); increment `authentication_key_wo_version` to update it.
+- `authentication_key_wo_version` (Number) Increment this value to update the write-only `authentication_key` attribute on the router.
 - `comment` (String)
 - `cost` (Number) Interface cost expressed as link state metric.
 - `dead_interval` (String) Specifies the interval after which a neighbor is declared dead.

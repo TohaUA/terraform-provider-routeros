@@ -128,9 +128,11 @@ func ResourceInterfaceSSTPClient() *schema.Resource {
 		"password": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Password used for authentication.",
 			Sensitive:   true,
+			WriteOnly:   true,
+			Description: "Password used for authentication. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"verify_server_address_from_certificate": {
 			Type:             schema.TypeBool,
 			Optional:         true,

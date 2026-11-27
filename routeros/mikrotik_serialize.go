@@ -173,8 +173,39 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 			continue
 		}
 
+		// Skip Terraform-only write-only version attributes.
+		if isWriteOnlyVersionAttr(s, terraformSnakeName) {
+			continue
+		}
+
 		// Skip all read-only properties.
 		if terraformMetadata.Computed && !terraformMetadata.Optional {
+			continue
+		}
+
+		if terraformMetadata.WriteOnly {
+			mikrotikKebabName := SnakeToKebab(terraformSnakeName)
+			if transformSet != nil && terraformMetadata.Type != schema.TypeMap {
+				if new, ok := transformSet[terraformSnakeName]; ok {
+					mikrotikKebabName = SnakeToKebab(new)
+				}
+			}
+
+			versionAttr := terraformSnakeName + writeOnlyVersionSuffix
+			_, hasVersionAttr := s[versionAttr]
+			isCreate := d.Id() == "" || d.IsNewResource()
+			versionChanged := hasVersionAttr && d.HasChange(versionAttr)
+			if !isCreate && !versionChanged {
+				continue
+			}
+
+			rawVal := rawConfigAttr(rawConfig, terraformSnakeName)
+			if !rawConfig.IsNull() && rawConfig.Type().IsObjectType() && rawConfig.Type().HasAttribute(terraformSnakeName) {
+				if v, diags := d.GetRawConfigAt(cty.GetAttrPath(terraformSnakeName)); !diags.HasError() {
+					rawVal = v
+				}
+			}
+			serializeWriteOnlyAttr(item, terraformSnakeName, mikrotikKebabName, terraformMetadata, rawVal, isCreate, setUnsetFields)
 			continue
 		}
 
@@ -305,6 +336,17 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 						continue
 					}
 
+					if fieldSchema.WriteOnly {
+						versionAttr := terraformSnakeName + writeOnlyVersionSuffix
+						_, hasVersionAttr := s[versionAttr]
+						isCreate := d.Id() == "" || d.IsNewResource()
+						versionChanged := hasVersionAttr && d.HasChange(versionAttr)
+						if isCreate || versionChanged {
+							serializeWriteOnlyAttr(item, fieldName, SnakeToKebab(mikrotikKebabName+"."+fieldName), fieldSchema, ctyList.GetAttr(fieldName), isCreate, setUnsetFields)
+						}
+						continue
+					}
+
 					if fieldSchema.Optional && !d.HasChange(fieldNameInState) &&
 						isEmpty(fieldNameInState, fieldSchema, d, ctyList.GetAttr(fieldName)) {
 						continue
@@ -382,6 +424,53 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 	}
 
 	return item, meta
+}
+
+func serializeWriteOnlyAttr(item MikrotikItem, terraformSnakeName, mikrotikKebabName string, fieldSchema *schema.Schema, rawVal cty.Value, isCreate bool, setUnsetFields map[string]struct{}) {
+	if !rawVal.IsKnown() {
+		return
+	}
+	if rawVal.IsNull() {
+		if isCreate {
+			return
+		}
+		if _, ok := setUnsetFields[terraformSnakeName]; ok {
+			item["!"+mikrotikKebabName] = ""
+		} else {
+			item[mikrotikKebabName] = ""
+		}
+		return
+	}
+
+	switch fieldSchema.Type {
+	case schema.TypeString:
+		str := rawVal.AsString()
+		if _, ok := setUnsetFields[terraformSnakeName]; ok && str == "" {
+			item["!"+mikrotikKebabName] = ""
+			return
+		}
+		item[mikrotikKebabName] = str
+	case schema.TypeFloat:
+		f, _ := rawVal.AsBigFloat().Float64()
+		item[mikrotikKebabName] = strconv.FormatFloat(f, 'f', -1, 64)
+	case schema.TypeInt:
+		i, _ := rawVal.AsBigFloat().Int64()
+		if _, ok := setUnsetFields[terraformSnakeName]; ok && i == 0 {
+			item["!"+mikrotikKebabName] = ""
+			return
+		}
+		item[mikrotikKebabName] = strconv.FormatInt(i, 10)
+	case schema.TypeBool:
+		if _, ok := setUnsetFields[terraformSnakeName]; ok {
+			if rawVal.True() {
+				item[mikrotikKebabName] = ""
+			} else {
+				item["!"+mikrotikKebabName] = ""
+			}
+			return
+		}
+		item[mikrotikKebabName] = BoolToMikrotikJSON(rawVal.True())
+	}
 }
 
 // unsetRemovedBlock Unset the properties of a nested block that the configuration no longer declares.
@@ -527,6 +616,10 @@ func MikrotikResourceDataToTerraform(item MikrotikItem, s map[string]*schema.Sch
 			continue
 		}
 
+		if s[terraformSnakeName].WriteOnly {
+			continue
+		}
+
 		switch s[terraformSnakeName].Type {
 		case schema.TypeString:
 			err = d.Set(terraformSnakeName, mikrotikValue)
@@ -611,6 +704,10 @@ func MikrotikResourceDataToTerraform(item MikrotikItem, s map[string]*schema.Sch
 							Detail: fmt.Sprintf("[MikrotikResourceDataToTerraform] the datasource Schema sub-field was lost during development: ▷ '%s.%s' ◁",
 								terraformSnakeName, subFieldSnakeName),
 						})
+						continue
+					}
+
+					if s[terraformSnakeName].Elem.(*schema.Resource).Schema[subFieldSnakeName].WriteOnly {
 						continue
 					}
 
@@ -726,6 +823,15 @@ func MikrotikResourceDataToTerraform(item MikrotikItem, s map[string]*schema.Sch
 	for name, m := range maps {
 		if err = d.Set(name, m); err != nil {
 			diags = append(diags, diag.FromErr(err)...)
+		}
+	}
+
+	// Ensure write-only attributes are never retained in state (even when upgrading from legacy state).
+	for name, field := range s {
+		if field.WriteOnly {
+			if err = d.Set(name, nil); err != nil {
+				diags = append(diags, diag.FromErr(err)...)
+			}
 		}
 	}
 

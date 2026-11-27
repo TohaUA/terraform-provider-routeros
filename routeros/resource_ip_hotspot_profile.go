@@ -119,11 +119,13 @@ func ResourceIpHotspotProfile() *schema.Resource {
 			Type:      schema.TypeString,
 			Optional:  true,
 			Sensitive: true,
+			WriteOnly: true,
 			Description: "Used together with MAC authentication, field used to specify password for the users to be " +
 				"authenticated by their MAC addresses. The following option is required, when specific RADIUS server " +
-				"rejects authentication for the clients with blank password.",
+				"rejects authentication for the clients with blank password. This is a write-only attribute (not stored in plan or state); increment `mac_auth_password_wo_version` to update it.",
 		},
-		KeyName: PropName("Descriptive name of the profile."),
+		"mac_auth_password_wo_version": PropWriteOnlyVersion("mac_auth_password"),
+		KeyName:                        PropName("Descriptive name of the profile."),
 		"nas_port_type": {
 			Type:     schema.TypeString,
 			Optional: true,

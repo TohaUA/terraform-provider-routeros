@@ -24,9 +24,11 @@ func ResourceContainerConfig() *schema.Resource {
 		"password": {
 			Type:        schema.TypeString,
 			Sensitive:   true,
+			WriteOnly:   true,
 			Optional:    true,
-			Description: "Specifies the password for authentication (starting from ROS 7.8)",
+			Description: "Specifies the password for authentication (starting from ROS 7.8). This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"ram_high": {
 			Type:             schema.TypeString,
 			Optional:         true,

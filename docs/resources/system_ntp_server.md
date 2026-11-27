@@ -18,7 +18,10 @@ resource "routeros_system_ntp_server" "test" {
 
 ### Optional
 
-- `auth_key` (String, Sensitive) NTP symmetric key, used for authentication between the NTP client and server. Key Identifier (Key ID) - an integer identifying the cryptographic key used to generate the message-authentication code.
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `auth_key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) NTP symmetric key, used for authentication between the NTP client and server. Key Identifier (Key ID) - an integer identifying the cryptographic key used to generate the message-authentication code. This is a write-only attribute (not stored in plan or state); increment `auth_key_wo_version` to update it.
+- `auth_key_wo_version` (Number) Increment this value to update the write-only `auth_key` attribute on the router.
 - `broadcast` (Boolean) Enable certain NTP server mode, for this mode to work you have to set up broadcast-addresses field.
 - `broadcast_addresses` (String) Set broadcast address to use for NTP server broadcast mode.
 - `enabled` (Boolean) Enable NTP server.

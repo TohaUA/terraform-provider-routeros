@@ -84,12 +84,13 @@ func ResourceInterfaceW60g() *schema.Resource {
 		KeyMtu:  PropMtuRw(),
 		KeyName: PropName("Name of the interface."),
 		"password": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Sensitive:        true,
-			Description:      "Password used for AES encryption.",
-			DiffSuppressFunc: AlwaysPresentNotUserProvided,
+			Type:        schema.TypeString,
+			Optional:    true,
+			Sensitive:   true,
+			WriteOnly:   true,
+			Description: "Password used for AES encryption. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"put_stations_in_bridge": {
 			Type:             schema.TypeString,
 			Optional:         true,

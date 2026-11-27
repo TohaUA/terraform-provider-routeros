@@ -12,6 +12,10 @@ resource "routeros_interface_wireguard_peer" "wg_peer" {
     "10.0.0.0/8",
   ]
 
+  # Optional write-only preshared key (increment preshared_key_wo_version to rotate):
+  # preshared_key            = "BASE64_PRESHARED_KEY"
+  # preshared_key_wo_version = 1
+
   # RouterOS 7.25.1+: MTU in the exported client configuration.
   client_mtu = 1380
 }

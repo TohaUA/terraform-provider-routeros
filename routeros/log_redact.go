@@ -81,7 +81,7 @@ func collectSensitiveNames(s map[string]*schema.Schema) {
 	}
 
 	for name, field := range s {
-		if field.Sensitive {
+		if field.Sensitive || field.WriteOnly {
 			sensitiveNames[SnakeToKebab(name)] = struct{}{}
 
 			// The transform set pairs a schema name with a router name; a sensitive

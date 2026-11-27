@@ -4,11 +4,12 @@
 ## Example Usage
 ```terraform
 resource "routeros_system_user" "test" {
-  name     = "test-user-1"
-  address  = "0.0.0.0/0"
-  group    = "read"
-  password = "secret"
-  comment  = "Test User"
+  name                = "test-user-1"
+  address             = "0.0.0.0/0"
+  group               = "read"
+  password            = "secret"
+  password_wo_version = 1
+  comment             = "Test User"
 }
 ```
 
@@ -22,12 +23,15 @@ resource "routeros_system_user" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `address` (String) Host or network address from which the user is allowed to log in.
 - `comment` (String)
 - `disabled` (Boolean)
 - `inactivity_policy` (String) Inactivity policy.
 - `inactivity_timeout` (String) Inactivity timeout for non-GUI sessions.
-- `password` (String, Sensitive) User  password. If not specified, it is left blank (hit [Enter] when logging  in). It conforms to standard Unix characteristics of passwords and may  contain letters, digits, '*' and '_' symbols.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) User  password. If not specified, it is left blank (hit [Enter] when logging  in). It conforms to standard Unix characteristics of passwords and may  contain letters, digits, '*' and '_' symbols. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 
 ### Read-Only
 

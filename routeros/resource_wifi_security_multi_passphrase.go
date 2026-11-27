@@ -46,10 +46,12 @@ func ResourceWifiSecurityMultiPassphrase() *schema.Resource {
 			Type:      schema.TypeString,
 			Optional:  true,
 			Sensitive: true,
+			WriteOnly: true,
 			Description: "The passphrase to use for PSK authentication types. Multiple users can use the same passphrase. " +
-				"Not compatible with WPA3-PSK.",
+				"Not compatible with WPA3-PSK. This is a write-only attribute (not stored in plan or state); increment `passphrase_wo_version` to update it.",
 			ValidateFunc: ValidationSecretLenBetween(8, 64),
 		},
+		"passphrase_wo_version": PropWriteOnlyVersion("passphrase"),
 		KeyVlanId: PropVlanIdRw("vlan-id that will be assigned to clients using this passphrase Only supported on wifi-qcom "+
 			"interfaces, if wifi-qcom-ac AP has a client that uses a passphrase that has vlan-id associated with "+
 			"it, the client will not be able to join.", false),

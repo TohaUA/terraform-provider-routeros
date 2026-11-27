@@ -75,7 +75,7 @@ func metaString(s map[string]*schema.Schema, key string) string {
 func attrsFromSDK(s map[string]*schema.Schema, prefix string) []Attr {
 	var out []Attr
 	for k, v := range s {
-		if prefix == "" && isMetaAttr(k) {
+		if prefix == "" && (isMetaAttr(k) || routeros.IsWriteOnlyVersionAttr(s, k)) {
 			continue
 		}
 		if nested, ok := v.Elem.(*schema.Resource); ok {

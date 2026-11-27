@@ -21,11 +21,14 @@ resource "routeros_interface_dot1x_client" "ether2" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `anon_identity` (String) Identity for outer layer EAP authentication. Used only with `eap-ttls` and `eap-peap` methods. If not set, the value from the identity parameter will be used for outer layer EAP authentication.
 - `certificate` (String) Name of a certificate. Required when the `eap-tls` method is used.
 - `comment` (String)
 - `disabled` (Boolean)
-- `password` (String, Sensitive) Cleartext password for the supplicant.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Cleartext password for the supplicant. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 
 ### Read-Only
 

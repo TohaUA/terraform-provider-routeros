@@ -84,9 +84,11 @@ func ResourceIpHotspotUser() *schema.Resource {
 		"password": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "User password.",
 			Sensitive:   true,
+			WriteOnly:   true,
+			Description: "User password. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"profile": {
 			Type:             schema.TypeString,
 			Optional:         true,

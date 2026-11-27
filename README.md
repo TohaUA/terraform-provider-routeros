@@ -150,8 +150,7 @@ prefer building from a pinned commit.
 
 ### Compatibility
 
-* Terraform plugin protocol **5.0** (`terraform-registry-manifest.json`); Terraform 1.x, and
-  OpenTofu on the same protocol.
+* Terraform plugin protocol **5.0** (`terraform-registry-manifest.json`); requires **Terraform 1.11 or later** for write-only secret attributes (OpenTofu has not been evaluated).
 * **RouterOS 7.25.2 is the support and acceptance-test target.** Earlier versions
   are unsupported. The fork includes the documented 7.24 → 7.25 API additions,
   including bridge security, XFRM, PON, PIM/MLD, WiFi network profiles, SSH host
@@ -160,6 +159,16 @@ prefer building from a pinned commit.
   New resources require **RouterOS 7.25.1+** and the appropriate hardware/packages.
   Existing `last_member_interval` and `reauth_timeout` attributes retain their Terraform names and translate to
   the renamed API properties. IPsec RSA keys use `/ip/ipsec/key/rsa`.
+
+### Write-only secrets (Terraform 1.11+)
+
+User-supplied secret inputs (passwords, passphrases, pre-shared keys, shared secrets, PINs, TCP MD5 keys, WireGuard private keys, and imported private keys/passphrases) are **write-only** (`WriteOnly: true, Sensitive: true`) and replace the earlier state-backed plain attributes:
+
+* **Not stored in plan or state:** Terraform keeps write-only values `null` in plan files and state.
+* **Terraform 1.11+ required:** Write-only attributes require Terraform **1.11 or later** (OpenTofu has not been evaluated).
+* **No drift detection:** A secret modified directly on the router is not read back into state and will not show up in `terraform plan`.
+* **Rotation via version attributes:** To rotate or clear a write-only secret, update it in configuration and increment the paired `<attribute>_wo_version` integer attribute (or `import_wo_version` to replace and re-import a `routeros_system_certificate`).
+* **Imports:** `terraform import` cannot populate write-only attributes; declare the secret and its `<attribute>_wo_version` when adopting or updating the resource.
 
 ### Upgrading configurations that expose secret values
 

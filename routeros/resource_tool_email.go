@@ -41,8 +41,10 @@ func ResourceToolEmail() *schema.Resource {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Sensitive:   true,
-			Description: "Password used for authenticating to an SMTP server.",
+			WriteOnly:   true,
+			Description: "Password used for authenticating to an SMTP server. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.",
 		},
+		"password_wo_version": PropWriteOnlyVersion("password"),
 		"port": {
 			Type:             schema.TypeString,
 			Optional:         true,

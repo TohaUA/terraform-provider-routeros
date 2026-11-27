@@ -18,6 +18,8 @@ resource "routeros_radius" "user_manager" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `accounting_backup` (Boolean) An option whether the configuration is for the backup RADIUS server.
 - `accounting_port` (Number) RADIUS server port used for accounting.
 - `authentication_port` (Number) RADIUS server port used for authentication.
@@ -30,7 +32,8 @@ resource "routeros_radius" "user_manager" {
 - `radsec_timeout` (String) Timeout after which the request should be resent over RadSec protocol.
 - `realm` (String) Explicitly stated realm (user domain), so the users do not have to provide proper ISP domain name in the user name.
 - `require_message_auth` (String) An option whether to require `Message-Authenticator` in received Access-Accept/Challenge/Reject messages.
-- `secret` (String, Sensitive) The shared secret to access the RADIUS server.
+- `secret` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The shared secret to access the RADIUS server. This is a write-only attribute (not stored in plan or state); increment `secret_wo_version` to update it.
+- `secret_wo_version` (Number) Increment this value to update the write-only `secret` attribute on the router.
 - `service` (Set of String) A set of router services that will use the RADIUS server. Possible values: `hotspot`, `login`, `ppp`, `wireless`, `dhcp`, `ipsec`, `dot1x`.
 - `src_address` (String) Source IPv4/IPv6 address of the packets sent to the RADIUS server.
 - `timeout` (String) A timeout, after which the request should be resent.

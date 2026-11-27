@@ -27,7 +27,10 @@ resource "routeros_system_package_local_update_source" "hub" {
 
 ### Optional
 
-- `password` (String, Sensitive) Password of the account the client authenticates to the package source with.
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password of the account the client authenticates to the package source with. This is a write-only attribute (not stored in plan or state); increment `password_wo_version` to update it.
+- `password_wo_version` (Number) Increment this value to update the write-only `password` attribute on the router.
 - `user` (String) Name of the account the client authenticates to the package source with. It is an account on the source router, and reading that router's file list is all it has to be able to do.
 
 ### Read-Only
