@@ -65,8 +65,11 @@ func TestKnownMappings(t *testing.T) {
 			t.Errorf("%s: path %q, want %q", name, r.Path, want)
 		}
 	}
-	if mapping["routeros_ip_service"].IdType != int(routeros.Name) {
-		t.Errorf("routeros_ip_service should be keyed by name (Name id type)")
+	if mapping["routeros_ip_service"].IdType != int(routeros.Id) {
+		t.Errorf("routeros_ip_service should be keyed by .id (Id id type)")
+	}
+	if mapping["routeros_system_identity"].IdType != int(routeros.Name) {
+		t.Errorf("routeros_system_identity should be keyed by name (Name id type)")
 	}
 	// Nested blocks are flattened to dotted names, as RouterOS reports them.
 	found := false
