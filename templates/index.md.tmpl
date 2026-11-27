@@ -3,52 +3,55 @@
 page_title: "RouterOS Provider"
 subcategory: ""
 description: |-
-    A provider to integrate with the REST API introduced in RouterOS v7
-  
+    Manage MikroTik RouterOS through the native API or REST.
 ---
 
 # RouterOS Provider
 
-## This is a fork
+These are the reference docs for the
+[TohaUA fork](https://github.com/TohaUA/terraform-provider-routeros).
+Keep `source = "terraform-routeros/routeros"` when using fork binaries from GitHub Releases.
+[Installation instructions](https://github.com/TohaUA/terraform-provider-routeros#installing-the-fork)
 
-These docs are built from [TohaUA/terraform-provider-routeros](https://github.com/TohaUA/terraform-provider-routeros),
-a fork of [terraform-routeros/terraform-provider-routeros](https://github.com/terraform-routeros/terraform-provider-routeros)
-at commit `0d8c069` (upstream `main` shortly after v1.99.1), plus 802.11be bands and 320 MHz channel
-width, two rounds of RouterOS 7.24 fields, a fix for the crash when a wifi/capsman access-list entry
-is updated, dependency bumps, and the `tools/schema-drift` comparison tool.
+## Compatibility
 
-The fork continues upstream's version numbering, so **fork v1.100.0 is not upstream v1.100.0**. The
-fork is not published on registry.terraform.io: keep `source = "terraform-routeros/routeros"` and
-install it through `dev_overrides` or a `filesystem_mirror`, as described in
-[Using this fork](https://github.com/TohaUA/terraform-provider-routeros#using-this-fork), which also
-covers release verification, the RouterOS 7.25+ target, where to report problems, and what a
-migration to a published `TohaUA/routeros` namespace would look like.
-
-## RouterOS 7.25+
-
-The provider requires **RouterOS 7.25 or later** (validated against **7.25.2**) and implements the documented 7.24 → 7.25 API additions, with configuration
-resources, operational data sources, and explicit command actions. See the
-[coverage and migration guide](guides/routeros_7_25.md) for feature mappings,
-transport tests, hardware requirements, and upgrade behavior.
-
-## Write-only secrets (Terraform 1.11+)
-
-User-supplied secret inputs are **write-only**:
-
-- **Terraform 1.11 or later** is required (OpenTofu has not been evaluated).
-- Write-only values are **never stored in Terraform plan or state** (they remain `null` in state).
-- **Drift is not detected:** changes to a write-only secret on the router outside Terraform do not appear in a plan.
-- **Rotation:** update the secret and increment its companion `<attribute>_wo_version` attribute (or `import_wo_version` for imported certificates) to send the updated value on apply.
-- **Imports:** `terraform import` cannot populate write-only values.
+The provider accepts **RouterOS 7.25 and later**. Acceptance CI targets **7.25.2** over native API
+and REST. Individual resources may also require a specific RouterOS version, package, or hardware.
+[Coverage and migration guide](guides/routeros_7_25.md)
 
 ## Getting started
 
-To get started with the provider, you first need to enable the REST API on your router. [You can follow the Mikrotik documentation on this](https://help.mikrotik.com/docs/display/ROS/REST+API), but the gist is to create an SSL cert (in `/certificate`) and enable the `www-ssl` service (in `/ip service`) which uses that certificate.
+Enable `www-ssl` and use `https://` for REST, or enable `api-ssl` and use `apis://` for native
+API. Assign a server certificate to the service and configure the issuing CA as needed. Supply the
+provider password through `ROS_PASSWORD`. Plaintext `http://` and `api://` expose credentials and
+configuration on the network. [RouterOS REST API](https://manual.mikrotik.com/docs/developer-guides/rest-api/) · [RouterOS native API](https://manual.mikrotik.com/docs/developer-guides/api/)
 
-TLS (`https://` or `apis://`) is recommended. Plaintext `http` and `api` transports send credentials and configuration in cleartext, and `insecure` skips TLS certificate verification (and cannot be combined with `ca_certificate`) — both are for lab use only.
+### TLS certificate pinning
 
+Certificate pinning is available from fork v2.5.0. To trust a specific router certificate,
+set `tls_fingerprint` in the provider block or set `ROS_TLS_FINGERPRINT`.
+Use `https://` or `apis://` and leave `ca_certificate` and `insecure` unset, including their
+environment variables.
 
-## Example Usage
+Compute the SHA-256 fingerprint from a trusted copy of the router's leaf certificate.
+
+```sh
+openssl x509 -in router-leaf.pem -noout -fingerprint -sha256
+```
+
+Copy the hexadecimal part after `=`. Colon separators are accepted. In pinning mode the
+provider authenticates the router by matching this fingerprint in place of normal CA and
+hostname checks. Before rotating the certificate, verify the replacement fingerprint through
+a trusted channel and coordinate the certificate and Terraform configuration changes.
+
+## Operator guides
+
+- [One state per router](guides/one_state_per_router.md)
+- [Import existing RouterOS configuration](guides/easy_import.md)
+- [Migrate and rotate write-only secrets with Terraform 1.11+](guides/write_only_secrets.md)
+- [Wi-Fi 7 configuration and validation](guides/wifi7.md)
+
+## Example usage
 
 {{tffile "examples/provider/provider.tf"}}
 
