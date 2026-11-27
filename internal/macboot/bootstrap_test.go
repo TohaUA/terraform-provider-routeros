@@ -193,13 +193,16 @@ type fakeMACTelnetServer struct {
 	serverPriv [32]byte
 	certFP     string
 
-	mu       sync.Mutex
-	addrSet  bool
-	certSet  bool
-	sslOn    bool
-	addrAdds int
-	certAdds int
-	vars     map[string]string
+	firstLoginPrompts bool
+
+	mu         sync.Mutex
+	addrSet    bool
+	certSet    bool
+	sslOn      bool
+	addrAdds   int
+	certAdds   int
+	loginStage int
+	vars       map[string]string
 }
 
 func startFakeMACTelnetServer(t *testing.T, user, pass, certFP string) *fakeMACTelnetServer {
@@ -305,10 +308,15 @@ func (s *fakeMACTelnetServer) serve() {
 						copy(confirm[:], cp.Data)
 						_, _, ok, err := ServerChallengeAndVerify(s.username, s.password, s.serverPriv, s.salt, clientPub, clientPar, confirm)
 						if err == nil && ok {
-							authed = true
 							var out bytes.Buffer
 							out.Write(EncodeControlPacket(macTelnetCPEndAuth, nil))
-							out.WriteString("\r\nMikroTik v7.25.2\r\n[admin@MikroTik] > ")
+							if s.firstLoginPrompts {
+								s.loginStage = 1
+								out.WriteString("\r\nMikroTik v7.25.2\r\nDo you want to see the software license? [Y/n]: ")
+							} else {
+								authed = true
+								out.WriteString("\r\nMikroTik v7.25.2\r\n[admin@MikroTik] > ")
+							}
 							pl := out.Bytes()
 							sendToClient(macTelnetPTypeData, txCounter, pl)
 							txCounter += uint32(len(pl))
@@ -319,6 +327,26 @@ func (s *fakeMACTelnetServer) serve() {
 						}
 					}
 				}
+			}
+			if !authed && len(plain) > 0 {
+				switch s.loginStage {
+				case 1:
+					if bytes.Contains(plain, []byte("n")) {
+						s.loginStage = 2
+						pl := []byte("\r\nChange your password\r\nnew password> ")
+						sendToClient(macTelnetPTypeData, txCounter, pl)
+						txCounter += uint32(len(pl))
+					}
+				case 2:
+					if bytes.Contains(plain, []byte{0x03}) {
+						s.loginStage = 0
+						authed = true
+						pl := []byte("\r\n[admin@MikroTik] > ")
+						sendToClient(macTelnetPTypeData, txCounter, pl)
+						txCounter += uint32(len(pl))
+					}
+				}
+				continue
 			}
 			if authed && len(plain) > 0 {
 				lineBuf.Write(plain)
@@ -538,4 +566,23 @@ func TestDebugRedaction(t *testing.T) {
 	if !strings.Contains(joinedRaw, "raw tx") {
 		t.Fatalf("expected raw tx hex dumps when UnsafeRawDebug is true, got: %s", joinedRaw)
 	}
+}
+
+func TestMACTelnetFirstLoginPrompts(t *testing.T) {
+	macSrv := startFakeMACTelnetServer(t, "admin", "", strings.Repeat("AB", 32))
+	macSrv.firstLoginPrompts = true
+	loopIf := loopbackInterfaceName(t)
+
+	sess, err := DialMACTelnet(context.Background(), MACTelnetOptions{
+		Interface:  loopIf,
+		TargetMAC:  "54:05:AB:01:02:03",
+		Username:   "admin",
+		Password:   "",
+		Timeout:    5 * time.Second,
+		RemoteAddr: macSrv.conn.LocalAddr().String(),
+	})
+	if err != nil {
+		t.Fatalf("DialMACTelnet with first-login prompts failed: %v", err)
+	}
+	_ = sess.Close()
 }

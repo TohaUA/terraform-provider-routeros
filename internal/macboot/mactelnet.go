@@ -385,8 +385,12 @@ func (s *MACTelnetSession) readLoop() {
 func (s *MACTelnetSession) handleDataPacket(pkt MACTelnetPacket) {
 	s.mu.Lock()
 	expected := s.rxCounter
-	if pkt.Counter == expected {
-		s.rxCounter += uint32(len(pkt.Payload))
+	payload := pkt.Payload
+	if pkt.Counter < expected && pkt.Counter+uint32(len(payload)) > expected {
+		payload = payload[expected-pkt.Counter:]
+	}
+	if pkt.Counter == expected || (pkt.Counter < expected && len(payload) > 0) {
+		s.rxCounter += uint32(len(payload))
 		newAck := s.rxCounter
 		s.mu.Unlock()
 
@@ -394,7 +398,7 @@ func (s *MACTelnetSession) handleDataPacket(pkt MACTelnetPacket) {
 		s.debugHex("tx-ack", ack, -1, 0)
 		_, _ = s.conn.WriteTo(ack, s.remoteAddr)
 
-		ctrls, plain, err := ParseDataPayload(pkt.Payload)
+		ctrls, plain, err := ParseDataPayload(payload)
 		if err != nil {
 			s.logf("malformed MAC-Telnet data payload: %v", err)
 			return
@@ -603,15 +607,26 @@ challengeReceived:
 		}
 	}
 
-	// Wait for the initial RouterOS prompt after login banner.
+	// Wait for the initial RouterOS prompt after login banner / first-boot prompts.
+	passwordPromptCancelled := false
+	enterSent := false
 	for {
 		clean := s.peekTermClean()
-		if strings.Contains(clean, "Login failed") {
+		lower := strings.ToLower(clean)
+		if strings.Contains(lower, "login failed") {
 			return errors.New("MAC-Telnet authentication failed: login rejected by router")
 		}
-		if !licenseSent && strings.Contains(clean, "software license? [Y/n]") {
+		if !licenseSent && strings.Contains(lower, "software license") {
 			licenseSent = true
-			_ = s.sendReliable(ctx, macTelnetPTypeData, []byte("n\r"), false)
+			_ = s.sendReliable(ctx, macTelnetPTypeData, []byte("n"), false)
+		}
+		if !passwordPromptCancelled && strings.Contains(lower, "new password") {
+			passwordPromptCancelled = true
+			_ = s.sendReliable(ctx, macTelnetPTypeData, []byte{0x03}, false)
+		}
+		if !enterSent && (strings.Contains(lower, `press "enter"`) || strings.Contains(lower, "press enter")) {
+			enterSent = true
+			_ = s.sendReliable(ctx, macTelnetPTypeData, []byte("\r"), false)
 		}
 		if rosPromptRegexp.MatchString(clean) {
 			s.drainTerm()
@@ -619,12 +634,20 @@ challengeReceived:
 		}
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("waiting for initial RouterOS prompt: %w", ctx.Err())
+			return fmt.Errorf("waiting for initial RouterOS prompt: %w (last output=%s)", ctx.Err(), sanitizePromptTail(clean))
 		case <-s.doneCh:
-			return errors.New("MAC-Telnet session closed before initial prompt")
+			return fmt.Errorf("MAC-Telnet session closed before initial prompt (last output=%s)", sanitizePromptTail(clean))
 		case <-s.termNotify:
 		}
 	}
+}
+
+func sanitizePromptTail(clean string) string {
+	const maxLen = 300
+	if len(clean) > maxLen {
+		clean = clean[len(clean)-maxLen:]
+	}
+	return fmt.Sprintf("%q", clean)
 }
 
 func cleanTerminalText(raw string) string {
@@ -680,7 +703,7 @@ func (s *MACTelnetSession) readUntilPrompt(ctx context.Context) (string, error) 
 		}
 		select {
 		case <-ctx.Done():
-			return s.drainTerm(), fmt.Errorf("waiting for RouterOS prompt: %w", ctx.Err())
+			return s.drainTerm(), fmt.Errorf("waiting for RouterOS prompt: %w (last output=%s)", ctx.Err(), sanitizePromptTail(clean))
 		case <-s.doneCh:
 			return s.drainTerm(), errors.New("MAC-Telnet session closed while executing command")
 		case <-s.termNotify:

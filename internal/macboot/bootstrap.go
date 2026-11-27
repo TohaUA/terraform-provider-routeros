@@ -256,11 +256,11 @@ func BuildBootstrapScript(cfg BootstrapConfig, nonce string) (string, error) {
 		":global mbN " + qNonce,
 		`:if ([:len [/ip/address/find address=$mbA interface=$mbI]]=0) do={/ip/address/add address=$mbA interface=$mbI}`,
 		`:if ([:len [/certificate/find name=$mbC]]=0) do={/certificate/add name=$mbC common-name=routeros key-size=prime256v1 key-usage=tls-server}`,
-		`:if ([:len [/certificate/find name=$mbC fingerprint=""]]>0) do={/certificate/sign ([/certificate/find name=$mbC]->0)}`,
-		`/ip/service/set [find name="www-ssl"] certificate=$mbC disabled=no`,
+		`:if ([:len [/certificate/get ([/certificate/find name=$mbC]->0) fingerprint]]=0) do={/certificate/sign ([/certificate/find name=$mbC]->0)}`,
+		`/ip/service/set www-ssl certificate=$mbC disabled=no`,
 	}
 	if cfg.EnableAPISSL {
-		lines = append(lines, `/ip/service/set [find name="api-ssl"] certificate=$mbC disabled=no`)
+		lines = append(lines, `/ip/service/set api-ssl certificate=$mbC disabled=no`)
 	}
 	lines = append(lines,
 		`:put ("===MACBOOT-" . "BEGIN-" . $mbN . "===")`,
