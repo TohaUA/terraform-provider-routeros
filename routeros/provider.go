@@ -144,6 +144,7 @@ func Provider() *schema.Provider {
 
 			// IP objects
 			"routeros_ip_address":                      ResourceIPAddress(),
+			"routeros_ip_arp":                          ResourceIpArp(),
 			"routeros_ip_dhcp_client":                  ResourceDhcpClient(),
 			"routeros_ip_dhcp_client_option":           ResourceDhcpClientOption(),
 			"routeros_ip_dhcp_relay":                   ResourceDhcpRelay(),

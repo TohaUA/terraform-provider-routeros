@@ -1,0 +1,32 @@
+# {{.Name}} ({{.Type}})
+{{ .Description | trimspace }}
+
+This resource manages **static, non-DHCP** IPv4 ARP entries under `/ip/arp`. Dynamic entries learned on the wire and entries created dynamically by DHCP leases are intentionally rejected during import, refresh, update, and delete.
+
+When the same IPv4 address appears on multiple interfaces, import with `<address>,<interface>` (or the RouterOS `.id`); bare `<address>` imports fail if more than one entry matches.
+
+## Adopting Script- or Scheduler-Managed Entries
+
+If static `/ip/arp` rows were previously maintained by an on-device RouterOS scheduler or script:
+
+1. Declare matching `routeros_ip_arp` blocks in Terraform configuration.
+2. Import each static row using `<address>,<interface>` or its RouterOS `.id`.
+3. Run `terraform plan` and confirm no unexpected changes are planned.
+4. Disable or remove the RouterOS scheduler/script so both systems do not overwrite the same table.
+
+Unlike an on-device RouterOS scheduler that runs periodically on a timer, Terraform reconciles `/ip/arp` only when `terraform apply` (or a scheduled workflow run) is executed.
+
+---
+
+{{ if .HasExample -}}
+## Example Usage
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+Import is supported using the following syntax:
+{{ codefile "shell" .ImportFile }}
+{{- end }}
