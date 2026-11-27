@@ -3,6 +3,7 @@ package routeros
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 // resource path is '/interface/vlan' etc.
@@ -81,6 +82,34 @@ func ReadItemsFiltered(filter []string, resourcePath string, c Client) (*[]Mikro
 
 	var res []MikrotikItem
 	err := c.SendRequest(crudRead, url, nil, &res)
+
+	return &res, err
+}
+
+// ReadItemsFilteredWithProplist queries resourcePath with the given filters and requests only
+// the named RouterOS properties via `.proplist`.
+func ReadItemsFilteredWithProplist(filter []string, proplist []string, resourcePath string, c Client) (*[]MikrotikItem, error) {
+	if resourcePath == "" {
+		return nil, errEmptyPath
+	}
+
+	query := make([]string, 0, len(filter)+1)
+	if c.GetTransport() == TransportAPI {
+		for _, s := range filter {
+			query = append(query, "?="+s)
+		}
+		if len(proplist) > 0 {
+			query = append(query, "=.proplist="+strings.Join(proplist, ","))
+		}
+	} else {
+		query = append(query, filter...)
+		if len(proplist) > 0 {
+			query = append(query, ".proplist="+strings.Join(proplist, ","))
+		}
+	}
+
+	var res []MikrotikItem
+	err := c.SendRequest(crudRead, &URL{Path: resourcePath, Query: query}, nil, &res)
 
 	return &res, err
 }

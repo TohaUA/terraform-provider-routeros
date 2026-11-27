@@ -426,6 +426,8 @@ func Provider() *schema.Provider {
 			"routeros_routing_pimsm_interface":                DatasourceRoutingPimsmInterfaces(),
 			"routeros_routing_pimsm_neighbor":                 DatasourceRoutingPimsmNeighbors(),
 			"routeros_routing_pimsm_uib_g":                    DatasourceRoutingPimsmUibG(),
+			"routeros_routing_bgp_session":                    DatasourceRoutingBgpSession(),
+			"routeros_interface_wireguard_peers":              DatasourceInterfaceWireguardPeers(),
 			"routeros_system_resource_hardware":               DatasourceSystemResourceHardware(),
 			"routeros_files":                                  DatasourceFiles(),
 			"routeros_interfaces":                             DatasourceInterfaces(),
