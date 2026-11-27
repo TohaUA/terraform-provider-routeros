@@ -1,3 +1,9 @@
+## [2.2.6](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.5...v2.2.6) (2026-11-27)
+
+### Bug Fixes
+
+* **user_manager_user:** change shared_users from int to string to support "unlimited" ([#88](https://github.com/TohaUA/terraform-provider-routeros/issues/88)) ([0e5ca51](https://github.com/TohaUA/terraform-provider-routeros/commit/0e5ca51b453b34f95f6ab32f6641b7e4470fb8a4)), closes [#53](https://github.com/TohaUA/terraform-provider-routeros/issues/53)
+
 ## [2.2.5](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.2.4...v2.2.5) (2026-11-27)
 
 ### Bug Fixes
