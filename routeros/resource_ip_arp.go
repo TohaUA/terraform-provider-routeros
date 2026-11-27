@@ -59,7 +59,10 @@ func ResourceIpArp() *schema.Resource {
 			Optional:         true,
 			ValidateFunc:     validation.IsMACAddress,
 			DiffSuppressFunc: MacAddressEqual,
-			Description:      "MAC address to map to the IPv4 address.",
+			StateFunc: func(v interface{}) string {
+				return strings.ToUpper(v.(string))
+			},
+			Description: "MAC address to map to the IPv4 address.",
 		},
 		"published": {
 			Type:        schema.TypeBool,
@@ -108,7 +111,19 @@ func ResourceIpArp() *schema.Resource {
 			if _, diags := readStatic(ctx, d, m); diags.HasError() {
 				return diags
 			}
-			return ResourceUpdate(ctx, resSchema, d, m)
+			diags := ResourceUpdate(ctx, resSchema, d, m)
+			if diags.HasError() || m.(Client).GetTransport() != TransportAPI {
+				return diags
+			}
+			item, readDiags := readStatic(ctx, d, m)
+			if readDiags.HasError() {
+				return append(diags, readDiags...)
+			}
+			if item == nil {
+				d.SetId("")
+				return diags
+			}
+			return append(diags, MikrotikResourceDataToTerraform(item, resSchema, d)...)
 		},
 		DeleteContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 			if _, diags := readStatic(ctx, d, m); diags.HasError() {
