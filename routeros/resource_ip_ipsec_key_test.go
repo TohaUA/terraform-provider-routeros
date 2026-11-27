@@ -28,6 +28,11 @@ func TestAccIpIpsecKeyTest_basic(t *testing.T) {
 							resource.TestCheckResourceAttr(testIpIpsecKey, "key_size", "2048"),
 						),
 					},
+					{
+						ResourceName:      testIpIpsecKey,
+						ImportState:       true,
+						ImportStateVerify: true,
+					},
 				},
 			})
 		})

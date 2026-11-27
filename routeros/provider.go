@@ -271,7 +271,6 @@ func Provider() *schema.Provider {
 
 			// Aliases for interface objects to retain compatibility between original and fork
 			"routeros_bridge":         ResourceInterfaceBridge(),
-			"routeros_bridge_mlag":    ResourceInterfaceBridgeMlag(),
 			"routeros_bridge_port":    ResourceInterfaceBridgePort(),
 			"routeros_bridge_vlan":    ResourceInterfaceBridgeVlan(),
 			"routeros_gre":            ResourceInterfaceGre(),

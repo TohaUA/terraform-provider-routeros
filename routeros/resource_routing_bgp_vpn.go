@@ -82,11 +82,6 @@ func ResourceRoutingBgpVpn() *schema.Resource {
 						Description: "List of route targets that will be used to import VPNv4 routes. The accepted RT format is " +
 							"similar to the one for Route Distinguishers.",
 					},
-					"router_id": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "The router ID of the BGP instance that will be used for the BGP best path selection algorithm.",
-					},
 				},
 			},
 		},

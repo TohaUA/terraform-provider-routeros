@@ -59,7 +59,6 @@ Optional:
 
 - `filter_chain` (String) The name of the routing filter chain that is used to filter prefixes during import.
 - `route_targets` (Set of String) List of route targets that will be used to import VPNv4 routes. The accepted RT format is similar to the one for Route Distinguishers.
-- `router_id` (String) The router ID of the BGP instance that will be used for the BGP best path selection algorithm.
 
 ## Import
 Import is supported using the following syntax:

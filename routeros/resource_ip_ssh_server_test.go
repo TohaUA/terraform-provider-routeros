@@ -44,10 +44,7 @@ func TestAccIpSSHServerSettingsTest_basic(t *testing.T) {
 	}
 }
 
-// RouterOS 7.21 dropped allow-none-crypto and always-allow-password-login from
-// /ip/ssh. strong_crypto is the surviving half of the allow_none_crypto pair
-// (they are ExactlyOneOf), and password_authentication replaced the login flag,
-// so it takes a string rather than a bool.
+// RouterOS 7.21+ uses strong_crypto and tri-state password_authentication on /ip/ssh.
 func testAccIpSSHServerSettingsConfig(strong bool, pwAuth, fwd string, kSize int) string {
 	return fmt.Sprintf(`%v
 
