@@ -142,7 +142,7 @@ func TestAccIPv6FirewallFilter_addressList(t *testing.T) {
 							testResourcePrimaryInstanceId("routeros_ipv6_firewall_filter.address_list"),
 							resource.TestCheckResourceAttr("routeros_ipv6_firewall_filter.address_list", "action", "add-src-to-address-list"),
 							resource.TestCheckResourceAttr("routeros_ipv6_firewall_filter.address_list", "address_list", "test-v6-list"),
-							resource.TestCheckResourceAttr("routeros_ipv6_firewall_filter.address_list", "address_list_timeout", "00:00:10"),
+							resource.TestCheckResourceAttr("routeros_ipv6_firewall_filter.address_list", "address_list_timeout", "10s"),
 							resource.TestCheckResourceAttr("routeros_ipv6_firewall_filter.address_list", "chain", "forward"),
 						),
 					},
@@ -157,7 +157,7 @@ func testAccIPv6FirewallFilterAddressListConfig() string {
 resource "routeros_ipv6_firewall_filter" "address_list" {
   action               = "add-src-to-address-list"
   address_list         = "test-v6-list"
-  address_list_timeout = "00:00:10"
+  address_list_timeout = "10s"
   chain                = "forward"
   protocol             = "tcp"
 }
