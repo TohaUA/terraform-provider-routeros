@@ -1,3 +1,9 @@
+## [2.8.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.7.0...v2.8.0) (2026-11-27)
+
+### Features
+
+* **datasources:** add routeros_system_device_mode data source ([#106](https://github.com/TohaUA/terraform-provider-routeros/issues/106)) ([91f1052](https://github.com/TohaUA/terraform-provider-routeros/commit/91f1052e5ec41071a2a49c5693f4e856d97771ef)), closes [#100](https://github.com/TohaUA/terraform-provider-routeros/issues/100)
+
 ## [2.7.0](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.6.0...v2.7.0) (2026-11-27)
 
 ### Features
