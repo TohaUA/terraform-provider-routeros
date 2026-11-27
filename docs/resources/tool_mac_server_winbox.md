@@ -17,6 +17,7 @@ resource "routeros_tool_mac_server_winbox" "test" {
 
 ### Optional
 
+- `lockout_ack` (String) Per-change acknowledgement token required when intentionally applying a management lockout-risky change. Set this to the exact token reported by the lockout guard diagnostic.
 
 ### Read-Only
 
