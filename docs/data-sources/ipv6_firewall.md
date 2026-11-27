@@ -172,6 +172,7 @@ Optional:
 Read-Only:
 
 - `action` (String)
+- `address_list` (String)
 - `bytes` (Number)
 - `chain` (String)
 - `comment` (String)
