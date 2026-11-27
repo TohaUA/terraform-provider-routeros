@@ -1,3 +1,9 @@
+## [2.3.3](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.3.2...v2.3.3) (2026-11-27)
+
+### Bug Fixes
+
+* **routeros:** require RouterOS 7.25+ and remove legacy compatibility code ([#92](https://github.com/TohaUA/terraform-provider-routeros/issues/92)) ([3953c7c](https://github.com/TohaUA/terraform-provider-routeros/commit/3953c7ce83f3c55057684a1918f7359df49fc907)), closes [#46](https://github.com/TohaUA/terraform-provider-routeros/issues/46)
+
 ## [2.3.2](https://github.com/TohaUA/terraform-provider-routeros/compare/v2.3.1...v2.3.2) (2026-11-27)
 
 ### Bug Fixes

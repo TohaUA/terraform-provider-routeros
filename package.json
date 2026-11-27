@@ -1,6 +1,6 @@
 {
     "name": "terraform-provider-routeros",
-    "version": "2.3.2",
+    "version": "2.3.3",
     "repository": {
         "type": "git",
         "url": "https://github.com/terraform-routeros/terraform-provider-routeros"
