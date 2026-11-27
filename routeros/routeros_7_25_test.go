@@ -11,8 +11,6 @@ import (
 // Exercise the 7.25.1 serializer in both directions. Existing Terraform
 // configuration and state retain their attribute names.
 func TestRouterOS725PropertyRenames(t *testing.T) {
-	previous := RouterOSVersion
-	t.Cleanup(func() { RouterOSVersion = previous })
 	for _, tc := range []struct {
 		name, field, legacy, current string
 		resource                     func() *schema.Resource
@@ -20,34 +18,29 @@ func TestRouterOS725PropertyRenames(t *testing.T) {
 		{"bridge", "last_member_interval", "last-member-interval", "last-member-query-interval", ResourceInterfaceBridge},
 		{"dot1x", "reauth_timeout", "reauth-timeout", "reauth-period", ResourceInterfaceDot1xServer},
 	} {
-		for _, version := range []string{"7.25.1"} {
-			t.Run(tc.name+"/"+version, func(t *testing.T) {
-				RouterOSVersion = version
-				key, other := tc.current, tc.legacy
-				res := tc.resource()
-				d := resourceDataWithRawConfig(res, "*1", map[string]cty.Value{tc.field: cty.StringVal("5s")})
-				item, _ := TerraformResourceDataToMikrotik(res.Schema, d)
-				if item[key] != "5s" {
-					t.Fatalf("write %s = %q, want 5s (payload: %v)", key, item[key], item)
-				}
-				if _, present := item[other]; present {
-					t.Fatalf("write includes obsolete key %s: %v", other, item)
-				}
-				read := res.TestResourceData()
-				if diags := MikrotikResourceDataToTerraform(MikrotikItem{key: "10s"}, res.Schema, read); len(diags) != 0 {
-					t.Fatalf("read: %v", diags)
-				}
-				if got := read.Get(tc.field); got != "10s" {
-					t.Fatalf("read %s = %v, want 10s", tc.field, got)
-				}
-			})
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			key, other := tc.current, tc.legacy
+			res := tc.resource()
+			d := resourceDataWithRawConfig(res, "*1", map[string]cty.Value{tc.field: cty.StringVal("5s")})
+			item, _ := TerraformResourceDataToMikrotik(res.Schema, d)
+			if item[key] != "5s" {
+				t.Fatalf("write %s = %q, want 5s (payload: %v)", key, item[key], item)
+			}
+			if _, present := item[other]; present {
+				t.Fatalf("write includes obsolete key %s: %v", other, item)
+			}
+			read := res.TestResourceData()
+			if diags := MikrotikResourceDataToTerraform(MikrotikItem{key: "10s"}, res.Schema, read); len(diags) != 0 {
+				t.Fatalf("read: %v", diags)
+			}
+			if got := read.Get(tc.field); got != "10s" {
+				t.Fatalf("read %s = %v, want 10s", tc.field, got)
+			}
+		})
 	}
 }
 
 func TestRouterOS725OptionalFields(t *testing.T) {
-	previous := RouterOSVersion
-	t.Cleanup(func() { RouterOSVersion = previous })
 	for _, tc := range []struct {
 		name, field, wire string
 		resource          func() *schema.Resource
@@ -72,14 +65,12 @@ func TestRouterOS725OptionalFields(t *testing.T) {
 				t.Fatalf("%s must be optional without an injected default", tc.field)
 			}
 			// Omitted options must not overwrite device defaults on ordinary writes.
-			RouterOSVersion = "7.25.1"
 			unset := resourceDataWithRawConfig(res, "*1", nil)
 			item, _ := TerraformResourceDataToMikrotik(res.Schema, unset)
 			key := SnakeToKebab(tc.field)
 			if _, present := item[key]; present {
 				t.Fatalf("unset %s sent without configuration: %v", key, item)
 			}
-			RouterOSVersion = "7.25.1"
 			d := resourceDataWithRawConfig(res, "*1", map[string]cty.Value{tc.field: tc.value})
 			// The helper initializes strings from state; set typed values as well.
 			if err := d.Set(tc.field, tc.state); err != nil {

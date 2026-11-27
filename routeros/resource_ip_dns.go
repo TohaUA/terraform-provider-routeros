@@ -198,12 +198,5 @@ func ResourceDns() *schema.Resource {
 
 		Schema:        resSchema,
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    ResourceDnsV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationScalarToList("servers"),
-				Version: 0,
-			},
-		},
 	}
 }

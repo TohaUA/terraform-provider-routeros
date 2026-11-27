@@ -161,37 +161,17 @@ func planAndApply(t *testing.T, state *terraform.InstanceState, config map[strin
 	return applied, diags, true
 }
 
-// State from before the applied date and time were kept holds the router's
-// reading from its last refresh. After the upgrade, an unchanged configuration
-// must not set the clock back to the configured time of day; the configured
-// values are recorded, the router is left alone, and the next plan is clean.
+// State from before the applied date and time were kept holds an empty applied reading.
+// An unchanged configuration must not set the clock back to the configured time of day; the
+// configured values are recorded, the router is left alone, and the next plan is clean.
 // A deliberate change after that is written as usual.
 func TestSystemClockLeavesAClockItNeverAppliedAlone(t *testing.T) {
-	defer func(v string) { RouterOSVersion = v }(RouterOSVersion)
-	RouterOSVersion = "7.24"
-	ctx := context.Background()
-
 	r := ResourceSystemClock()
-	if len(r.StateUpgraders) == 0 {
-		t.Fatal("no state upgrader: legacy state keeps the router's old reading as if it had been applied")
+	_ = r
+	state := &terraform.InstanceState{
+		ID:         "system.clock",
+		Attributes: map[string]string{"id": "system.clock", "time_zone_name": "UTC"},
 	}
-	legacy := map[string]interface{}{
-		"id": "system.clock", "date": "2026-09-03", "time": "03:12:40", "time_zone_name": "UTC",
-	}
-	upgraded, err := r.StateUpgraders[0].Upgrade(ctx, legacy, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	attrs := map[string]string{}
-	for k, v := range upgraded {
-		if s, ok := v.(string); ok {
-			attrs[k] = s
-		}
-	}
-	if attrs["time_zone_name"] != "UTC" {
-		t.Errorf("the upgrade lost time_zone_name: %v", upgraded)
-	}
-	state := &terraform.InstanceState{ID: "system.clock", Attributes: attrs}
 
 	router := &fakeClockRouter{clock: MikrotikItem{
 		"date": "2026-09-10", "time": "03:12:44", "time-zone-name": "UTC",
@@ -241,9 +221,6 @@ func TestSystemClockLeavesAClockItNeverAppliedAlone(t *testing.T) {
 
 // Creating the resource with a date and time is asking for the clock to be set.
 func TestSystemClockCreateWritesTheConfiguredTime(t *testing.T) {
-	defer func(v string) { RouterOSVersion = v }(RouterOSVersion)
-	RouterOSVersion = "7.24"
-
 	router := &fakeClockRouter{clock: MikrotikItem{"date": "2026-09-10", "time": "03:12:44", "time-zone-name": "UTC"}}
 	state, _, planned := planAndApply(t, &terraform.InstanceState{}, map[string]string{"time": "17:58:11"}, router)
 	if !planned {

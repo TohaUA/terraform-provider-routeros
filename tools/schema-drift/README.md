@@ -69,11 +69,11 @@ here unchanged:
 
 | variables | meaning |
 |---|---|
-| `ROS_HOSTURL`, `MIKROTIK_HOST` | `https://router` (a `/rest` suffix is tolerated) |
-| `ROS_USERNAME`, `MIKROTIK_USER` | username; a read-only user is enough |
-| `ROS_PASSWORD`, `MIKROTIK_PASSWORD` | password |
-| `ROS_CA_CERTIFICATE`, `MIKROTIK_CA_CERTIFICATE` | PEM bundle to trust (optional) |
-| `ROS_INSECURE`, `MIKROTIK_INSECURE` | `true` to skip certificate verification (optional) |
+| `ROS_HOSTURL` | `https://router` (a `/rest` suffix is tolerated) |
+| `ROS_USERNAME` | username; a read-only user is enough |
+| `ROS_PASSWORD` | password |
+| `ROS_CA_CERTIFICATE` | PEM bundle to trust (optional) |
+| `ROS_INSECURE` | `true` to skip certificate verification (optional) |
 
 `ROS_CACERT`, the CA variable earlier versions of this tool used, is still read, after both
 provider names.

@@ -21,12 +21,12 @@ The fork continues upstream's version numbering, so **fork v1.100.0 is not upstr
 fork is not published on registry.terraform.io: keep `source = "terraform-routeros/routeros"` and
 install it through `dev_overrides` or a `filesystem_mirror`, as described in
 [Using this fork](https://github.com/TohaUA/terraform-provider-routeros#using-this-fork), which also
-covers release verification, the RouterOS 7.24 target, where to report problems, and what a
+covers release verification, the RouterOS 7.25+ target, where to report problems, and what a
 migration to a published `TohaUA/routeros` namespace would look like.
 
-## RouterOS 7.25.1
+## RouterOS 7.25+
 
-The fork targets RouterOS **7.25.1** and implements the documented 7.24 → 7.25 API additions, with configuration
+The provider requires **RouterOS 7.25 or later** (validated against **7.25.2**) and implements the documented 7.24 → 7.25 API additions, with configuration
 resources, operational data sources, and explicit command actions. See the
 [coverage and migration guide](guides/routeros_7_25.md) for feature mappings,
 transport tests, hardware requirements, and upgrade behavior.
@@ -82,17 +82,16 @@ resource "routeros_interface_gre" "gre_hq" {
 	Plaintext schemes (http:// and api://) send credentials and traffic unencrypted; prefer https:// or apis://.
 	Standard proxy environment variables (HTTP_PROXY, HTTPS_PROXY, NO_PROXY) apply to the REST (http:// and https://) transport only; api:// and apis:// connect directly.
 
-	export ROS_HOSTURL=router.local or export MIKROTIK_HOST=router.local
+	export ROS_HOSTURL=router.local
 - `username` (String) Username for the MikroTik WEB/Winbox.
 
 
-	export ROS_USERNAME=admin or export MIKROTIK_USER=admin
+	export ROS_USERNAME=admin
 
 ### Optional
 
-- `ca_certificate` (String) Path to MikroTik's certificate authority file (env: ROS_CA_CERTIFICATE | MIKROTIK_CA_CERTIFICATE).
-- `insecure` (Boolean) Skip TLS certificate verification (not recommended) (env: ROS_INSECURE | MIKROTIK_INSECURE).
-- `password` (String, Sensitive) Password for the MikroTik user (env: ROS_PASSWORD | MIKROTIK_PASSWORD).
+- `ca_certificate` (String) Path to MikroTik's certificate authority file (env: ROS_CA_CERTIFICATE).
+- `insecure` (Boolean) Skip TLS certificate verification (not recommended) (env: ROS_INSECURE).
+- `password` (String, Sensitive) Password for the MikroTik user (env: ROS_PASSWORD).
 - `rest_timeout` (Number) Timeout, in seconds, for a single request to the router. Applies to both the REST and the API transport.
-- `routeros_version` (String) RouterOS version for which resource schemes will be adapted. The version obtained from MikroTik will be used if not specified (env: ROS_VERSION).
 - `suppress_syso_del_warn` (Boolean) Suppress the system object deletion warning (env: ROS_SUPPRESS_SYSO_DEL_WARN).

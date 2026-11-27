@@ -190,13 +190,6 @@ func ResourceDhcpServer() *schema.Resource {
 		},
 
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    ResourceDhcpServerV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationNameToId(resSchema[MetaResourcePath].Default.(string)),
-				Version: 0,
-			},
-		},
 
 		Schema: resSchema,
 	}

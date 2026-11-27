@@ -73,13 +73,6 @@ func ResourceSystemClock() *schema.Resource {
 
 		Schema:        resSchema,
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Version: 0,
-				Type:    (&schema.Resource{Schema: resSchema}).CoreConfigSchema().ImpliedType(),
-				Upgrade: systemClockForgetLegacyReading,
-			},
-		},
 	}
 }
 
@@ -95,28 +88,11 @@ func ResourceSystemClock() *schema.Resource {
 // shows as the change it is.
 //
 // An empty value in state means nothing has been applied: the resource was
-// imported, or its state predates this and was cleared by the upgrade below. The
-// configured value is then recorded without being written, because comparing it
-// with a reading the router took some time ago says nothing about whether the
-// configuration changed, and writing it could move the clock by hours or days.
+// imported, or its state predates this. The configured value is then recorded
+// without being written, because comparing it with a reading the router took
+// some time ago says nothing about whether the configuration changed, and
+// writing it could move the clock by hours or days.
 var systemClockAppliedFields = []string{"date", "time"}
-
-// systemClockForgetLegacyReading upgrades state from before the applied date and
-// time were kept. That state holds the router's reading from its last refresh,
-// which was not applied by anyone: kept, it differs from an unchanged
-// configuration, and the apply that follows would set the clock back to the
-// configured time of day. Clearing it marks the applied values as unknown.
-func systemClockForgetLegacyReading(_ context.Context, rawState map[string]interface{}, _ interface{}) (map[string]interface{}, error) {
-	if rawState == nil {
-		return rawState, nil
-	}
-
-	for _, field := range systemClockAppliedFields {
-		rawState[field] = nil
-	}
-
-	return rawState, nil
-}
 
 func systemClockApply(s map[string]*schema.Schema) func(context.Context, *schema.ResourceData, interface{}) diag.Diagnostics {
 	return func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

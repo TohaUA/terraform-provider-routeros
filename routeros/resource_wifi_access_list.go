@@ -118,7 +118,6 @@ func ResourceWifiAccessList() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Description:   `*<span style="color:red">This resource requires a minimum version of RouterOS 7.13.</span>*`,
 		CreateContext: DefaultCreate(resSchema),
 		ReadContext:   DefaultRead(resSchema),
 		UpdateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

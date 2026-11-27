@@ -288,7 +288,6 @@ func TestSensitiveSecretsInventory(t *testing.T) {
 		{false, "routeros_wifi_access_list", "passphrase"},
 		{false, "routeros_capsman_access_list", "private_passphrase"},
 		{false, "routeros_interface_wireguard_peer", "private_key"},
-		{false, "routeros_wireguard_peer", "private_key"},
 		{false, "routeros_system_certificate", "import.key_file_content"},
 		{false, "routeros_interface_l2tp_server", "ipsec_secret"},
 		{false, "routeros_interface_lte", "pin"},

@@ -198,14 +198,14 @@ For the first two to work correctly, you must remove the resource state (`terraf
 ## Purpose
 
 This provider allows you to configure Mikrotik routers using [old API](https://help.mikrotik.com/docs/display/ROS/API) or [REST API](https://help.mikrotik.com/docs/display/ROS/REST+API). TLS (`https://` or `apis://`) is recommended; unencrypted `http` / `api` transports send credentials and configuration in cleartext and are for lab use only.
-Compatibility testing is only performed within ROS version 7.x.
+RouterOS 7.25 or later is required.
 
 From version 1.0.0, the provider has been rewritten by [vaerh](https://github.com/vaerh), and their [fork](https://github.com/vaerh/terraform-provider-routeros) has now been merged. This version drastically improves adding new endpoints to the provider, enabling significantly easier development. [vaerh](https://github.com/vaerh) has been added as a maintainer to this project.
 
 _We are not affiliated in any way with Mikrotik or the development of RouterOS_
 ## Using the provider
 
-To get started with the provider, you first need to enable the REST API on your router. [You can follow the Mikrotik documentation on this](https://help.mikrotik.com/docs/display/ROS/REST+API), but the gist is to create an SSL cert (in `/certificate`) and enable the `www-ssl` service (in `/ip service`) which uses that certificate. After that, export `ROS_PASSWORD` (or `MIKROTIK_PASSWORD`) in your environment and include the following in your Terraform manifests:
+To get started with the provider, you first need to enable the REST API on your router. [You can follow the Mikrotik documentation on this](https://help.mikrotik.com/docs/display/ROS/REST+API), but the gist is to create an SSL cert (in `/certificate`) and enable the `www-ssl` service (in `/ip service`) which uses that certificate. After that, export `ROS_PASSWORD` in your environment and include the following in your Terraform manifests:
 
 ```terraform
 terraform {
@@ -220,7 +220,7 @@ provider "routeros" {
   hosturl        = "https://my.router.local"
   username       = "my_username"
   ca_certificate = "/path/to/ca/certificate.pem"
-  # Set ROS_PASSWORD (or MIKROTIK_PASSWORD) in the environment
+  # Set ROS_PASSWORD in the environment
 }
 
 ```
@@ -321,9 +321,7 @@ read back.
 `tools/schema-drift` compares every resource schema with what a live router returns for the
 resource's menu (GET only) and lists the fields that exist on one side only. Run it once per
 RouterOS release to turn "support 7.xx" into a checklist. It reads the same connection variables as
-the provider: `ROS_HOSTURL` or `MIKROTIK_HOST`, `ROS_USERNAME` or `MIKROTIK_USER`, `ROS_PASSWORD` or
-`MIKROTIK_PASSWORD`, and optionally `ROS_CA_CERTIFICATE` or `MIKROTIK_CA_CERTIFICATE` and
-`ROS_INSECURE` or `MIKROTIK_INSECURE`:
+the provider: `ROS_HOSTURL`, `ROS_USERNAME`, `ROS_PASSWORD`, and optionally `ROS_CA_CERTIFICATE` and `ROS_INSECURE`:
 
 ```bash
 export ROS_HOSTURL=https://router.example ROS_USERNAME=admin ROS_PASSWORD=... ROS_CA_CERTIFICATE=/path/ca.pem

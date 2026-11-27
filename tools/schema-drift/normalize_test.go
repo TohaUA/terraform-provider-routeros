@@ -245,33 +245,23 @@ func TestCompareTransformSetMapsAndBlocks(t *testing.T) {
 }
 
 func TestCompareAppliesVersionDrift(t *testing.T) {
-	// /ip/dhcp-server: src_address <-> server-address since 7.1 (mikrotik_resource_drift.go).
+	// /ip/dhcp-server: src_address <-> server-address (mikrotik_resource_drift.go).
 	g := &MenuGroup{Path: "/ip/dhcp-server", Resources: []*Resource{{
 		Name: "routeros_ip_dhcp_server", Path: "/ip/dhcp-server",
 		Attrs: []Attr{{Name: "name", Type: "string", Required: true}, {Name: "src_address", Type: "string", Optional: true}},
 	}}}
 	items := []map[string]string{{"name": "d", "server-address": "10.0.0.1"}}
 
-	got, err := compareOne(t, NewComparer("7.24", nil, nil), g, items)
+	got, err := compareOne(t, NewComparer("7.25", nil, nil), g, items)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rows := rowsByField(got)
 	if rows["server-address"].Class != ClassCovered || rows["server-address"].Attr != "src_address" {
-		t.Errorf("7.24 server-address: %+v", rows["server-address"])
+		t.Errorf("7.25 server-address: %+v", rows["server-address"])
 	}
 	if got.Count(ClassSchemaOnly) != 0 {
-		t.Errorf("7.24 src_address should be matched via the drift map: %v", got.Fields)
-	}
-
-	got, _ = compareOne(t, NewComparer("7.0", nil, nil), g, items)
-	rows = rowsByField(got)
-	if rows["server-address"].Class != ClassMissing || rows["src-address"].Class != ClassSchemaOnly {
-		t.Errorf("7.0 must not apply the 7.1 rename: %v", got.Fields)
-	}
-
-	if _, err := NewComparer("not-a-version", nil, nil).Compare(g, items); err == nil {
-		t.Errorf("bad version must be an error")
+		t.Errorf("7.25 src_address should be matched via the drift map: %v", got.Fields)
 	}
 }
 

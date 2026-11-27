@@ -15,9 +15,6 @@ func TestAccRouterOS725Fields(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("requires TF_ACC and a disposable RouterOS instance")
 	}
-	if !testCheckMinVersion(t, "7.25.1") {
-		t.Skip("requires RouterOS 7.25.1 or later")
-	}
 	for _, tc := range []struct {
 		name, resourceType, path, base, field string
 		values                                []string

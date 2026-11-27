@@ -123,12 +123,5 @@ func ResourceDhcpServerNetwork() *schema.Resource {
 
 		Schema:        resSchema,
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    ResourceDhcpServerNetworkV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationScalarToList("caps_manager", "dhcp_option", "dns_server", "ntp_server", "wins_server"),
-				Version: 0,
-			},
-		},
 	}
 }

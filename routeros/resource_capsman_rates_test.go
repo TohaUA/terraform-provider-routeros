@@ -6,14 +6,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testCapsManRatesMaxVersion = "7.12.2"
 const testCapsManRatesAddress = "routeros_capsman_rates.test_rates"
 
 func TestAccCapsManRatesTest_basic(t *testing.T) {
-	if !testCheckMaxVersion(t, testCapsManRatesMaxVersion) {
-		t.Logf("Test skipped, the maximum supported version is %v", testCapsManRatesMaxVersion)
-		return
-	}
+	t.Skip("legacy wireless/CAPsMAN v1 requires the optional wireless package not installed on RouterOS 7.25 CHR")
 
 	for _, name := range testNames {
 		t.Run(name, func(t *testing.T) {

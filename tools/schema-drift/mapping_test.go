@@ -50,7 +50,6 @@ func TestKnownMappings(t *testing.T) {
 	mapping := ProviderResources(routeros.Provider())
 	cases := map[string]string{
 		"routeros_interface_bridge":       "/interface/bridge",
-		"routeros_bridge":                 "/interface/bridge",
 		"routeros_ip_service":             "/ip/service",
 		"routeros_ip_settings":            "/ip/settings",
 		"routeros_routing_bgp_connection": "/routing/bgp/connection",
@@ -99,16 +98,16 @@ func TestGroupByMenuAliases(t *testing.T) {
 	if !ok {
 		t.Fatal("/interface/bridge group missing")
 	}
-	if got := strings.Join(g.Names(), ","); got != "routeros_bridge,routeros_interface_bridge" {
-		t.Errorf("/interface/bridge aliases: %s", got)
+	if got := strings.Join(g.Names(), ","); got != "routeros_interface_bridge" {
+		t.Errorf("/interface/bridge resources: %s", got)
 	}
-	if s := g.Schemas(); len(s) != 1 || len(s[0].Resources) != 2 {
-		t.Errorf("/interface/bridge aliases should share one schema, got %d schemas", len(s))
+	if s := g.Schemas(); len(s) != 1 || len(s[0].Resources) != 1 {
+		t.Errorf("/interface/bridge should have one resource, got %d schemas", len(s))
 	}
 	if len(noMenu) != len(noMenuAllowlist) {
 		t.Errorf("resources without menu: %d, allowlist has %d", len(noMenu), len(noMenuAllowlist))
 	}
-	if g.Select([]string{"routeros_bridge"}) == nil || g.Select([]string{"/interface/bridge"}) == nil ||
+	if g.Select([]string{"routeros_interface_bridge"}) == nil || g.Select([]string{"/interface/bridge"}) == nil ||
 		g.Select([]string{"/ip/service"}) != nil || g.Select(nil) == nil {
 		t.Errorf("Select mismatch")
 	}

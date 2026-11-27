@@ -41,10 +41,6 @@ func (c *certImportClient) SendRequest(method crudMethod, url *URL, item Mikroti
 // an imported certificate, and a configuration that declares no settings keeps the
 // import-only request sequence.
 func TestSystemCertificateImportAppliesSettings(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.24"
-	t.Cleanup(func() { RouterOSVersion = old })
-
 	tests := []struct {
 		name    string
 		config  map[string]cty.Value

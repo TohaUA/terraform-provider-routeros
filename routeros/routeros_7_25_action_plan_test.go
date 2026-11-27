@@ -41,9 +41,6 @@ func api725ActionConfig(r *schema.Resource, values map[string]cty.Value) *terraf
 }
 
 func TestAPI725ActionArgumentPlanning(t *testing.T) {
-	oldVersion := RouterOSVersion
-	RouterOSVersion = "7.25.1"
-	t.Cleanup(func() { RouterOSVersion = oldVersion })
 	for _, tc := range []struct {
 		name, field, wire, old, want string
 		next                         cty.Value
@@ -95,9 +92,6 @@ func TestAPI725ActionArgumentPlanning(t *testing.T) {
 }
 
 func TestAPI725ActionTriggerPlanning(t *testing.T) {
-	oldVersion := RouterOSVersion
-	RouterOSVersion = "7.25.1"
-	t.Cleanup(func() { RouterOSVersion = oldVersion })
 	r := ResourceSystemSSHExec()
 	for _, next := range []string{"first", "second"} {
 		config := api725ActionConfig(r, map[string]cty.Value{

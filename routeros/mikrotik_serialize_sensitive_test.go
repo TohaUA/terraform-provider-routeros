@@ -15,10 +15,6 @@ import (
 // every top-level optional sensitive string in the provider, puts a mask in state while configuration says
 // nothing about it, and fails if the mask appears anywhere in the request, under any name.
 func TestSensitiveValuesAreNotSentUnlessDeclared(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.24"
-	defer func() { RouterOSVersion = old }()
-
 	const mask = "***"
 
 	resources := Provider().ResourcesMap
@@ -76,10 +72,6 @@ func TestSensitiveValuesAreNotSentUnlessDeclared(t *testing.T) {
 // The same rule holds for an Optional+Sensitive field inside a nested TypeList block: a masked value taken from
 // state must not be sent when configuration declares the block but leaves the secret out.
 func TestNestedListSensitiveValueNotSentUnlessDeclared(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.24"
-	defer func() { RouterOSVersion = old }()
-
 	const mask = "***"
 
 	res := &schema.Resource{

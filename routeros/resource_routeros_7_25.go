@@ -167,7 +167,7 @@ func addAPI725Fields(s map[string]*schema.Schema) {
 		// Versioned wire renames keep their original Terraform attribute. A
 		// second attribute for the new wire name would steal deserialized state.
 		renamed := false
-		for from, to := range driftAttributeSlice.GetDriftMap("7.25", path, false) {
+		for from, to := range driftAttributeSlice.GetDriftMap(path, false) {
 			if to == f.Wire && s[from] != nil {
 				renamed = true
 				break
@@ -196,21 +196,30 @@ func addAPI725Fields(s map[string]*schema.Schema) {
 	}
 }
 
-func requireAPI725() diag.Diagnostics {
-	version, err := parseRouterOSVersion(RouterOSVersion)
+type versionedClient interface {
+	GetRouterOSVersion() string
+}
+
+func requireAPI725(m interface{}) diag.Diagnostics {
+	vc, ok := m.(versionedClient)
+	if !ok || vc.GetRouterOSVersion() == "" {
+		return nil
+	}
+	ros := vc.GetRouterOSVersion()
+	version, err := parseRouterOSVersion(ros)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	minimum, _ := parseRouterOSVersion(routerOS725MinimumVersion)
 	if version < minimum {
-		return diag.Errorf("This resource requires RouterOS 7.25.1 or later; configured version is %s", RouterOSVersion)
+		return diag.Errorf("This resource requires RouterOS %s or later; connected router runs %s", routerOS725MinimumVersion, ros)
 	}
 	return nil
 }
 
 func api725Guard(f schema.CreateContextFunc) schema.CreateContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-		if diags := requireAPI725(); diags.HasError() {
+		if diags := requireAPI725(m); diags.HasError() {
 			return diags
 		}
 		return f(ctx, d, m)
@@ -285,7 +294,7 @@ func newAPI725Datasource(path string, command bool) *schema.Resource {
 		Description: fmt.Sprintf("Read `%s` on RouterOS 7.25.1+. [CLI reference](https://manual.mikrotik.com/docs/7.25/cli-reference%s/).", path, path),
 		Schema:      s,
 		ReadContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-			if diags := requireAPI725(); diags.HasError() {
+			if diags := requireAPI725(m); diags.HasError() {
 				return diags
 			}
 			var rows []MikrotikItem
@@ -346,7 +355,7 @@ func newAPI725Action(path string) *schema.Resource {
 	s["result_json"] = &schema.Schema{Type: schema.TypeString, Computed: true, Sensitive: true, Description: "JSON array containing the command replies. Stored in Terraform state."}
 	s[MetaSkipFields] = PropSkipFields("arguments", "triggers")
 	execute := func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-		if diags := requireAPI725(); diags.HasError() {
+		if diags := requireAPI725(m); diags.HasError() {
 			return diags
 		}
 		args, _ := TerraformResourceDataToMikrotik(s, d)

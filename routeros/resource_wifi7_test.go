@@ -36,7 +36,7 @@ func TestWifi7ExistingSchemaCompatibility(t *testing.T) {
 		if r == nil {
 			t.Fatalf("existing resource removed: %s", name)
 		}
-		if r.SchemaVersion != 0 || len(r.StateUpgraders) != 0 {
+		if r.SchemaVersion != 0 {
 			t.Errorf("%s unexpectedly requires state migration", name)
 		}
 		for field, old := range fields {
@@ -191,9 +191,6 @@ func TestWifi7ExplicitFalseAndStringsWritten(t *testing.T) {
 }
 
 func TestWifi7OperationalState(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.25.1"
-	t.Cleanup(func() { RouterOSVersion = old })
 	r := DatasourceWifiRadios()
 	d := r.TestResourceData()
 	c := &wifi7Recorder{row: MikrotikItem{".id": "*R", "hw-caps": "mlo,beacon-protection", "ml-group": "AA:BB:CC:DD:EE:FF", "2g-channels": "2412,2437", "bands": "6ghz-be:20/40/80/160/320mhz"}}
@@ -359,9 +356,6 @@ func TestWifi7ReadClearsRemovedNewControls(t *testing.T) {
 }
 
 func TestWifi7RadioSettingsUnsupported(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.25.1"
-	t.Cleanup(func() { RouterOSVersion = old })
 	r := ResourceWifiRadioSettings()
 	d := resourceDataWithRawConfig(r, "", map[string]cty.Value{"external_antenna": cty.False})
 	c := &wifi7Recorder{err: errors.New("Not supported")}

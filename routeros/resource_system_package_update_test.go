@@ -14,10 +14,6 @@ const testSystemPackageUpdate = "routeros_system_package_update.test"
 // RouterOS rejects a request carrying a property the menu does not accept, so the read-only properties
 // must stay out of the request even though the router reports them. Only the channel may be sent.
 func TestSystemPackageUpdateSendsOnlyTheChannel(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.24"
-	defer func() { RouterOSVersion = old }()
-
 	res := ResourceSystemPackageUpdate()
 	d := resourceDataWithRawConfig(res, "system-package-update", map[string]cty.Value{
 		"channel": cty.StringVal("stable"),
@@ -50,10 +46,6 @@ func TestSystemPackageUpdateSendsOnlyTheChannel(t *testing.T) {
 // Every property a RouterOS 7.24 router returns from this menu has to be declared. An undeclared one is
 // not an error, it is a warning on every single read, which is how a schema quietly rots.
 func TestSystemPackageUpdateReadsTheWholeMenu(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.24"
-	defer func() { RouterOSVersion = old }()
-
 	res := ResourceSystemPackageUpdate()
 	item := MikrotikItem{
 		"channel":           "stable",

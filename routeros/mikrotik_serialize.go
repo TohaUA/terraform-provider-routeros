@@ -134,7 +134,7 @@ func TerraformResourceDataToMikrotik(s map[string]*schema.Schema, d *schema.Reso
 	}
 
 	// Resource attribute drift compensation.
-	if drift := driftAttributeSlice.GetDriftMap(RouterOSVersion, s[MetaResourcePath].Default.(string), false); len(drift) > 0 {
+	if drift := driftAttributeSlice.GetDriftMap(s[MetaResourcePath].Default.(string), false); len(drift) > 0 {
 		if transformSet == nil {
 			transformSet = make(map[string]string)
 		}
@@ -444,7 +444,7 @@ func MikrotikResourceDataToTerraform(item MikrotikItem, s map[string]*schema.Sch
 	}
 
 	// Resource attribute drift compensation.
-	if drift := driftAttributeSlice.GetDriftMap(RouterOSVersion, s[MetaResourcePath].Default.(string), true); len(drift) > 0 {
+	if drift := driftAttributeSlice.GetDriftMap(s[MetaResourcePath].Default.(string), true); len(drift) > 0 {
 		if transformSet == nil {
 			transformSet = make(map[string]string)
 		}
@@ -744,7 +744,7 @@ func MikrotikResourceDataToTerraformDatasource(items *[]MikrotikItem, resourceDa
 	}
 
 	// Resource attribute drift compensation.
-	if drift := driftAttributeSlice.GetDriftMap(RouterOSVersion, s[MetaResourcePath].Default.(string), true); len(drift) > 0 {
+	if drift := driftAttributeSlice.GetDriftMap(s[MetaResourcePath].Default.(string), true); len(drift) > 0 {
 		if transformSet == nil {
 			transformSet = make(map[string]string)
 		}

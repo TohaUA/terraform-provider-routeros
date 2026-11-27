@@ -11,17 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const testInterfaceEthernetMinVersion = "7.12"
 const testInterfaceEthernetAddress = "routeros_interface_ethernet.test"
 const testInterfaceEthernetImportAddress = "routeros_interface_ethernet.importtest"
 const expectedIdForInterface3 = "*3"
 
 func TestAccInterfaceEthernetTest_basic(t *testing.T) {
-	if !testCheckMinVersion(t, testInterfaceEthernetMinVersion) {
-		t.Logf("Test skipped, the minimum required version is %v", testInterfaceEthernetMinVersion)
-		return
-	}
-
 	for _, name := range testNames {
 		t.Run(name, func(t *testing.T) {
 			resource.Test(t, resource.TestCase{

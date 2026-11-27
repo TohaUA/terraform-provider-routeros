@@ -21,12 +21,12 @@ The fork continues upstream's version numbering, so **fork v1.100.0 is not upstr
 fork is not published on registry.terraform.io: keep `source = "terraform-routeros/routeros"` and
 install it through `dev_overrides` or a `filesystem_mirror`, as described in
 [Using this fork](https://github.com/TohaUA/terraform-provider-routeros#using-this-fork), which also
-covers release verification, the RouterOS 7.24 target, where to report problems, and what a
+covers release verification, the RouterOS 7.25+ target, where to report problems, and what a
 migration to a published `TohaUA/routeros` namespace would look like.
 
-## RouterOS 7.25.1
+## RouterOS 7.25+
 
-The fork targets RouterOS **7.25.1** and implements the documented 7.24 → 7.25 API additions, with configuration
+The provider requires **RouterOS 7.25 or later** (validated against **7.25.2**) and implements the documented 7.24 → 7.25 API additions, with configuration
 resources, operational data sources, and explicit command actions. See the
 [coverage and migration guide](guides/routeros_7_25.md) for feature mappings,
 transport tests, hardware requirements, and upgrade behavior.

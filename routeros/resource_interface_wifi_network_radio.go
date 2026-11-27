@@ -18,7 +18,7 @@ func ResourceWifiNetworkRadio() *schema.Resource {
 	r.Schema["channel_reselect_interval"].DiffSuppressFunc = TimeEqual
 	r.Schema["channel_reselect_time"].DiffSuppressFunc = TimeEqual
 	r.UpdateContext = func(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-		if ds := requireAPI725(); ds.HasError() {
+		if ds := requireAPI725(m); ds.HasError() {
 			return ds
 		}
 		if ds := ResourceUpdate(ctx, r.Schema, d, m); ds.HasError() {

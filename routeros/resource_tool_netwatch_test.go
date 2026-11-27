@@ -10,9 +10,6 @@ import (
 const testToolNetwatch = "routeros_tool_netwatch.test"
 
 func TestAccToolNetwatchTest_dns(t *testing.T) {
-	if !testCheckMinVersion(t, "7.16") {
-		t.Skip("DNS probe options require RouterOS 7.16 or later")
-	}
 	testAccToolNetwatchProbeType(t, "dns", []string{"example.com", "example.net"}, `
   dns_server  = "8.8.8.8"
   record_type = "A"

@@ -114,12 +114,5 @@ func ResourceCapsManProvisioning() *schema.Resource {
 
 		Schema:        resSchema,
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    ResourceCapsManProvisioningV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationScalarToList("hw_supported_modes", "ip_address_ranges", "slave_configurations"),
-				Version: 0,
-			},
-		},
 	}
 }

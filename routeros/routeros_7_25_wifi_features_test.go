@@ -10,9 +10,6 @@ import (
 )
 
 func TestRouterOS725WifiProfileFeatures(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.25.1"
-	t.Cleanup(func() { RouterOSVersion = old })
 	r := ResourceWifiConfiguration()
 	for _, tc := range []struct {
 		field, wire string

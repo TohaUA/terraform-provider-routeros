@@ -23,13 +23,12 @@ func newClientTestResourceData(t *testing.T, overrides map[string]interface{}) *
 	t.Helper()
 
 	for _, env := range []string{
-		"ROS_HOSTURL", "MIKROTIK_HOST",
-		"ROS_USERNAME", "MIKROTIK_USER",
-		"ROS_PASSWORD", "MIKROTIK_PASSWORD",
-		"ROS_CA_CERTIFICATE", "MIKROTIK_CA_CERTIFICATE",
-		"ROS_INSECURE", "MIKROTIK_INSECURE",
+		"ROS_HOSTURL",
+		"ROS_USERNAME",
+		"ROS_PASSWORD",
+		"ROS_CA_CERTIFICATE",
+		"ROS_INSECURE",
 		"ROS_SUPPRESS_SYSO_DEL_WARN",
-		"ROS_VERSION",
 	} {
 		t.Setenv(env, "")
 	}
@@ -41,7 +40,6 @@ func newClientTestResourceData(t *testing.T, overrides map[string]interface{}) *
 		"ca_certificate":         "",
 		"insecure":               false,
 		"suppress_syso_del_warn": false,
-		"routeros_version":       "7.25.2",
 		"rest_timeout":           59,
 	}
 	for k, v := range overrides {
@@ -54,8 +52,6 @@ func newClientTestResourceData(t *testing.T, overrides map[string]interface{}) *
 func isolateClientGlobals(t *testing.T) {
 	t.Helper()
 
-	origVersion := RouterOSVersion
-
 	connectionMu.Lock()
 	origRest := restConnections
 	origPools := apiPools
@@ -64,8 +60,6 @@ func isolateClientGlobals(t *testing.T) {
 	connectionMu.Unlock()
 
 	t.Cleanup(func() {
-		RouterOSVersion = origVersion
-
 		connectionMu.Lock()
 		for _, pool := range apiPools {
 			pool.mu.Lock()
@@ -274,8 +268,7 @@ func TestNewClientPlaintextWarnings(t *testing.T) {
 		defer srv.Close()
 
 		d := newClientTestResourceData(t, map[string]interface{}{
-			"hosturl":          srv.URL,
-			"routeros_version": "",
+			"hosturl": srv.URL,
 		})
 
 		client, diags := NewClient(context.Background(), d)
@@ -304,8 +297,7 @@ func TestNewClientPlaintextWarnings(t *testing.T) {
 		defer closeMockAPIServer(ln, done)
 
 		d := newClientTestResourceData(t, map[string]interface{}{
-			"hosturl":          "api://" + ln.Addr().String(),
-			"routeros_version": "",
+			"hosturl": "api://" + ln.Addr().String(),
 		})
 
 		client, diags := NewClient(context.Background(), d)
@@ -333,9 +325,8 @@ func TestNewClientPlaintextWarnings(t *testing.T) {
 		defer tlsSrv.Close()
 
 		d := newClientTestResourceData(t, map[string]interface{}{
-			"hosturl":          tlsSrv.URL,
-			"insecure":         true,
-			"routeros_version": "",
+			"hosturl":  tlsSrv.URL,
+			"insecure": true,
 		})
 
 		client, diags := NewClient(context.Background(), d)
@@ -364,9 +355,8 @@ func TestNewClientPlaintextWarnings(t *testing.T) {
 		defer closeMockAPIServer(ln, done)
 
 		d := newClientTestResourceData(t, map[string]interface{}{
-			"hosturl":          "apis://" + ln.Addr().String(),
-			"insecure":         true,
-			"routeros_version": "",
+			"hosturl":  "apis://" + ln.Addr().String(),
+			"insecure": true,
 		})
 
 		client, diags := NewClient(context.Background(), d)
@@ -381,9 +371,15 @@ func TestNewClientPlaintextWarnings(t *testing.T) {
 	t.Run("schemeless hosturl defaults to https with no warnings", func(t *testing.T) {
 		isolateClientGlobals(t)
 
+		tlsSrv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`[{"version":"7.25.2"}]`))
+		}))
+		defer tlsSrv.Close()
+
 		d := newClientTestResourceData(t, map[string]interface{}{
-			"hosturl":          "router.local",
-			"routeros_version": "7.25.2",
+			"hosturl":  strings.TrimPrefix(tlsSrv.URL, "https://"),
+			"insecure": true,
 		})
 
 		client, diags := NewClient(context.Background(), d)
@@ -397,10 +393,100 @@ func TestNewClientPlaintextWarnings(t *testing.T) {
 		if !ok {
 			t.Fatalf("expected *RestClient, got %T", client)
 		}
-		if rc.HostURL != "https://router.local" {
-			t.Errorf("HostURL = %q, want %q", rc.HostURL, "https://router.local")
+		if rc.HostURL != tlsSrv.URL {
+			t.Errorf("HostURL = %q, want %q", rc.HostURL, tlsSrv.URL)
+		}
+		if rc.Version != "7.25.2" {
+			t.Errorf("Version = %q, want %q", rc.Version, "7.25.2")
 		}
 	})
+}
+
+func TestNewClientMinimumVersionGuard(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		rawVersion  string
+		wantVersion string
+		wantErr     bool
+	}{
+		{name: "rejects 7.24.5 with channel", rawVersion: "7.24.5 (stable)", wantErr: true},
+		{name: "rejects 7.24 without channel", rawVersion: "7.24", wantErr: true},
+		{name: "accepts 7.25 without channel", rawVersion: "7.25", wantVersion: "7.25"},
+		{name: "accepts 7.25.2 without channel", rawVersion: "7.25.2", wantVersion: "7.25.2"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			isolateClientGlobals(t)
+
+			tlsSrv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(`[{"version":"` + tc.rawVersion + `"}]`))
+			}))
+			defer tlsSrv.Close()
+
+			d := newClientTestResourceData(t, map[string]interface{}{
+				"hosturl":  tlsSrv.URL,
+				"insecure": true,
+			})
+
+			client, diags := NewClient(context.Background(), d)
+			if tc.wantErr {
+				if client != nil {
+					t.Fatalf("expected nil client for version %q, got %T", tc.rawVersion, client)
+				}
+				if !diags.HasError() {
+					t.Fatalf("expected error diagnostic for version %q, got %+v", tc.rawVersion, diags)
+				}
+				if !strings.Contains(diags[0].Summary, minSupportedRouterOSVersion) {
+					t.Errorf("error summary %q must mention minimum version %s", diags[0].Summary, minSupportedRouterOSVersion)
+				}
+				return
+			}
+			if diags.HasError() {
+				t.Fatalf("unexpected error diagnostics for %q: %v", tc.rawVersion, diags)
+			}
+			rc, ok := client.(*RestClient)
+			if !ok {
+				t.Fatalf("expected *RestClient, got %T", client)
+			}
+			if rc.Version != tc.wantVersion {
+				t.Errorf("Version = %q, want %q", rc.Version, tc.wantVersion)
+			}
+		})
+	}
+}
+
+func TestGetRouterOSVersionFormats(t *testing.T) {
+	for _, tc := range []struct {
+		raw  string
+		want string
+	}{
+		{raw: "7.25", want: "7.25"},
+		{raw: "7.25.2", want: "7.25.2"},
+		{raw: "7.25.2 (stable)", want: "7.25.2"},
+	} {
+		t.Run(tc.raw, func(t *testing.T) {
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(`[{"version":"` + tc.raw + `"}]`))
+			}))
+			defer srv.Close()
+
+			rc := &RestClient{
+				ctx:       context.Background(),
+				HostURL:   srv.URL,
+				Transport: TransportREST,
+				extra:     &ExtraParams{},
+				Client:    srv.Client(),
+			}
+			got, diags := GetRouterOSVersion(rc)
+			if diags.HasError() {
+				t.Fatalf("unexpected diagnostics: %v", diags)
+			}
+			if got != tc.want {
+				t.Errorf("GetRouterOSVersion(%q) = %q, want %q", tc.raw, got, tc.want)
+			}
+		})
+	}
 }
 
 func TestRESTClientUsesProxyFromEnvironment(t *testing.T) {

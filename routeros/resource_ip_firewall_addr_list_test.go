@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testIPFirewallrAddrList = "routeros_firewall_addr_list.data"
+const testIPFirewallrAddrList = "routeros_ip_firewall_addr_list.data"
 
 func TestAccIPFirewallAddrListTest_basic(t *testing.T) {
 	for _, name := range testNames {
@@ -17,7 +17,7 @@ func TestAccIPFirewallAddrListTest_basic(t *testing.T) {
 					testSetTransportEnv(t, name)
 				},
 				ProviderFactories: testAccProviderFactories,
-				CheckDestroy:      testCheckResourceDestroy("/ip/firewall/address-list", "routeros_firewall_addr_list"),
+				CheckDestroy:      testCheckResourceDestroy("/ip/firewall/address-list", "routeros_ip_firewall_addr_list"),
 				Steps: []resource.TestStep{
 					{
 						Config: testAccIPFirewallAddrListConfig(),
@@ -37,7 +37,7 @@ func TestAccIPFirewallAddrListTest_basic(t *testing.T) {
 func testAccIPFirewallAddrListConfig() string {
 	return providerConfig + `
 
-resource "routeros_firewall_addr_list" "data" {
+resource "routeros_ip_firewall_addr_list" "data" {
 	list = "test-addr-list"	
 	address = "192.168.0.0-192.168.1.255"
 	timeout = "5m"

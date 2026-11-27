@@ -16,9 +16,14 @@ type RestClient struct {
 	HostURL   string
 	Username  string
 	Password  string
+	Version   string
 	Transport TransportType
 	extra     *ExtraParams
 	*http.Client
+}
+
+func (c *RestClient) GetRouterOSVersion() string {
+	return c.Version
 }
 
 type errorResponse struct {

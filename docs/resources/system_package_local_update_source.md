@@ -1,5 +1,5 @@
 # routeros_system_package_local_update_source (Resource)
-*<span style="color:red">This resource requires a minimum version of RouterOS 7.17.</span>*
+
 
 A local-update client takes its `.npk` files from the sources listed in this menu instead of from MikroTik's download servers. The transfer runs over WinBox rather than HTTP or FTP, so the source router has to answer WinBox on the address given here and the account named has to exist on that router, not on this one.
 

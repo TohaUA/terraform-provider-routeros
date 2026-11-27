@@ -115,17 +115,5 @@ func ResourceCapsManChannel() *schema.Resource {
 
 		Schema:        resSchema,
 		SchemaVersion: 2,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    ResourceCapsManChannelV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationNameToId(resSchema[MetaResourcePath].Default.(string)),
-				Version: 0,
-			},
-			{
-				Type:    ResourceCapsManChannelV1().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationScalarToList("frequency", "secondary_frequency"),
-				Version: 1,
-			},
-		},
 	}
 }

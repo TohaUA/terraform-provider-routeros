@@ -7,15 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testRoutingBfdMinVersion = "7.20"
 const testRoutingBfdConfiguration = "routeros_routing_bfd_configuration.test"
 
 func TestAccRoutingBfdConfigurationTest_basic(t *testing.T) {
-	if !testCheckMinVersion(t, testRoutingBfdMinVersion) {
-		t.Logf("Test skipped, the minimum required version is %v", testRoutingBfdMinVersion)
-		return
-	}
-
 	t.Parallel()
 	for _, name := range testNames {
 		t.Run(name, func(t *testing.T) {

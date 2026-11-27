@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testIPFirewallNat = "routeros_firewall_nat.data"
+const testIPFirewallNat = "routeros_ip_firewall_nat.data"
 
 func TestAccIPFirewallNatTest_basic(t *testing.T) {
 	for _, name := range testNames {
@@ -17,7 +17,7 @@ func TestAccIPFirewallNatTest_basic(t *testing.T) {
 					testSetTransportEnv(t, name)
 				},
 				ProviderFactories: testAccProviderFactories,
-				CheckDestroy:      testCheckResourceDestroy("/ip/firewall/nat", "routeros_firewall_nat"),
+				CheckDestroy:      testCheckResourceDestroy("/ip/firewall/nat", "routeros_ip_firewall_nat"),
 				Steps: []resource.TestStep{
 					{
 						Config: testAccIPFirewallNatConfig(),
@@ -38,7 +38,7 @@ func TestAccIPFirewallNatTest_basic(t *testing.T) {
 func testAccIPFirewallNatConfig() string {
 	return providerConfig + `
 
-resource "routeros_firewall_nat" "data" {
+resource "routeros_ip_firewall_nat" "data" {
 	chain = "srcnat"	
 	action = "masquerade"
 	disabled = true

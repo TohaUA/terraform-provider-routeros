@@ -48,14 +48,11 @@ func loadSensitiveNames() {
 			collectSensitiveNames(r.Schema)
 		}
 
-		// A sensitive attribute renamed for some RouterOS version is sent under
-		// its router name.
-		for _, obj := range driftAttributeSlice {
-			for _, attrs := range obj.Resources {
-				for _, attr := range attrs {
-					if _, ok := sensitiveNames[SnakeToKebab(attr.TF)]; ok {
-						sensitiveNames[SnakeToKebab(attr.MT)] = struct{}{}
-					}
+		// A sensitive attribute renamed in the drift table is sent under its router name.
+		for _, attrs := range driftAttributeSlice {
+			for _, attr := range attrs {
+				if _, ok := sensitiveNames[SnakeToKebab(attr.TF)]; ok {
+					sensitiveNames[SnakeToKebab(attr.MT)] = struct{}{}
 				}
 			}
 		}

@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testIPFirewallMangle = "routeros_firewall_mangle.data"
+const testIPFirewallMangle = "routeros_ip_firewall_mangle.data"
 
 func TestAccIPFirewallMangleTest_basic(t *testing.T) {
 	for _, name := range testNames {
@@ -17,7 +17,7 @@ func TestAccIPFirewallMangleTest_basic(t *testing.T) {
 					testSetTransportEnv(t, name)
 				},
 				ProviderFactories: testAccProviderFactories,
-				CheckDestroy:      testCheckResourceDestroy("/ip/firewall/mangle", "routeros_firewall_mangle"),
+				CheckDestroy:      testCheckResourceDestroy("/ip/firewall/mangle", "routeros_ip_firewall_mangle"),
 				Steps: []resource.TestStep{
 					{
 						Config: testAccIPFirewallMangleConfig(),
@@ -38,7 +38,7 @@ func TestAccIPFirewallMangleTest_basic(t *testing.T) {
 func testAccIPFirewallMangleConfig() string {
 	return providerConfig + `
 
-resource "routeros_firewall_mangle" "data" {
+resource "routeros_ip_firewall_mangle" "data" {
 	chain = "prerouting"	
 	action = "mark-connection"
 	new_connection_mark = "test-mark"

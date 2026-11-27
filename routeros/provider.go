@@ -10,8 +10,6 @@ var (
 	ErrorMsgGet    = "An error was encountered while sending a GET request to the API: %v"
 	ErrorMsgPatch  = "An error was encountered while sending a PATCH request to the API: %v"
 	ErrorMsgDelete = "An error was encountered while sending a DELETE request to the API: %v"
-
-	RouterOSVersion string
 )
 
 // Generate the resources drift:
@@ -24,7 +22,7 @@ func Provider() *schema.Provider {
 				Type:     schema.TypeString,
 				Required: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc(
-					[]string{"ROS_HOSTURL", "MIKROTIK_HOST"},
+					[]string{"ROS_HOSTURL"},
 					nil,
 				),
 				Description: `URL of the MikroTik router, default is TLS connection to REST.
@@ -40,49 +38,49 @@ func Provider() *schema.Provider {
 	Plaintext schemes (http:// and api://) send credentials and traffic unencrypted; prefer https:// or apis://.
 	Standard proxy environment variables (HTTP_PROXY, HTTPS_PROXY, NO_PROXY) apply to the REST (http:// and https://) transport only; api:// and apis:// connect directly.
 
-	export ROS_HOSTURL=router.local or export MIKROTIK_HOST=router.local
+	export ROS_HOSTURL=router.local
 `,
 			},
 			"username": {
 				Type:     schema.TypeString,
 				Required: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc(
-					[]string{"ROS_USERNAME", "MIKROTIK_USER"},
+					[]string{"ROS_USERNAME"},
 					nil,
 				),
 				Description: `Username for the MikroTik WEB/Winbox.
 
 
-	export ROS_USERNAME=admin or export MIKROTIK_USER=admin
+	export ROS_USERNAME=admin
 `,
 			},
 			"password": {
 				Type:     schema.TypeString,
 				Optional: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc(
-					[]string{"ROS_PASSWORD", "MIKROTIK_PASSWORD"},
+					[]string{"ROS_PASSWORD"},
 					nil,
 				),
-				Description: "Password for the MikroTik user (env: ROS_PASSWORD | MIKROTIK_PASSWORD).",
+				Description: "Password for the MikroTik user (env: ROS_PASSWORD).",
 				Sensitive:   true,
 			},
 			"ca_certificate": {
 				Type:     schema.TypeString,
 				Optional: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc(
-					[]string{"ROS_CA_CERTIFICATE", "MIKROTIK_CA_CERTIFICATE"},
+					[]string{"ROS_CA_CERTIFICATE"},
 					nil,
 				),
-				Description: "Path to MikroTik's certificate authority file (env: ROS_CA_CERTIFICATE | MIKROTIK_CA_CERTIFICATE).",
+				Description: "Path to MikroTik's certificate authority file (env: ROS_CA_CERTIFICATE).",
 			},
 			"insecure": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc(
-					[]string{"ROS_INSECURE", "MIKROTIK_INSECURE"},
+					[]string{"ROS_INSECURE"},
 					false,
 				),
-				Description: "Skip TLS certificate verification (not recommended) (env: ROS_INSECURE | MIKROTIK_INSECURE).",
+				Description: "Skip TLS certificate verification (not recommended) (env: ROS_INSECURE).",
 			},
 			"suppress_syso_del_warn": {
 				Type:     schema.TypeBool,
@@ -92,16 +90,6 @@ func Provider() *schema.Provider {
 					false,
 				),
 				Description: "Suppress the system object deletion warning (env: ROS_SUPPRESS_SYSO_DEL_WARN).",
-			},
-			"routeros_version": {
-				Type:     schema.TypeString,
-				Optional: true,
-				DefaultFunc: schema.MultiEnvDefaultFunc(
-					[]string{"ROS_VERSION"},
-					nil,
-				),
-				Description: "RouterOS version for which resource schemes will be adapted. The version obtained from " +
-					"MikroTik will be used if not specified (env: ROS_VERSION).",
 			},
 			"rest_timeout": {
 				Type:         schema.TypeInt,
@@ -206,19 +194,6 @@ func Provider() *schema.Provider {
 			"routeros_ipv6_route":                      ResourceIPv6Route(),
 			"routeros_ipv6_settings":                   ResourceIpv6Settings(),
 
-			// Aliases for IP objects to retain compatibility between original and fork
-			"routeros_dhcp_client":         ResourceDhcpClient(),
-			"routeros_dhcp_client_option":  ResourceDhcpClientOption(),
-			"routeros_dhcp_server":         ResourceDhcpServer(),
-			"routeros_dhcp_server_network": ResourceDhcpServerNetwork(),
-			"routeros_dhcp_server_lease":   ResourceDhcpServerLease(),
-			"routeros_firewall_addr_list":  ResourceIPFirewallAddrList(),
-			"routeros_firewall_filter":     ResourceIPFirewallFilter(),
-			"routeros_firewall_mangle":     ResourceIPFirewallMangle(),
-			"routeros_firewall_nat":        ResourceIPFirewallNat(),
-			"routeros_dns":                 ResourceDns(),
-			"routeros_dns_record":          ResourceDnsRecord(),
-
 			// Interface Objects
 			"routeros_interface_6to4":                           ResourceInterface6to4(),
 			"routeros_interface_bonding":                        ResourceInterfaceBonding(),
@@ -269,26 +244,12 @@ func Provider() *schema.Provider {
 			"routeros_interface_w60g":                           ResourceInterfaceW60g(),
 			"routeros_interface_w60g_station":                   ResourceInterfaceW60gStation(),
 
-			// Aliases for interface objects to retain compatibility between original and fork
-			"routeros_bridge":         ResourceInterfaceBridge(),
-			"routeros_bridge_port":    ResourceInterfaceBridgePort(),
-			"routeros_bridge_vlan":    ResourceInterfaceBridgeVlan(),
-			"routeros_gre":            ResourceInterfaceGre(),
-			"routeros_ipip":           ResourceInterfaceIPIP(),
-			"routeros_vlan":           ResourceInterfaceVlan(),
-			"routeros_vrrp":           ResourceInterfaceVrrp(),
-			"routeros_wireguard":      ResourceInterfaceWireguard(),
-			"routeros_wireguard_peer": ResourceInterfaceWireguardPeer(),
-			// Aliases for backward compatibility
-			"routeros_ip_dhcp_server_option_set": ResourceDhcpServerOptionSets(),
-
 			// System Objects
 			"routeros_disk_settings":                      ResourceDiskSettings(),
 			"routeros_ip_cloud":                           ResourceIpCloud(),
 			"routeros_ip_cloud_advanced":                  ResourceIpCloudAdvanced(),
 			"routeros_system_certificate":                 ResourceSystemCertificate(),
 			"routeros_system_certificate_scep_server":     ResourceCertificateScepServer(),
-			"routeros_certificate_scep_server":            ResourceCertificateScepServer(),
 			"routeros_system_clock":                       ResourceSystemClock(),
 			"routeros_system_identity":                    ResourceSystemIdentity(),
 			"routeros_system_led":                         ResourceSystemLed(),
@@ -312,10 +273,6 @@ func Provider() *schema.Provider {
 			"routeros_system_user_aaa":                    ResourceUserAaa(),
 			"routeros_system_user_group":                  ResourceUserGroup(),
 			"routeros_system_user_settings":               ResourceSystemUserSettings(),
-
-			// Aliases for system objects to retain compatibility between original and fork
-			"routeros_identity":  ResourceSystemIdentity(),
-			"routeros_scheduler": ResourceSystemScheduler(),
 
 			// CAPsMAN Objects
 			"routeros_capsman_aaa":               ResourceCapsManAaa(),
@@ -475,9 +432,6 @@ func Provider() *schema.Provider {
 			"routeros_system_routerboard":                     DatasourceSystemRouterboard(),
 			"routeros_wifi_easy_connect":                      DatasourceWiFiEasyConnect(),
 			"routeros_x509":                                   DatasourceX509(),
-
-			// Aliases for entries that have been renamed
-			"routeros_firewall": DatasourceIPFirewall(),
 		},
 		ConfigureContextFunc: NewClient,
 	}

@@ -23,7 +23,7 @@ func api725Resolve(s map[string]*schema.Schema, wire string) (string, *schema.Sc
 		}
 	}
 	if path := s[MetaResourcePath]; path != nil {
-		for from, to := range driftAttributeSlice.GetDriftMap("7.25", path.Default.(string), false) {
+		for from, to := range driftAttributeSlice.GetDriftMap(path.Default.(string), false) {
 			if to == wire && s[from] != nil {
 				return from, s[from]
 			}
@@ -40,9 +40,6 @@ func api725Resolve(s map[string]*schema.Schema, wire string) (string, *schema.Sc
 // Presence alone is insufficient: verify every new scalar can be read, every
 // configurable one reaches its exact wire key, and status never reaches writes.
 func TestRouterOS725DeltaFieldSerialization(t *testing.T) {
-	old := RouterOSVersion
-	RouterOSVersion = "7.25.1"
-	t.Cleanup(func() { RouterOSVersion = old })
 	var manifest struct {
 		Delta struct {
 			Changes []struct {

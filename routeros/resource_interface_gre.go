@@ -49,13 +49,6 @@ func ResourceInterfaceGre() *schema.Resource {
 		},
 
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    ResourceInterfaceGreV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationNameToId(resSchema[MetaResourcePath].Default.(string)),
-				Version: 0,
-			},
-		},
 
 		Schema: resSchema,
 	}

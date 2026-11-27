@@ -109,13 +109,6 @@ func ResourceCapsManRates() *schema.Resource {
 		},
 
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Type:    ResourceCapsManRatesV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: stateMigrationNameToId(resSchema[MetaResourcePath].Default.(string)),
-				Version: 0,
-			},
-		},
 
 		Schema: resSchema,
 	}
