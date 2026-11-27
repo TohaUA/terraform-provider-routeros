@@ -106,14 +106,33 @@ jobs:
             --gateway 172.30.99.1 \
             -o com.docker.network.bridge.name=macbootbr0 \
             macboot-l2
+          BRIDGE_GW=$(docker network inspect bridge -f '{{(index .IPAM.Config 0).Gateway}}')
           docker create --name routeros \
             --cap-add=NET_ADMIN \
             --device /dev/net/tun \
             --device /dev/kvm \
             -e ROUTEROS_MEMORY=2048 \
+            -e BRIDGE_GW="$BRIDGE_GW" \
             -p 8728:8728 \
-            --entrypoint /routeros/entrypoint_with_four_interfaces.sh \
-            routeros-test
+            --entrypoint /usr/bin/env \
+            routeros-test \
+            bash -c '
+              if ip -4 addr show dev eth0 | grep -q "172\.30\.99\."; then
+                ip link set eth0 down
+                ip link set eth1 down
+                ip link set eth0 name eth_l2
+                ip link set eth1 name eth0
+                ip link set eth_l2 name eth1
+                ip link set eth0 up
+                ip link set eth1 up
+              fi
+              if [ -n "$BRIDGE_GW" ]; then
+                ip route replace default via "$BRIDGE_GW" dev eth0
+              fi
+              ip -br addr
+              ip route
+              exec /routeros/entrypoint_with_four_interfaces.sh
+            '
           docker network connect macboot-l2 routeros
           docker start routeros
 
