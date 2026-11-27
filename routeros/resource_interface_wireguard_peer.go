@@ -9,9 +9,8 @@ import (
 // ResourceInterfaceWireguardPeer https://help.mikrotik.com/docs/display/ROS/WireGuard#WireGuard-Peers
 func ResourceInterfaceWireguardPeer() *schema.Resource {
 	resSchema := map[string]*schema.Schema{
-		MetaResourcePath:   PropResourcePath("/interface/wireguard/peers"),
-		MetaId:             PropId(Id),
-		MetaSetUnsetFields: PropSetUnsetFields("client_mtu"),
+		MetaResourcePath: PropResourcePath("/interface/wireguard/peers"),
+		MetaId:           PropId(Id),
 
 		"allowed_address": {
 			Type:     schema.TypeList,
@@ -67,9 +66,10 @@ func ResourceInterfaceWireguardPeer() *schema.Resource {
 			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"client_mtu": {
-			Type:        schema.TypeInt,
-			Optional:    true,
-			Description: "MTU written into the generated client configuration. Requires RouterOS 7.25.1 or later.",
+			Type:             schema.TypeInt,
+			Optional:         true,
+			Description:      "MTU written into the generated client configuration. Requires RouterOS 7.25.1 or later.",
+			DiffSuppressFunc: AlwaysPresentNotUserProvided,
 		},
 		"current_endpoint_address": {
 			Type:        schema.TypeString,

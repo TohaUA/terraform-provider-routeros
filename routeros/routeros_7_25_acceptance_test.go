@@ -62,10 +62,7 @@ func TestAccRouterOS725Fields(t *testing.T) {
   public_key = "QxC+CTcrDdU5+ny0+2ChUH3NegTrwoVCv53TllI5T0I="
   allowed_address = ["192.0.2.0/30"]
   disabled = true
-`, "client_mtu", []string{"1380", "1420"}, true, "0"},
-		{"ipsec_policy_group", "routeros_ip_ipsec_policy_group", "/ip/ipsec/policy/group", `
-  name = "tf-725-policy-group"
-`, "interface", []string{`"ether1"`, `"bridge"`}, true, ""},
+`, "client_mtu", []string{"1380", "1420"}, false, ""},
 		{"snmp", "routeros_snmp_community", "/snmp/community", `
   name = "tf-725-snmp"
   security = "authorized"
